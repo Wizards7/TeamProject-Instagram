@@ -65,3 +65,11 @@ export interface IStory {
   image: string;
   datePublished: string;
 }
+
+export interface IUser {
+  id: string;
+  userName: string;
+  fullName: string;
+  image: string | null;
+  email: string;
+}
