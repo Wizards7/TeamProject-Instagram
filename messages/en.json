@@ -1,0 +1,19 @@
+{
+  "HomePage": {
+    "title": "Hello world!"
+  },
+  "Auth": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "username": "Username",
+    "password": "Password",
+    "or": "OR",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Have an account?",
+    "phoneEmail": "Mobile Number or Email",
+    "fullName": "Full Name",
+    "confirmPassword": "Confirm Password",
+    "loginFacebook": "Log in with Facebook",
+    "signupPrompt": "Sign up to see photos and videos from your friends."
+  }
+}

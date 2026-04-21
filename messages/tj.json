@@ -1,0 +1,19 @@
+{
+  "HomePage": {
+    "title": "Салом ҷаҳон!"
+  },
+  "Auth": {
+    "login": "Воридшавӣ",
+    "signup": "Бақайдгирӣ",
+    "username": "Номи корбар",
+    "password": "Рамз",
+    "or": "Ё",
+    "noAccount": "Ҳисоб надоред?",
+    "haveAccount": "Ҳисоб доред?",
+    "phoneEmail": "Рақами мобилӣ ё почта",
+    "fullName": "Ному насаб",
+    "confirmPassword": "Рамзро тасдиқ кунед",
+    "loginFacebook": "Воридшавӣ тавассути Facebook",
+    "signupPrompt": "Бақайдгирӣ кунед, то аксу видеоҳои дӯстонатонро бинед."
+  }
+}
