@@ -20,12 +20,19 @@ export default function Home() {
       {/* Stories */}
       <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-8 flex gap-6 overflow-x-auto no-scrollbar shadow-sm">
         {storyData?.map((story) => (
-          <div key={story.storyId} className="flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group">
+          <div
+            key={story.storyId}
+            className="flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group"
+          >
             <div className="w-[72px] h-[72px] rounded-full p-[2.5px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 group-active:scale-95 transition-transform duration-200">
               <div className="w-full h-full rounded-full border-[3px] border-white overflow-hidden bg-gray-100 shadow-inner">
-                <img 
-                  src={story.userImage ? `${FILE_URL}${story.userImage}` : "/image.webp"} 
-                  alt="Story" 
+                <img
+                  src={
+                    story.userImage
+                      ? `${FILE_URL}${story.userImage}`
+                      : "/image.webp"
+                  }
+                  alt="Story"
                   className="w-full h-full object-cover"
                 />
               </div>
