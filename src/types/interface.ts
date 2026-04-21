@@ -73,3 +73,17 @@ export interface IUser {
   image: string | null;
   email: string;
 }
+
+//profile interfaces
+export interface IUserProfile {
+  id: string;
+  userName: string;
+  fullName: string;
+  image: string | null;
+  email: string;
+  about: string | null;   
+  gender: 0 | 1 | null;
+  postCount: number;
+  followersCount: number;
+  followingCount: number;
+}
