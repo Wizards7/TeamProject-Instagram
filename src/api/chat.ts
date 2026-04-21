@@ -7,7 +7,7 @@ export const chatApi = apiSlice.injectEndpoints({
       query: () => "/Chat/get-chats",
       providesTags: ["Chat"],
     }),
-    getChatById: builder.query<IBaseResponse<IChat>, number>({
+    getChatById: builder.query<IBaseResponse<IMessage[]>, number>({
       query: (chatId) => `/Chat/get-chat-by-id?chatId=${chatId}`,
       providesTags: (result, error, arg) => [{ type: "Chat", id: arg }],
     }),

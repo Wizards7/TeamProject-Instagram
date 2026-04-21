@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import ChatList from "@/src/components/messages/ChatList";
 import ChatView from "@/src/components/messages/ChatView";
 import EmptyChat from "@/src/components/messages/EmptyChat";
@@ -20,7 +21,7 @@ const MessagesPage = () => {
     try {
       await createChat(user.id).unwrap();
       setIsSearchOpen(false);
-      refetch(); // Refresh list to show new chat
+      refetch(); 
     } catch (err) {
       console.error("Failed to create chat:", err);
     }
@@ -28,16 +29,21 @@ const MessagesPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-100px)]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0095f6]"></div>
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] bg-white">
+        <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="rounded-full h-10 w-10 border-4 border-gray-100 border-t-[#0095f6]"
+        />
+        <span className="mt-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Wizzards7 UI Loading...</span>
       </div>
     );
   }
 
   return (
-    <div className="h-[calc(100vh-100px)] border border-[#dbdbdb] rounded-sm overflow-hidden flex bg-white shadow-sm">
+    <div className="h-[calc(100vh-100px)] border border-[#dbdbdb] rounded-sm overflow-hidden flex bg-white shadow-2xl shadow-black/5 max-w-[1200px] mx-auto my-1">
       {/* List Pane */}
-      <div className="w-[350px] flex-shrink-0">
+      <div className="w-[350px] flex-shrink-0 border-r border-[#dbdbdb]">
         <ChatList 
           chats={chats} 
           selectedChatId={selectedChat?.chatId} 
@@ -46,22 +52,49 @@ const MessagesPage = () => {
         />
       </div>
 
-      {/* Main View Pane */}
-      <div className="flex-1 min-w-0">
-        {selectedChat ? (
-          <ChatView chat={selectedChat} />
-        ) : (
-          <EmptyChat />
-        )}
+      {/* Main View Pane - Content changes with Animation */}
+      <div className="flex-1 min-w-0 bg-white relative">
+        <AnimatePresence mode="wait">
+            {selectedChat ? (
+                <motion.div 
+                    key={`chat-${selectedChat.chatId}`}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="h-full"
+                >
+                    <ChatView 
+                        chat={selectedChat} 
+                        onDeleteChat={() => {
+                            setSelectedChat(null);
+                            refetch();
+                        }}
+                    />
+                </motion.div>
+            ) : (
+                <motion.div 
+                    key="empty-chat"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="h-full"
+                >
+                    <EmptyChat />
+                </motion.div>
+            )}
+        </AnimatePresence>
       </div>
 
-      {/* Modals */}
-      {isSearchOpen && (
-        <UserSearchModal 
-          onClose={() => setIsSearchOpen(false)} 
-          onSelectUser={handleSelectUserFromSearch}
-        />
-      )}
+      {/* Modern Modal Overlay */}
+      <AnimatePresence>
+        {isSearchOpen && (
+            <UserSearchModal 
+                onClose={() => setIsSearchOpen(false)} 
+                onSelectUser={handleSelectUserFromSearch}
+            />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

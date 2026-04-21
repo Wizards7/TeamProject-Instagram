@@ -26,21 +26,26 @@ export interface IBaseResponse<T> {
 
 export interface IChat {
   chatId: number;
-  chatName: string;
-  chatPhoto: string;
-  lastMessage: string;
-  messages: IMessage[];
-  receiverUserId: string;
+  sendUserId: string;
+  sendUserName: string;
+  sendUserImage: string;
+  receiveUserId: string;
+  receiveUserName: string;
+  receiveUserImage: string;
+  // UI helpers
+  lastMessage?: string;
+  messages?: IMessage[];
 }
 
 export interface IMessage {
-  id: number;
-  messageText: string;
-  file: string;
-  isMine: boolean;
-  senderUserId: string;
-  receiverUserId: string;
+  userId: string;
+  userName: string;
+  userImage: string;
+  messageId: number;
   chatId: number;
+  messageText: string | null;
+  sendMassageDate: string;
+  file: string | null;
 }
 
 export interface IUser {
