@@ -1,5 +1,5 @@
 import { apiSlice } from "./apiSlice";
-import { IPost, IPagedResponse, IUserProfile } from "../types/interface";
+import { IPost, IPagedResponse, IUserProfile, IFollower } from "../types/interface";
 
 
 export const userProfileApi = apiSlice.injectEndpoints({
@@ -30,6 +30,43 @@ export const userProfileApi = apiSlice.injectEndpoints({
       }),
     }),
 
+getFollowers: builder.query<{ data: IFollower[] }, { userId: string; pageNumber?: number; pageSize?: number }>({
+  query: ({ userId, pageNumber = 1, pageSize = 30 }) => ({
+    url: "/FollowingRelationShip/get-subscribers", 
+    params: { UserId: userId, pageNumber, pageSize }, 
+  }),
+}),
+
+getFollowing: builder.query<{ data: IFollower[] }, { userId: string; pageNumber?: number; pageSize?: number }>({
+  query: ({ userId, pageNumber = 1, pageSize = 30 }) => ({
+    url: "/FollowingRelationShip/get-subscriptions", 
+    params: { UserId: userId, pageNumber, pageSize },
+  }),
+}),
+
+addFollowingRelationShip: builder.mutation<void, { followingUserId: string }>({
+  query: ({ followingUserId }) => ({
+    url: "/FollowingRelationShip/add-following-relation-ship",
+    method: "POST",
+    params: { followingUserId },
+  }),
+}),
+
+deleteFollowingRelationShip: builder.mutation<void, { followingUserId: string }>({
+  query: ({ followingUserId }) => ({
+    url: "/FollowingRelationShip/delete-following-relation-ship",
+    method: "DELETE",
+    params: { followingUserId },
+  }),
+}),
+
+isFollowingUser: builder.query<{ data: boolean }, { followingUserId: string }>({
+  query: ({ followingUserId }) => ({
+    url: "/UserProfile/get-is-follow-user-profile-by-id",
+    params: { followingUserId },
+  }),
+}),
+
   }),
 });
 export const {
@@ -37,4 +74,9 @@ export const {
   useGetUserProfileByIdQuery,
   useGetMyPostsQuery,
   useGetPostFavoritesQuery,
+  useGetFollowersQuery,    
+  useGetFollowingQuery,
+  useAddFollowingRelationShipMutation,      
+  useDeleteFollowingRelationShipMutation,    
+  useIsFollowingUserQuery,    
 } = userProfileApi;

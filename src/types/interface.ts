@@ -87,3 +87,23 @@ export interface IUserProfile {
   followersCount: number;
   followingCount: number;
 }
+
+export interface IFollower {
+  id: string;
+  userName: string;
+  fullName: string;
+  image: string | null;
+  isFollowing?: boolean;   
+}
+
+ export interface FollowModalProps {
+  title: string;
+  users: IFollower[];
+  onClose: () => void;
+}
+
+export interface FollowModalProps {
+  title: string;
+  users: IFollower[];
+  onClose: () => void;
+}

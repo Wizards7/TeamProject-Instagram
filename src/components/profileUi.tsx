@@ -1,11 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { IPost } from "../types/interface";
+import { IFollower, IPost } from "../types/interface";
 import {
   useGetMyProfileQuery,
   useGetMyPostsQuery,
-  useGetPostFavoritesQuery,   
+  useGetPostFavoritesQuery,
+  useGetFollowersQuery,
+  useGetFollowingQuery,
 } from "../api/userProfile";
+import { FollowModal } from "./FollowModal";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -222,18 +225,38 @@ const ProfileUi = () => {
   const [activeTab, setActiveTab] = useState<Tab>("posts");
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
 
+  // State for follow modal
+  const [followModal, setFollowModal] = useState<{ type: "followers" | "following"; open: boolean }>({
+    type: "followers",
+    open: false,
+  });
+
   const { data: profileData, isLoading: profileLoading } = useGetMyProfileQuery();
   const profile = profileData?.data;
 
   const { data: myPostsData, isLoading: postsLoading } = useGetMyPostsQuery();
   const myPosts = myPostsData?.data ?? [];
 
-  // Saved posts – only fetched when the tab is active 
+  // Saved posts – only fetched when the tab is active
   const { data: favData, isLoading: favLoading } = useGetPostFavoritesQuery(
     { PageSize: 30 },
     { skip: activeTab !== "saved" }
   );
   const savedPosts = favData?.data ?? [];
+
+  const { data: followersData, isFetching: followersLoading } = useGetFollowersQuery(
+    { userId: profile?.id ?? "", pageSize: 50 },
+    { skip: !followModal.open || followModal.type !== "followers" || !profile?.id }
+  );
+
+  const { data: followingData, isFetching: followingLoading } = useGetFollowingQuery(
+    { userId: profile?.id ?? "", pageSize: 50 },
+    { skip: !followModal.open || followModal.type !== "following" || !profile?.id }
+  );
+
+  const modalUsers: IFollower[] =
+    followModal.type === "followers" ? followersData?.data ?? [] : followingData?.data ?? [];
+  const modalLoading = followModal.type === "followers" ? followersLoading : followingLoading;
 
   // Determine which posts to display
   let displayedPosts: IPost[] = [];
@@ -305,15 +328,21 @@ const ProfileUi = () => {
 
           <div className="flex items-center gap-8 mb-5">
             <p className="text-sm">
-              <span className="font-bold">{profile.postCount ?? myPosts.length}</span>{" "}
+              <span className="font-bold">{profile.postCount ?? myPosts.length}</span>
               <span className="text-[#262626]">posts</span>
             </p>
-            <button className="text-sm hover:opacity-60 transition-opacity">
-              <span className="font-bold">{(profile.followersCount ?? 0).toLocaleString()}</span>{" "}
+            <button
+              onClick={() => setFollowModal({ type: "followers", open: true })}
+              className="text-sm hover:opacity-60 transition-opacity"
+            >
+              <span className="font-bold">{(profile.followersCount ?? 0).toLocaleString()}</span>
               <span className="text-[#262626]">followers</span>
             </button>
-            <button className="text-sm hover:opacity-60 transition-opacity">
-              <span className="font-bold">{(profile.followingCount ?? 0).toLocaleString()}</span>{" "}
+            <button
+              onClick={() => setFollowModal({ type: "following", open: true })}
+              className="text-sm hover:opacity-60 transition-opacity"
+            >
+              <span className="font-bold">{(profile.followingCount ?? 0).toLocaleString()}</span>
               <span className="text-[#262626]">following</span>
             </button>
           </div>
@@ -327,7 +356,7 @@ const ProfileUi = () => {
         </div>
       </div>
 
-      {/* Tabs - Posts, Reels, Saved */}
+      {/* Tabs */}
       <div className="border-t border-gray-200">
         <div className="flex items-center justify-center gap-12">
           {tabs.map((tab) => (
@@ -371,8 +400,22 @@ const ProfileUi = () => {
         </div>
       )}
 
-      {selectedPost && (
-        <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />
+      {selectedPost && <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
+
+      {/* Followers / Following Modal */}
+      {followModal.open && (
+        <FollowModal
+          title={followModal.type === "followers" ? "Followers" : "Following"}
+          users={modalUsers}
+          onClose={() => setFollowModal({ type: "followers", open: false })}
+        />
+      )}
+
+      {/* Loading overlay for modal */}
+      {modalLoading && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-[#0095f6] rounded-full animate-spin" />
+        </div>
       )}
     </div>
   );
