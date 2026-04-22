@@ -70,9 +70,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             className="absolute bottom-3 right-3 bg-black/60 p-2 rounded-full text-white hover:bg-black transition-all z-10 shadow-lg"
           >
             {isMuted ? (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M1.39 3.42a.999.999 0 0 0 0 1.41l3.59 3.59c-.4.44-.67 1-.78 1.58H1a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h3.21l6.09 6.09A1.5 1.5 0 0 0 13 23.06v-5.24l5.29 5.29a.999.999 0 1 0 1.41-1.41L2.8 3.42a.999.999 0 0 0-1.41 0zM11 19.41l-4.66-4.66H2v-4h2.21l1.45-1.45L11 14.65v4.76zm2-10.76l-2-2V.94A1.5 1.5 0 0 1 13.79.06l6.09 6.09c.4.4.62.94.62 1.5v2.85l-2-2V7.65l-4.66-4.66v5.66zm6.8 6.8l-1.44-1.44c.4-.95.64-2.01.64-3.12 0-3.12-1.86-5.8-4.5-6.97v-2.1c3.76 1.28 6.5 4.85 6.5 9.07 0 1.63-.49 3.12-1.2 4.56z"/></svg>
+              <img src="/mute.svg" className="w-[12px] h-[12px] brightness-0 invert" alt="Mute" />
             ) : (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13.79.06A1.5 1.5 0 0 0 11 .94v22.12a1.5 1.5 0 0 0 2.79.88l6.09-6.09c.4-.4.62-.94.62-1.5V7.65c0-.56-.22-1.1-.62-1.5L13.79.06zM13 2.35l4.66 4.66v7.98L13 19.65V2.35zM1 9v6a1 1 0 0 0 1 1h3.21l6.09 6.09A1.5 1.5 0 0 0 13 21.06V2.94A1.5 1.5 0 0 0 10.3.06L4.21 6.15H2a1 1 0 0 0-1 1zM11 19.41l-4.66-4.66H2v-4h4.34L11 6.09v13.32z"/></svg>
+              <img src="/sound.svg" className="w-[12px] h-[12px] brightness-0 invert" alt="Sound" />
             )}
           </button>
 
