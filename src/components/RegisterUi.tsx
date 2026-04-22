@@ -36,6 +36,7 @@ const RegisterUi = () => {
       // Show Splash Screen (Sileo) for premium transition
       setShowSplash(true);
       setTimeout(() => {
+        router.refresh();
         router.push("/"); // After register, go straight to HOME
       }, 1500);
     } catch (error) {
