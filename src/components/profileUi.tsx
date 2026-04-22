@@ -87,7 +87,7 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white flex max-w-[900px] w-full max-h-[90vh] rounded-sm overflow-hidden"
+        className="bg-white flex max-w-225 w-full max-h-[90vh] rounded-sm overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-[55%] bg-black flex items-center justify-center shrink-0">
@@ -113,7 +113,7 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
         </div>
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="flex items-center gap-3 p-4 border-b border-gray-200">
-            <div className="w-8 h-8 rounded-full p-[1px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600">
+            <div className="w-8 h-8 rounded-full p-px bg-linear-to-tr from-yellow-400 to-fuchsia-600">
               <div className="w-full h-full rounded-full border border-white overflow-hidden bg-gray-100">
                 {post.userImage ? (
                   <img src={`${FILE_URL}${post.userImage}`} className="w-full h-full object-cover" />
@@ -192,7 +192,7 @@ const EmptyStateForPosts: React.FC = () => (
       </svg>
     </div>
     <h3 className="text-xl font-light mb-2">Share Photos</h3>
-    <p className="text-sm text-gray-500 mb-6 max-w-[300px]">
+    <p className="text-sm text-gray-500 mb-6 max-w-75">
       When you share photos, they will appear on your profile.
     </p>
     <button className="px-4 py-2 bg-[#0095f6] text-white text-sm font-semibold rounded-lg hover:bg-[#1877f2] transition-colors">
@@ -290,11 +290,11 @@ const ProfileUi = () => {
   }
 
   return (
-    <div className="max-w-[935px] mx-auto px-4 py-8">
+    <div className="max-w-233.75 mx-auto px-4 py-8">
       {/* Profile header */}
       <div className="flex items-start gap-16 mb-10">
         <div className="shrink-0">
-          <div className="w-[150px] h-[150px] rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600">
+          <div className="w-37.5 h-37.5 rounded-full p-0.75 bg-linear-to-tr from-yellow-400 to-fuchsia-600">
             <div className="w-full h-full rounded-full border-[3px] border-white overflow-hidden bg-gray-100">
               {profile.image ? (
                 <img
@@ -389,7 +389,7 @@ const ProfileUi = () => {
           <EmptyStateForSaved />
         )
       ) : (
-        <div className="grid grid-cols-3 gap-[3px] mt-1">
+        <div className="grid grid-cols-3 gap-0.75 mt-1">
           {displayedPosts.map((post) => (
             <PostThumbnail
               key={post.postId}

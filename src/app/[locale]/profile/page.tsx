@@ -1,5 +1,4 @@
 import ProfileUi from '@/src/components/profileUi'
-import React from 'react'
 
 const pages = () => {
   return (
