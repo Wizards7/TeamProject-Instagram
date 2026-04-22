@@ -35,6 +35,7 @@ const LoginUi = () => {
         // Show Splash Screen (Sileo) for premium transition
         setShowSplash(true);
         setTimeout(() => {
+          router.refresh();
           router.push("/");
         }, 1500);
       }
