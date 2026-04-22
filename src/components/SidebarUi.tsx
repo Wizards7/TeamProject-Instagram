@@ -76,7 +76,7 @@ const sidebarItems = [
   },
   {
     label: "Messages",
-    href: "/direct/inbox",
+    href: "/messages",
     icon: (active: boolean) => (
       <img 
         src="/message.svg" 
@@ -88,7 +88,7 @@ const sidebarItems = [
   },
   {
     label: "Notifications",
-    href: "/notifications",
+    href: "/notification",
     icon: (active: boolean) => (
       <svg
         aria-label="Notifications"
