@@ -88,7 +88,7 @@ const sidebarItems = [
   },
   {
     label: "Notifications",
-    href: "/notifications",
+    href: "/notification",
     icon: (active: boolean) => (
       <svg
         aria-label="Notifications"
