@@ -5,18 +5,18 @@ import { Link, usePathname } from "@/src/i18n/navigation";
 import { logoutUser } from "../utils/token";
 
 const sidebarItems = [
-  { 
-    label: "Home", 
-    href: "/", 
+  {
+    label: "Home",
+    href: "/",
     icon: (active: boolean) => (
       <svg aria-label="Home" color={active ? "#0095f6" : "#262626"} fill={active ? "#0095f6" : "none"} height="24" role="img" viewBox="0 0 24 24" width="24">
         <path d="M9.005 16.545a2.997 2.997 0 012.997-2.997h0A2.997 2.997 0 0115 16.545V22h7V11.543L12 2 2 11.543V22h7v-5.455z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
       </svg>
     )
   },
-  { 
-    label: "Search", 
-    href: "/search", 
+  {
+    label: "Search",
+    href: "/search",
     icon: (active: boolean) => (
       <svg aria-label="Search" color={active ? "#0095f6" : "#262626"} fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
         <path d="M19 10.5A8.5 8.5 0 1110.5 2a8.5 8.5 0 018.5 8.5z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
@@ -24,9 +24,9 @@ const sidebarItems = [
       </svg>
     )
   },
-  { 
-    label: "Explore", 
-    href: "/explore", 
+  {
+    label: "Explore",
+    href: "/explore",
     icon: (active: boolean) => (
       <svg aria-label="Explore" color={active ? "#0095f6" : "#262626"} fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
         <polygon fill="none" points="13.941 13.941 7.581 16.424 10.063 10.063 16.424 7.581 13.941 13.941" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></polygon>
@@ -34,9 +34,9 @@ const sidebarItems = [
       </svg>
     )
   },
-  { 
-    label: "Reels", 
-    href: "/reels", 
+  {
+    label: "Reels",
+    href: "/reels",
     icon: (active: boolean) => (
       <svg aria-label="Reels" color={active ? "#0095f6" : "#262626"} fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
         <line fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" x1="2.049" x2="21.95" y1="7.002" y2="7.002"></line>
@@ -47,9 +47,9 @@ const sidebarItems = [
       </svg>
     )
   },
-  { 
-    label: "Messages", 
-    href: "/direct/inbox", 
+  {
+    label: "Messages",
+    href: "/messages",
     icon: (active: boolean) => (
       <svg aria-label="Messenger" color={active ? "#0095f6" : "#262626"} fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
         <path d="M12.003 2.001a9.705 9.705 0 110 19.41 10.82 10.82 0 01-4.59-.997L2 22l1.62-.5.53-.17z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
@@ -57,18 +57,18 @@ const sidebarItems = [
       </svg>
     )
   },
-  { 
-    label: "Notifications", 
-    href: "/notifications", 
+  {
+    label: "Notifications",
+    href: "/notifications",
     icon: (active: boolean) => (
       <svg aria-label="Notifications" color={active ? "#0095f6" : "#262626"} fill={active ? "#0095f6" : "none"} height="24" role="img" viewBox="0 0 24 24" width="24">
         <path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
       </svg>
     )
   },
-  { 
-    label: "Create", 
-    href: "/create", 
+  {
+    label: "Create",
+    href: "/create",
     icon: (active: boolean) => (
       <svg aria-label="New Post" color={active ? "#0095f6" : "#262626"} fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
         <rect fill="none" height="18" rx="3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="18" x="3" y="3"></rect>
@@ -88,10 +88,10 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="pt-8 pb-10 px-3 flex items-center">
         <Link href="/">
-          <img 
-            src="/Frame 168.png" 
-            alt="Instagram" 
-            className="w-[153px] h-auto object-contain" 
+          <img
+            src="/Frame 168.png"
+            alt="Instagram"
+            className="w-[153px] h-auto object-contain"
           />
         </Link>
       </div>
@@ -105,8 +105,8 @@ export default function Sidebar() {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-200 relative group
-                ${isActive ? "text-[#0095f6]" : "hover:bg-[#fafafa] text-[#262626]"}`}
+              className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group
+                ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
             >
               <div className="transition-transform duration-200 group-hover:scale-110">
                 {item.icon(isActive)}
@@ -114,14 +114,14 @@ export default function Sidebar() {
               <span className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}>
                 {item.label}
               </span>
-              
+
               {isActive && (
                 <div className="absolute right-[-12px] top-1 bottom-1 w-1 bg-[#0095f6] rounded-l-full shadow-[0_0_8px_rgba(0,149,246,0.5)]" />
               )}
             </Link>
           );
         })}
-        
+
         {/* Profile (Special Item) */}
         <Link
           href="/profile"
@@ -156,7 +156,7 @@ export default function Sidebar() {
               <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left border-b border-gray-100 mb-1">
                 <span>Saved</span>
               </button>
-              <button 
+              <button
                 onClick={logoutUser}
                 className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left"
               >
@@ -166,7 +166,7 @@ export default function Sidebar() {
           </div>
         )}
 
-        <button 
+        <button
           onClick={() => setIsMoreOpen(!isMoreOpen)}
           className={`flex items-center gap-4 p-3 w-full rounded-lg hover:bg-[#fafafa] transition-all text-[#262626] group ${isMoreOpen ? "bg-[#fafafa]" : ""}`}
         >

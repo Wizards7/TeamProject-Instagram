@@ -1,15 +1,15 @@
 import { apiSlice } from "./apiSlice";
-import { IUser, IPagedResponse } from "../types/interface";
+import { IBaseResponse, IPaginatedResponse, IUser } from "../types/interface";
 
 export const userApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getUsers: builder.query<IPagedResponse<IUser>, { PageNumber?: number, PageSize?: number }>({
+    getUsers: builder.query<IPaginatedResponse<IUser[]>, { UserName?: string; Email?: string; PageNumber?: number; PageSize?: number }>({
       query: (params) => ({
         url: "/User/get-users",
-        params,
+        params: params,
       }),
     }),
   }),
 });
 
-export const { useGetUsersQuery } = userApi;
+export const { useGetUsersQuery, useLazyGetUsersQuery } = userApi;
