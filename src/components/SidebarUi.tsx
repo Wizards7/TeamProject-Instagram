@@ -187,8 +187,8 @@ export default function Sidebar() {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-200 relative group
-                ${isActive ? "text-[#0095f6]" : "hover:bg-[#fafafa] text-[#262626]"}`}
+              className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group
+                ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
             >
               <div className="transition-transform duration-200 group-hover:scale-110">
                 {item.icon(isActive)}

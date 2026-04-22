@@ -1,15 +1,20 @@
-import { apiSlice } from "./apiSlice";
-import { IUser, IPagedResponse } from "../types/interface";
+import { createApi } from '@reduxjs/toolkit/query/react'
+import { baseQuery } from './baseQuery'
+import type { IPaginatedResponse, IUser } from "../types/interface";
 
-export const userApi = apiSlice.injectEndpoints({
-  endpoints: (builder) => ({
-    getUsers: builder.query<IPagedResponse<IUser>, { PageNumber?: number, PageSize?: number }>({
-      query: (params) => ({
+export const userApi = createApi({
+  reducerPath: 'userApi',
+  baseQuery,
+  tagTypes: ["User"],
+  endpoints: (build) => ({
+    getUsers: build.query<IPaginatedResponse<IUser[]>, { UserName?: string; Email?: string; PageNumber?: number; PageSize?: number }>({
+      query: (params: any) => ({
         url: "/User/get-users",
         params,
       }),
+      providesTags: ["User"],
     }),
   }),
-});
+})
 
-export const { useGetUsersQuery } = userApi;
+export const { useGetUsersQuery, useLazyGetUsersQuery } = userApi;

@@ -1,18 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getToken } from "../utils/token";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQuery } from "./baseQuery";
 
 export const apiSlice = createApi({
   reducerPath: "api",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_VITE_API_URL,
-    prepareHeaders: (headers) => {
-      const token = getToken();
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
-  tagTypes: ["Login", "Todo", "Profile", "Post"],
+  baseQuery,
+  tagTypes: ["Login", "Todo", "Profile", "Chat"],
   endpoints: () => ({}),
 });
