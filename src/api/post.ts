@@ -5,6 +5,7 @@ export const postApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getPosts: builder.query<IPagedResponse<IPost>, void>({
       query: () => `/Post/get-posts?PageSize=1000`,
+      providesTags: ["Post"],
     }),
     likePost: builder.mutation<void, number>({
       query: (postId) => ({
@@ -44,6 +45,7 @@ export const postApi = apiSlice.injectEndpoints({
     }),
     getReels: builder.query<IPagedResponse<IPost>, void>({
       query: () => `/Post/get-reels?PageSize=100`,
+      providesTags: ["Post"],
     }),
     addComment: builder.mutation<void, { postId: number; comment: string }>({
       query: ({ postId, comment }) => ({

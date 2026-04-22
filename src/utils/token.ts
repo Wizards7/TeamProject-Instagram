@@ -55,3 +55,13 @@ axiosRequest.interceptors.request.use(
   },
   (error) => Promise.reject(error),
 );
+
+axiosRequest.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      logoutUser();
+    }
+    return Promise.reject(error);
+  }
+);
