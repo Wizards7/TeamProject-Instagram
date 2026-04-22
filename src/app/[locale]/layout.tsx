@@ -17,7 +17,6 @@ export default async function RootLayout({
 }>) {
   const { locale } = await params;
 
-  // Check if user is logged in to decide whether to show the sidebar
   const cookieStore = await cookies();
   const isLoggedIn = cookieStore.has("auth_token");
 

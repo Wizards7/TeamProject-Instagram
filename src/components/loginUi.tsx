@@ -32,7 +32,6 @@ const LoginUi = () => {
       if (response && response.data) {
         saveToken(response.data);
 
-        // Show Splash Screen (Sileo) for premium transition
         setShowSplash(true);
         setTimeout(() => {
           router.push("/");
@@ -50,7 +49,6 @@ const LoginUi = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="flex flex-row items-center justify-center gap-12 max-w-[850px] w-full">
-        {/* LEFT SECTION: Phone Mockups */}
         <div className="hidden lg:block relative w-[380px] h-[580px]">
           <div className="absolute top-0 right-0 w-[250px] z-20">
             <img
@@ -68,7 +66,6 @@ const LoginUi = () => {
           </div>
         </div>
 
-        {/* RIGHT SECTION: The Login Card */}
         <div className="flex flex-col gap-3 w-full max-w-[350px]">
           <div className="bg-white border border-gray-300 p-8 flex flex-col items-center">
             <h1
@@ -130,7 +127,6 @@ const LoginUi = () => {
             </Link>
           </div>
 
-          {/* Language Dropdown at the bottom */}
           <div className="flex flex-col items-center gap-4 mt-4">
             <p className="text-[12px] text-gray-400">Get the app.</p>
             <div className="flex gap-2">
