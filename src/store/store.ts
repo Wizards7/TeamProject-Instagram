@@ -9,14 +9,12 @@ export const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
     [chatApi.reducerPath]: chatApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
-    [userProfileApi.reducerPath]: userProfileApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       apiSlice.middleware,
       chatApi.middleware,
       userApi.middleware,
-      userProfileApi.middleware
     ),
 });
 
