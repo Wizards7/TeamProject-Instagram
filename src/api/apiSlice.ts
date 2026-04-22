@@ -4,6 +4,6 @@ import { baseQuery } from "./baseQuery";
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery,
-  tagTypes: ["Login", "Todo", "Profile", "Chat"],
+  tagTypes: ["Login", "Todo", "Profile", "Chat", "Post"],
   endpoints: () => ({}),
 });
