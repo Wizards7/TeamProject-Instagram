@@ -107,7 +107,7 @@ const UserSearchModal: React.FC<UserSearchModalProps> = ({ onClose, onSelectUser
                       </div>
                       <div className="flex items-center gap-1.5 text-xs text-[#737373] font-medium truncate">
                         <span>{user.fullName || user.userName}</span>
-                        {user.subscribersCount > 0 && (
+                        {user.subscribersCount !== undefined && user.subscribersCount > 0 && (
                           <>
                             <span>•</span>
                             <span>{user.subscribersCount} followers</span>

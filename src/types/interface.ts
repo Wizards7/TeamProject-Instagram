@@ -50,10 +50,12 @@ export interface IMessage {
 
 export interface IUser {
   id: string;
-  avatar: string;
-  fullName: string;
-  subscribersCount: number;
   userName: string;
+  fullName: string;
+  avatar?: string;
+  image?: string | null;
+  subscribersCount?: number;
+  email?: string;
 }
 
 export interface IPaginatedResponse<T> {
@@ -67,13 +69,15 @@ export interface IPaginatedResponse<T> {
 }
 
 export interface IUserProfile {
-  userId: string;
+  id?: string;
+  userId?: string;
   userName: string;
   fullName: string;
   email: string;
-  phoneNumber: string;
-  image: string;
-  about: string;
+  phoneNumber?: string;
+  image: string | null;
+  about: string | null;
+  gender?: 0 | 1 | null;
   postCount: number;
   followingCount: number;
   followersCount: number;
@@ -127,10 +131,16 @@ export interface IStory {
   datePublished: string;
 }
 
-export interface IUser {
+export interface IFollower {
   id: string;
   userName: string;
   fullName: string;
   image: string | null;
-  email: string;
+  isFollowing?: boolean;   
+}
+
+export interface FollowModalProps {
+  title: string;
+  users: IFollower[];
+  onClose: () => void;
 }
