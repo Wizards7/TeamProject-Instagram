@@ -42,7 +42,6 @@ const MessagesPage = () => {
 
   return (
     <div className="h-[calc(100vh-100px)] border border-[#dbdbdb] rounded-sm overflow-hidden flex bg-white shadow-2xl shadow-black/5 max-w-[1200px] mx-auto my-1">
-      {/* List Pane */}
       <div className="w-[350px] flex-shrink-0 border-r border-[#dbdbdb]">
         <ChatList 
           chats={chats} 
@@ -52,7 +51,6 @@ const MessagesPage = () => {
         />
       </div>
 
-      {/* Main View Pane - Content changes with Animation */}
       <div className="flex-1 min-w-0 bg-white relative">
         <AnimatePresence mode="wait">
             {selectedChat ? (
