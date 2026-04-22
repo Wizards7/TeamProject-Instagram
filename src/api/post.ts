@@ -4,7 +4,7 @@ import { IPost, IPagedResponse } from "../types/interface";
 export const postApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getPosts: builder.query<IPagedResponse<IPost>, void>({
-      query: () => `/Post/get-posts`,
+      query: () => `/Post/get-posts?PageSize=1000`,
     }),
     likePost: builder.mutation<void, number>({
       query: (postId) => ({
