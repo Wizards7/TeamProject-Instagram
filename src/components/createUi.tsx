@@ -3,8 +3,8 @@
 import { useState, useRef, DragEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, ChevronDown, Smile, ChevronLeft, Image as ImageIcon, X, Loader2, Sparkles, Map, AlertCircle } from 'lucide-react';
-import { useAddPostMutation } from './../../../api/postApi';
-import { toast } from 'react-hot-toast'; // или любой другой тост
+import { useAddPostMutation } from './../api/postUser';
+import { toast } from 'react-hot-toast';
 
 const CreatePage = () => {
   const router = useRouter();

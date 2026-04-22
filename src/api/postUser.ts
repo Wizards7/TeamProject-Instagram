@@ -1,23 +1,5 @@
+import { IPost } from '../types/interface';
 import { apiSlice } from './apiSlice';
-
-export interface IAddPostRequest {
-  title: string;
-  content: string;
-  images: File[];
-}
-
-export interface IPost {
-  id: number;
-  title: string;
-  content: string;
-  images: string[];
-  userId: string;
-  createdAt: string;
-  likesCount: number;
-  commentsCount: number;
-  isLiked?: boolean;
-  isFavorited?: boolean;
-}
 
 export const postApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -41,7 +23,7 @@ export const postApi = apiSlice.injectEndpoints({
         `/Post/get-following-post?UserId=${userId}&PageNumber=${pageNumber}&PageSize=${pageSize}`,
       providesTags: ['Post'],
     }),
-    
+
     likePost: builder.mutation<any, { postId: number }>({
       query: ({ postId }) => ({
         url: `/Post/like-post?postId=${postId}`,
