@@ -80,33 +80,44 @@ const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean }> = ({ src, i
 
   return (
     <div
-      className={`p-2 flex items-center gap-3 min-w-[220px] ${isMine ? "text-white" : "text-black"}`}
+      className={`p-2 flex items-center gap-3 min-w-[240px] ${isMine ? "text-white" : "text-black"}`}
       onContextMenu={(e) => e.stopPropagation()}
     >
       <button
         onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-        className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${isMine ? "bg-white/20 hover:bg-white/30" : "bg-black/10 hover:bg-black/20"}`}
+        className={`w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center transition-all shadow-sm ${isMine ? "bg-white/20 hover:bg-white/30" : "bg-black/5 hover:bg-black/10"}`}
       >
         {isPlaying ? (
-          <div className="flex gap-1 items-center">
-            <div className="w-1 h-3 bg-current rounded-full animate-pulse" />
-            <div className="w-1 h-3 bg-current rounded-full" />
+          <div className="flex gap-1 items-center h-4">
+            <motion.div animate={{ height: [8, 16, 8] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-current rounded-full" />
+            <motion.div animate={{ height: [16, 8, 16] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-current rounded-full" />
+            <motion.div animate={{ height: [8, 14, 8] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-current rounded-full" />
           </div>
         ) : (
-          <Play size={18} fill="currentColor" className="ml-1" />
+          <Play size={20} fill="currentColor" className="ml-1" />
         )}
       </button>
-      <div className="flex-1 flex flex-col gap-1">
-        <div className="h-1 bg-current opacity-20 rounded-full relative overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            className="absolute left-0 top-0 bottom-0 bg-current rounded-full transition-all"
-          />
+      <div className="flex-1 flex flex-col gap-1.5 py-1">
+        <div className="flex items-end gap-[2px] h-8 relative">
+          {/* Waveform Bars */}
+          {Array.from({ length: 35 }).map((_, i) => {
+            const height = 20 + Math.sin(i * 0.5) * 15 + Math.random() * 5;
+            const isFilled = (i / 35) * 100 <= progress;
+            return (
+              <div
+                key={i}
+                style={{ height: `${Math.max(4, height)}%` }}
+                className={`w-[3px] rounded-full transition-colors duration-300 ${isFilled ? "bg-current" : "bg-current opacity-20"}`}
+              />
+            );
+          })}
         </div>
-        <div className="flex justify-between items-center opacity-60 text-[10px] font-bold">
+        <div className="flex justify-between items-center opacity-70 text-[10px] font-bold tracking-tight">
           <span>{formatAudioTime(currentTime)}</span>
-          <span className="tracking-tighter uppercase font-black">{t("voice")}</span>
+          <div className="flex items-center gap-1">
+            <Mic size={10} />
+            <span className="uppercase">{t("voice")}</span>
+          </div>
         </div>
       </div>
       <audio
@@ -510,7 +521,26 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
           </AnimatePresence>
           <div className={`flex items-center gap-3 bg-white border border-gray-200 rounded-[32px] px-5 py-2.5 shadow-xl transition-all shadow-black/5 ${isRecording ? "ring-2 ring-red-400" : "focus-within:border-gray-400"}`}>
             {!isRecording && <button onClick={() => setIsEmojiOpen(!isEmojiOpen)} className="p-1 hover:opacity-60 transition-opacity"><Smile size={26} /></button>}
-            {isRecording && <div className="flex items-center gap-3 flex-1 text-red-500 animate-pulse font-bold text-sm"><div className="w-2 h-2 bg-red-500 rounded-full" />{t("recording")} {formatTimeSeconds(recordingTime)}</div>}
+            {isRecording && (
+              <div className="flex items-center gap-3 flex-1 text-red-500 font-bold text-sm">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                  className="w-2.5 h-2.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+                />
+                <div className="flex items-end gap-0.5 h-4 px-2">
+                  {[...Array(12)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ height: [4, 12, 4, 16, 4] }}
+                      transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.05 }}
+                      className="w-1 bg-red-400 rounded-full"
+                    />
+                  ))}
+                </div>
+                {t("recording")} {formatTimeSeconds(recordingTime)}
+              </div>
+            )}
             <form onSubmit={handleSend} className={`flex-1 flex items-center ${isRecording ? "hidden" : "flex"}`}>
               <input type="text" placeholder={t("messagePlaceholder")} value={messageText} onChange={(e) => setMessageText(e.target.value)} autoFocus className="flex-1 bg-transparent border-none outline-none text-[15px] py-1.5 font-medium placeholder:text-gray-400" />
               <AnimatePresence>{messageText.trim() && <motion.button initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} type="submit" className="ml-2 font-bold text-[#0095f6] hover:text-[#00376b] transition-colors">{editingMessage ? t("save") : t("send")}</motion.button>}</AnimatePresence>
