@@ -12,7 +12,8 @@ export const postApi = apiSlice.injectEndpoints({
         method: "POST",
       }),
       async onQueryStarted(postId, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
+        // Optimistic update for regular feed
+        const patchFeed = dispatch(
           postApi.util.updateQueryData("getPosts", undefined, (draft) => {
             const post = draft.data.find((p) => p.postId === postId);
             if (post) {
@@ -22,14 +23,42 @@ export const postApi = apiSlice.injectEndpoints({
             }
           })
         );
+        // Optimistic update for Reels
+        const patchReels = dispatch(
+          postApi.util.updateQueryData("getReels", undefined, (draft) => {
+            const reel = draft.data.find((p) => p.postId === postId);
+            if (reel) {
+              const isLiking = !reel.postLike;
+              reel.postLike = isLiking;
+              reel.postLikeCount += isLiking ? 1 : -1;
+            }
+          })
+        );
         try {
           await queryFulfilled;
         } catch {
-          patchResult.undo();
+          patchFeed.undo();
+          patchReels.undo();
         }
       },
+    }),
+    getReels: builder.query<IPagedResponse<IPost>, void>({
+      query: () => `/Post/get-reels?PageSize=100`,
+    }),
+    addComment: builder.mutation<void, { postId: number; comment: string }>({
+      query: ({ postId, comment }) => ({
+        url: `/Post/add-comment`,
+        method: "POST",
+        params: { postId, comment },
+      }),
+      invalidatesTags: ["Post"],
     }),
   }),
 });
 
-export const { useGetPostsQuery, useLikePostMutation } = postApi;
+export const { 
+  useGetPostsQuery, 
+  useLikePostMutation, 
+  useGetReelsQuery, 
+  useAddCommentMutation 
+} = postApi;

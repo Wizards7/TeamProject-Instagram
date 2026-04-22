@@ -111,7 +111,7 @@ const sidebarItems = [
   },
   {
     label: "Create",
-    href: "/create",
+    href: "/createPost",
     icon: (active: boolean) => (
       <svg
         aria-label="New Post"

@@ -6,6 +6,8 @@ import { cookies } from "next/headers";
 import Providers from "@/src/components/ProvidersUi";
 import Sidebar from "@/src/components/SidebarUi";
 
+import MobileNav from "@/src/components/MobileNav";
+
 export const dynamic = "force-dynamic";
 
 export default async function RootLayout({
@@ -46,13 +48,7 @@ export default async function RootLayout({
               </main>
 
               {/* Mobile Bottom Nav: Only show if logged in */}
-              {isLoggedIn && (
-                <div className="lg:hidden fixed bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-200 z-50 flex items-center justify-around px-4">
-                  <span className="text-[10px] text-gray-400">
-                    Mobile Nav placeholder
-                  </span>
-                </div>
-              )}
+              {isLoggedIn && <MobileNav />}
             </div>
           </NextIntlClientProvider>
         </Providers>

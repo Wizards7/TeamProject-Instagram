@@ -25,8 +25,8 @@ export default function Home() {
           
           {/* Stories - No BG, only border bottom */}
           <div className="flex gap-4 overflow-x-auto no-scrollbar py-4 mb-2 border-b border-gray-200">
-            {storyData?.map((story) => (
-              <div key={story.storyId} className="flex flex-col items-center gap-2 min-w-[66px] cursor-pointer group">
+            {storyData?.map((story, index) => (
+              <div key={story.storyId || index} className="flex flex-col items-center gap-2 min-w-[66px] cursor-pointer group">
                 <div className="w-[66px] h-[66px] rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 transition-transform active:scale-95">
                   <div className="w-full h-full rounded-full border-2 border-white overflow-hidden bg-gray-100">
                     <img 
