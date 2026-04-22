@@ -23,11 +23,11 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { IChat, IMessage } from "../../types/interface";
-import { 
-  useSendMessageMutation, 
-  useGetChatByIdQuery, 
-  useDeleteMessageMutation, 
-  useDeleteChatMutation 
+import {
+  useSendMessageMutation,
+  useGetChatByIdQuery,
+  useDeleteMessageMutation,
+  useDeleteChatMutation
 } from "../../api/chat";
 
 interface ChatViewProps {
@@ -50,8 +50,8 @@ const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean }> = ({ src, i
         audioRef.current.pause();
       } else {
         audioRef.current.play().catch(err => {
-            console.error("Playback failed:", err);
-            alert(t("errorPlayback"));
+          console.error("Playback failed:", err);
+          alert(t("errorPlayback"));
         });
       }
       setIsPlaying(!isPlaying);
@@ -79,43 +79,43 @@ const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean }> = ({ src, i
   };
 
   return (
-    <div 
+    <div
       className={`p-2 flex items-center gap-3 min-w-[220px] ${isMine ? "text-white" : "text-black"}`}
       onContextMenu={(e) => e.stopPropagation()}
     >
-      <button 
+      <button
         onClick={(e) => { e.stopPropagation(); togglePlay(); }}
         className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${isMine ? "bg-white/20 hover:bg-white/30" : "bg-black/10 hover:bg-black/20"}`}
       >
         {isPlaying ? (
-            <div className="flex gap-1 items-center">
-                <div className="w-1 h-3 bg-current rounded-full animate-pulse" />
-                <div className="w-1 h-3 bg-current rounded-full" />
-            </div>
+          <div className="flex gap-1 items-center">
+            <div className="w-1 h-3 bg-current rounded-full animate-pulse" />
+            <div className="w-1 h-3 bg-current rounded-full" />
+          </div>
         ) : (
-            <Play size={18} fill="currentColor" className="ml-1" />
+          <Play size={18} fill="currentColor" className="ml-1" />
         )}
       </button>
       <div className="flex-1 flex flex-col gap-1">
         <div className="h-1 bg-current opacity-20 rounded-full relative overflow-hidden">
-          <motion.div 
+          <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            className="absolute left-0 top-0 bottom-0 bg-current rounded-full transition-all" 
+            className="absolute left-0 top-0 bottom-0 bg-current rounded-full transition-all"
           />
         </div>
         <div className="flex justify-between items-center opacity-60 text-[10px] font-bold">
-            <span>{formatAudioTime(currentTime)}</span>
-            <span className="tracking-tighter uppercase font-black">{t("voice")}</span>
+          <span>{formatAudioTime(currentTime)}</span>
+          <span className="tracking-tighter uppercase font-black">{t("voice")}</span>
         </div>
       </div>
-      <audio 
-        ref={audioRef} 
-        src={src} 
-        onTimeUpdate={onTimeUpdate} 
+      <audio
+        ref={audioRef}
+        src={src}
+        onTimeUpdate={onTimeUpdate}
         onEnded={onEnded}
         preload="auto"
-        className="hidden" 
+        className="hidden"
         onError={() => console.error("Audio Load Error for:", src)}
       />
     </div>
@@ -167,7 +167,7 @@ const CallModal: React.FC<{ type: 'audio' | 'video', chat: IChat, onClose: (dura
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-[500] bg-black flex flex-col items-center justify-center text-white"
     >
@@ -176,34 +176,34 @@ const CallModal: React.FC<{ type: 'audio' | 'video', chat: IChat, onClose: (dura
           {chat.receiveUserImage ? (
             <img src={`${process.env.NEXT_PUBLIC_VITE_API_URL}/images/${chat.receiveUserImage}`} alt="user" className="w-full h-full object-cover" />
           ) : (
-             <div className="w-full h-full bg-gray-600 flex items-center justify-center text-3xl font-bold uppercase">{chat.receiveUserName[0]}</div>
+            <div className="w-full h-full bg-gray-600 flex items-center justify-center text-3xl font-bold uppercase">{chat.receiveUserName[0]}</div>
           )}
         </div>
         <div className="text-center">
-            <h2 className="text-2xl font-bold">{chat.receiveUserName}</h2>
-            <p className="text-gray-400 mt-1">{type === 'video' ? `${t("videoCall")}...` : `${t("audioCall")}...`}</p>
-            {callDuration > 0 && <p className="text-[#0095f6] font-mono mt-2 text-lg">{formatTime(callDuration)}</p>}
+          <h2 className="text-2xl font-bold">{chat.receiveUserName}</h2>
+          <p className="text-gray-400 mt-1">{type === 'video' ? `${t("videoCall")}...` : `${t("audioCall")}...`}</p>
+          {callDuration > 0 && <p className="text-[#0095f6] font-mono mt-2 text-lg">{formatTime(callDuration)}</p>}
         </div>
       </div>
 
       {type === 'video' && (
         <div className="w-full h-full absolute inset-0 -z-10 bg-black">
-            <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover opacity-60" />
+          <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover opacity-60" />
         </div>
       )}
 
       <div className="absolute bottom-20 flex items-center gap-8">
         <button className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center hover:bg-white/20 transition-all">
-            <Mic size={28} />
+          <Mic size={28} />
         </button>
-        <button 
-            onClick={handleEndCall}
-            className="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-all shadow-xl shadow-red-500/20"
+        <button
+          onClick={handleEndCall}
+          className="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-all shadow-xl shadow-red-500/20"
         >
-            <Phone size={32} fill="white" className="rotate-[135deg]" />
+          <Phone size={32} fill="white" className="rotate-[135deg]" />
         </button>
         <button className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center hover:bg-white/20 transition-all">
-            {type === 'video' ? <Video size={28} /> : <Phone size={28} />}
+          {type === 'video' ? <Video size={28} /> : <Phone size={28} />}
         </button>
       </div>
     </motion.div>
@@ -402,7 +402,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pt-6 pb-28 custom-scrollbar">
         {messagesLoading ? (
           <div className="h-full flex items-center justify-center">
-             <div className="w-6 h-6 border-2 border-[#0095f6] border-b-transparent rounded-full animate-spin"></div>
+            <div className="w-6 h-6 border-2 border-[#0095f6] border-b-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">
@@ -422,7 +422,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
             <AnimatePresence initial={false}>
               {[...messages].reverse().map((msg, index) => {
                 const isMine = msg.userId === chat.sendUserId;
-                const isLastInGroup = index === messages.length - 1 || messages[index+1].userId !== msg.userId;
+                const isLastInGroup = index === messages.length - 1 || messages[index + 1].userId !== msg.userId;
                 return (
                   <motion.div key={msg.messageId} layout initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} className={`flex flex-col transition-all ${isMine ? "items-end ml-12" : "items-start mr-12"}`}>
                     <div className="relative group max-w-full">
@@ -499,7 +499,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
                     <span className="text-gray-500 line-clamp-1">{replyingTo ? replyingTo.messageText : editingMessage?.messageText}</span>
                   </div>
                 </div>
-                <button onClick={() => { setReplyingTo(null); setEditingMessage(null); if(editingMessage) setMessageText(""); }} className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"><X size={16} /></button>
+                <button onClick={() => { setReplyingTo(null); setEditingMessage(null); if (editingMessage) setMessageText(""); }} className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"><X size={16} /></button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -533,23 +533,23 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
       </AnimatePresence>
       <AnimatePresence>
         {activeCall && (
-            <CallModal 
-              type={activeCall} 
-              chat={chat} 
-              onClose={async (duration) => {
-                setActiveCall(null);
-                if (duration > 0) {
-                  const m = Math.floor(duration / 60);
-                  const s = duration % 60;
-                  const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
-                  const typeStr = activeCall === 'video' ? t("videoCall") : t("audioCall");
-                  const formData = new FormData();
-                  formData.append("ChatId", chat.chatId.toString());
-                  formData.append("MessageText", `📞 ${typeStr} ${t("callEnded")} (${timeStr})`);
-                  try { await sendMessage(formData).unwrap(); } catch(e) { console.error(e); }
-                }
-              }} 
-            />
+          <CallModal
+            type={activeCall}
+            chat={chat}
+            onClose={async (duration) => {
+              setActiveCall(null);
+              if (duration > 0) {
+                const m = Math.floor(duration / 60);
+                const s = duration % 60;
+                const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
+                const typeStr = activeCall === 'video' ? t("videoCall") : t("audioCall");
+                const formData = new FormData();
+                formData.append("ChatId", chat.chatId.toString());
+                formData.append("MessageText", `📞 ${typeStr} ${t("callEnded")} (${timeStr})`);
+                try { await sendMessage(formData).unwrap(); } catch (e) { console.error(e); }
+              }
+            }}
+          />
         )}
       </AnimatePresence>
     </div>

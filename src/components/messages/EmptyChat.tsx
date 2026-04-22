@@ -5,25 +5,29 @@ import { motion } from "framer-motion";
 import { SendHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-const EmptyChat = () => {
+interface EmptyChatProps {
+  onOpenNewChat: () => void;
+}
+
+const EmptyChat: React.FC<EmptyChatProps> = ({ onOpenNewChat }) => {
   const t = useTranslations("Chat");
 
   return (
     <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-white select-none text-[#262626]">
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="mb-4"
       >
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             y: [0, -10, 0],
           }}
-          transition={{ 
-            duration: 4, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut"
           }}
           className="w-[100px] h-[100px] rounded-full border-[2.5px] border-[#262626] flex items-center justify-center mx-auto mb-6 shadow-sm"
         >
@@ -31,7 +35,7 @@ const EmptyChat = () => {
         </motion.div>
       </motion.div>
 
-      <motion.h2 
+      <motion.h2
         initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -39,8 +43,8 @@ const EmptyChat = () => {
       >
         {t("emptyTitle")}
       </motion.h2>
-      
-      <motion.p 
+
+      <motion.p
         initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
@@ -48,8 +52,9 @@ const EmptyChat = () => {
       >
         {t("emptyDesc")}
       </motion.p>
-      
-      <motion.button 
+
+      <motion.button
+        onClick={onOpenNewChat}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ y: 10, opacity: 0 }}

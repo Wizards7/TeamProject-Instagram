@@ -16,12 +16,12 @@ interface ChatListProps {
   };
 }
 
-const ChatList: React.FC<ChatListProps> = ({ 
-  chats, 
-  selectedChatId, 
-  onSelectChat, 
+export const ChatList: React.FC<ChatListProps> = ({
+  chats,
+  selectedChatId,
+  onSelectChat,
   onOpenNewChat,
-  currentUser = { userName: "terrylucas" } 
+  currentUser = { userName: "terrylucas" }
 }) => {
   const t = useTranslations("Chat");
   const API_IMAGE_URL = `${process.env.NEXT_PUBLIC_VITE_API_URL}/images/`;
@@ -30,18 +30,18 @@ const ChatList: React.FC<ChatListProps> = ({
     <div className="flex flex-col h-full bg-white border-r border-[#dbdbdb] select-none text-[#262626]">
       {/* Header Section */}
       <div className="p-5 pb-2 flex items-center justify-between">
-        <motion.div 
+        <motion.div
           whileTap={{ scale: 0.97 }}
           className="flex items-center gap-2 font-bold text-xl cursor-not-allowed group transition-all"
         >
           <span className="truncate max-w-[200px]">{currentUser.userName}</span>
           <ChevronDown size={20} strokeWidth={2.5} className="group-hover:translate-y-0.5 transition-transform" />
         </motion.div>
-        
-        <motion.button 
+
+        <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.9 }}
-          onClick={onOpenNewChat} 
+          onClick={onOpenNewChat}
           className="p-1.5 hover:bg-neutral-100 rounded-full transition-all text-[#262626]"
         >
           <Edit size={24} strokeWidth={1.5} />
@@ -60,7 +60,7 @@ const ChatList: React.FC<ChatListProps> = ({
       <div className="flex-1 overflow-y-auto custom-scrollbar pt-2">
         <AnimatePresence mode="popLayout">
           {chats.length === 0 ? (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="p-10 text-center text-[#737373] text-sm italic"
@@ -70,7 +70,7 @@ const ChatList: React.FC<ChatListProps> = ({
           ) : (
             chats.map((chat) => {
               const isActive = selectedChatId === chat.chatId;
-              
+
               return (
                 <motion.div
                   layout
@@ -84,26 +84,26 @@ const ChatList: React.FC<ChatListProps> = ({
                 >
                   {/* Selected Indicator */}
                   {isActive && (
-                    <motion.div 
+                    <motion.div
                       layoutId="active-selection-indicator"
-                      className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#262626] z-10" 
+                      className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#262626] z-10"
                     />
                   )}
-                  
+
                   {/* Avatar with IG Story Gradient border */}
                   <div className="relative flex-shrink-0">
                     <div className="p-[2.5px] rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]">
-                        <div className="w-14 h-14 rounded-full overflow-hidden border-[2.5px] border-white bg-white flex items-center justify-center font-bold text-gray-300">
-                            {chat.receiveUserImage ? (
-                                <img
-                                    src={API_IMAGE_URL + chat.receiveUserImage}
-                                    alt={chat.receiveUserName}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <span className="text-xl">{chat.receiveUserName[0]}</span>
-                            )}
-                        </div>
+                      <div className="w-14 h-14 rounded-full overflow-hidden border-[2.5px] border-white bg-white flex items-center justify-center font-bold text-gray-300">
+                        {chat.receiveUserImage ? (
+                          <img
+                            src={API_IMAGE_URL + chat.receiveUserImage}
+                            alt={chat.receiveUserName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xl">{chat.receiveUserName[0]}</span>
+                        )}
+                      </div>
                     </div>
                     {/* Active Status Dot */}
                     <div className="absolute bottom-1 right-1 w-4 h-4 bg-[#78de45] border-[3px] border-white rounded-full shadow-sm"></div>
@@ -115,16 +115,16 @@ const ChatList: React.FC<ChatListProps> = ({
                       {chat.receiveUserName}
                     </span>
                     <div className="flex items-center gap-1.5 min-w-0">
-                        <span className={`text-sm truncate ${isActive ? "text-gray-900 font-medium" : "text-[#737373]"}`}>
-                           {chat.lastMessage || t("sentMessage")}
-                        </span>
-                        <span className="text-[#737373] text-xs flex-shrink-0">· 1h</span>
+                      <span className={`text-sm truncate ${isActive ? "text-gray-900 font-medium" : "text-[#737373]"}`}>
+                        {chat.lastMessage || t("sentMessage")}
+                      </span>
+                      <span className="text-[#737373] text-xs flex-shrink-0">· 1h</span>
                     </div>
                   </div>
 
                   {/* Activity Indicator (Blue dot if unread, or nothing) */}
                   {!isActive && (
-                      <div className="w-2.5 h-2.5 bg-[#0095f6] rounded-full ml-auto shadow-sm" />
+                    <div className="w-2.5 h-2.5 bg-[#0095f6] rounded-full ml-auto shadow-sm" />
                   )}
                 </motion.div>
               );
