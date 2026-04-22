@@ -1,14 +1,23 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { apiSlice } from "../api/apiSlice";
+import { chatApi } from "../api/chat";
+import { userApi } from "../api/user";
+import { userProfileApi } from "../api/userProfile";
 
 export const store = configureStore({
   reducer: {
-    // Add the single API reducer
     [apiSlice.reducerPath]: apiSlice.reducer,
+    [chatApi.reducerPath]: chatApi.reducer,
+    [userApi.reducerPath]: userApi.reducer,
+    [userProfileApi.reducerPath]: userProfileApi.reducer,
   },
-  // Add the single API middleware
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
+    getDefaultMiddleware().concat(
+      apiSlice.middleware,
+      chatApi.middleware,
+      userApi.middleware,
+      userProfileApi.middleware
+    ),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
