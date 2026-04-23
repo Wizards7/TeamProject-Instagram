@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Link, usePathname } from "@/src/i18n/navigation";
-import { logoutUser } from "../utils/token";
-import { useGetMyProfileQuery } from "../api/userProfile";
+import { logoutUser } from "../../utils/token";
+import { useGetMyProfileQuery } from "../../api/userProfile";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -69,11 +69,18 @@ const sidebarItems = [
     label: "Reels",
     href: "/reels",
     icon: (active: boolean) => (
-      <img 
-        src="/video.svg" 
-        className={`w-6 h-6 transition-all duration-300 ${active ? "brightness-0 invert-[.5] sepia(1) saturate(5) hue-rotate(190deg)" : "brightness-0"}`} 
-        alt="Reels" 
-        style={active ? { filter: 'invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)' } : {}}
+      <img
+        src="/video.svg"
+        className={`w-6 h-6 transition-all duration-300 ${active ? "brightness-0 invert-[.5] sepia(1) saturate(5) hue-rotate(190deg)" : "brightness-0"}`}
+        alt="Reels"
+        style={
+          active
+            ? {
+                filter:
+                  "invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)",
+              }
+            : {}
+        }
       />
     ),
   },
@@ -81,11 +88,18 @@ const sidebarItems = [
     label: "Messages",
     href: "/messages",
     icon: (active: boolean) => (
-      <img 
-        src="/message.svg" 
-        className="w-6 h-6 transition-all duration-300" 
-        alt="Messages" 
-        style={active ? { filter: 'invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)' } : { filter: 'brightness(0)' }}
+      <img
+        src="/message.svg"
+        className="w-6 h-6 transition-all duration-300"
+        alt="Messages"
+        style={
+          active
+            ? {
+                filter:
+                  "invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)",
+              }
+            : { filter: "brightness(0)" }
+        }
       />
     ),
   },

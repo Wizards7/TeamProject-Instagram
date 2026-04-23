@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { Link, useRouter } from "../i18n/navigation";
-import { useRegisterMutation } from "../api/Authenticator";
+import { Link, useRouter } from "../../i18n/navigation";
+import { useRegisterMutation } from "../../api/Authenticator";
 import { useForm } from "react-hook-form";
-import { saveToken } from "../utils/token";
-import { IRegisterRequest } from "../types/interface";
-import LoadingUi from "./LoadingUi";
-import SelectLanguage from "./SelectLangUi";
+import { saveToken } from "../../utils/token";
+import { IRegisterRequest } from "../../types/interface";
+import LoadingUi from "../LoadingUi";
+import SelectLanguage from "../SelectLangUi";
 import { useTranslations } from "next-intl";
 
 const RegisterUi = () => {
@@ -28,7 +28,7 @@ const RegisterUi = () => {
   const onSubmit = async (value: IRegisterRequest) => {
     try {
       const response = await registerUser(value).unwrap();
-      
+
       if (response && response.data) {
         saveToken(response.data);
       }
@@ -88,9 +88,7 @@ const RegisterUi = () => {
                 className="w-full bg-gray-50 border border-gray-300 rounded-[3px] px-2 py-2 text-xs focus:outline-none focus:border-gray-400"
               />
               {errors.email && (
-                <span className="text-[10px] text-red-500 pl-1">
-                  Required
-                </span>
+                <span className="text-[10px] text-red-500 pl-1">Required</span>
               )}
             </div>
 
@@ -102,9 +100,7 @@ const RegisterUi = () => {
                 className="w-full bg-gray-50 border border-gray-300 rounded-[3px] px-2 py-2 text-xs focus:outline-none focus:border-gray-400"
               />
               {errors.fullName && (
-                <span className="text-[10px] text-red-500 pl-1">
-                  Required
-                </span>
+                <span className="text-[10px] text-red-500 pl-1">Required</span>
               )}
             </div>
 
@@ -199,14 +195,14 @@ const RegisterUi = () => {
         <div className="flex flex-col items-center gap-4 mt-4">
           <p className="text-[12px] text-gray-400">Get the app.</p>
           <div className="flex gap-2">
-            <img 
-              src="https://static.cdninstagram.com/rsrc.php/v3/yz/r/c5Rp7YmS_iX.png" 
-              alt="App Store" 
+            <img
+              src="https://static.cdninstagram.com/rsrc.php/v3/yz/r/c5Rp7YmS_iX.png"
+              alt="App Store"
               className="h-10 cursor-pointer"
             />
-            <img 
-              src="https://static.cdninstagram.com/rsrc.php/v3/yu/r/EHY6QnZYdNX.png" 
-              alt="Google Play" 
+            <img
+              src="https://static.cdninstagram.com/rsrc.php/v3/yu/r/EHY6QnZYdNX.png"
+              alt="Google Play"
               className="h-10 cursor-pointer"
             />
           </div>

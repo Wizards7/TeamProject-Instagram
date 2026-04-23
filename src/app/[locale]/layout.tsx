@@ -4,9 +4,9 @@ import { routing } from "@/src/i18n/routing";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import Providers from "@/src/components/ProvidersUi";
-import Sidebar from "@/src/components/SidebarUi";
+import Sidebar from "@/src/components/navBar/SidebarUi";
 
-import MobileNav from "@/src/components/MobileNav";
+import MobileNav from "@/src/components/navBar/MobileNav";
 
 export const dynamic = "force-dynamic";
 
@@ -41,8 +41,16 @@ export default async function RootLayout({
               )}
 
               {/* Main Content Area: Margin only if sidebar is present */}
-              <main className={`flex-1 transition-all duration-300 ${isLoggedIn ? "lg:ml-[245px]" : ""}`}>
-                <div className={isLoggedIn ? "max-w-[975px] mx-auto pt-8 px-4 sm:px-8" : "w-full min-h-screen"}>
+              <main
+                className={`flex-1 transition-all duration-300 ${isLoggedIn ? "lg:ml-[245px]" : ""}`}
+              >
+                <div
+                  className={
+                    isLoggedIn
+                      ? "max-w-[975px] mx-auto pt-8 px-4 sm:px-8"
+                      : "w-full min-h-screen"
+                  }
+                >
                   {children}
                 </div>
               </main>

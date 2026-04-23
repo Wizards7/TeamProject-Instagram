@@ -1,4 +1,4 @@
-import RegisterUi from "@/src/components/RegisterUi";
+import RegisterUi from "@/src/components/Auth/RegisterUi";
 import React from "react";
 
 const Register = () => {

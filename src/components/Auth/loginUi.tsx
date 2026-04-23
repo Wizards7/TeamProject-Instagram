@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { Link, useRouter } from "../i18n/navigation";
+import { Link, useRouter } from "../../i18n/navigation";
 import { useForm } from "react-hook-form";
-import { useLoginMutation } from "../api/Authenticator";
-import { saveToken } from "../utils/token";
-import { ILoginRequest } from "../types/interface";
-import LoadingUi from "./LoadingUi";
-import SelectLanguage from "./SelectLangUi";
+import { useLoginMutation } from "../../api/Authenticator";
+import { saveToken } from "../../utils/token";
+import { ILoginRequest } from "../../types/interface";
+import LoadingUi from "../LoadingUi";
+import SelectLanguage from "../SelectLangUi";
 
 const LoginUi = () => {
   const router = useRouter();

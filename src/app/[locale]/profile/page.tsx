@@ -1,9 +1,8 @@
-import ProfileUi from '@/src/components/profileUi'
+import ProfileUi from "@/src/components/ProfileUi/profileUi";
+import React from "react";
 
-const pages = () => {
-  return (
-    <div><ProfileUi/></div>
-  )
-}
+const Profile = () => {
+  return <ProfileUi />;
+};
 
-export default pages
+export default Profile;
