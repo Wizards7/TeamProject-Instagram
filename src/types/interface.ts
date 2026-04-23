@@ -50,10 +50,12 @@ export interface IMessage {
 
 export interface IUser {
   id: string;
-  avatar: string;
-  fullName: string;
-  subscribersCount: number;
   userName: string;
+  fullName: string;
+  avatar?: string;
+  image?: string | null;
+  subscribersCount?: number;
+  email?: string;
 }
 
 export interface IPaginatedResponse<T> {
@@ -67,14 +69,78 @@ export interface IPaginatedResponse<T> {
 }
 
 export interface IUserProfile {
-  userId: string;
+  id?: string;
+  userId?: string;
   userName: string;
   fullName: string;
   email: string;
-  phoneNumber: string;
-  image: string;
-  about: string;
+  phoneNumber?: string;
+  image: string | null;
+  about: string | null;
+  gender?: 0 | 1 | null;
   postCount: number;
   followingCount: number;
   followersCount: number;
+}
+
+export interface IComment {
+  postCommentId: number;
+  userId: string;
+  userName: string;
+  userImage: string | null;
+  dateCommented: string;
+  comment: string;
+}
+
+export interface IPost {
+  postId: number;
+  userId: string;
+  userName: string;
+  userImage: string | null;
+  datePublished: string;
+  images: string[];
+  postLike: boolean;
+  postLikeCount: number;
+  userLikes: string | null;
+  commentCount: number;
+  comments: IComment[];
+  postView: number;
+  userViews: string | null;
+  postFavorite: boolean;
+  userFavorite: string | null;
+  title: string | null;
+  content: string | null;
+}
+
+export interface IPagedResponse<T> {
+  pageNumber: number;
+  pageSize: number;
+  totalPage: number;
+  totalRecord: number;
+  data: T[];
+  errors: string[];
+  statusCode: number;
+}
+
+export interface IStory {
+  storyId: number;
+  userId: string;
+  userName: string;
+  userImage: string | null;
+  image: string;
+  datePublished: string;
+}
+
+export interface IFollower {
+  id: string;
+  userName: string;
+  fullName: string;
+  image: string | null;
+  isFollowing?: boolean;   
+}
+
+export interface FollowModalProps {
+  title: string;
+  users: IFollower[];
+  onClose: () => void;
 }

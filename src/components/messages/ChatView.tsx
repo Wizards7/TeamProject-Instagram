@@ -81,21 +81,20 @@ const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean, onAlert?: (ms
 
   return (
     <div
-      className={`p-2 flex items-center gap-3 min-w-[240px] ${isMine ? "text-white" : "text-black"}`}
+      className={`p-2 flex items-center gap-3 min-w-[220px] ${isMine ? "text-white" : "text-black"}`}
       onContextMenu={(e) => e.stopPropagation()}
     >
       <button
         onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-        className={`w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center transition-all shadow-sm ${isMine ? "bg-white/20 hover:bg-white/30" : "bg-black/5 hover:bg-black/10"}`}
+        className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${isMine ? "bg-white/20 hover:bg-white/30" : "bg-black/10 hover:bg-black/20"}`}
       >
         {isPlaying ? (
-          <div className="flex gap-1 items-center h-4">
-            <motion.div animate={{ height: [8, 16, 8] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-current rounded-full" />
-            <motion.div animate={{ height: [16, 8, 16] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-current rounded-full" />
-            <motion.div animate={{ height: [8, 14, 8] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-current rounded-full" />
+          <div className="flex gap-1 items-center">
+            <div className="w-1 h-3 bg-current rounded-full animate-pulse" />
+            <div className="w-1 h-3 bg-current rounded-full" />
           </div>
         ) : (
-          <Play size={20} fill="currentColor" className="ml-1" />
+          <Play size={18} fill="currentColor" className="ml-1" />
         )}
       </button>
       <div className="flex-1 flex flex-col gap-1.5 py-1">
@@ -114,12 +113,10 @@ const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean, onAlert?: (ms
             );
           })}
         </div>
-        <div className="flex justify-between items-center opacity-70 text-[10px] font-bold tracking-tight">
+        </div>
+        <div className="flex justify-between items-center opacity-60 text-[10px] font-bold">
           <span>{formatAudioTime(currentTime)}</span>
-          <div className="flex items-center gap-1">
-            <Mic size={10} />
-            <span className="uppercase">{t("voice")}</span>
-          </div>
+          <span className="tracking-tighter uppercase font-black">{t("voice")}</span>
         </div>
       </div>
       <audio

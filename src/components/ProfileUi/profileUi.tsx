@@ -1,16 +1,22 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter, Link, usePathname } from "@/src/i18n/navigation";
+import { useLocale } from "next-intl";
 import { IFollower, IPost } from "../../types/interface";
 import {
   useGetMyProfileQuery,
+  useGetUserProfileByIdQuery,
   useGetMyPostsQuery,
   useGetPostFavoritesQuery,
   useGetFollowersQuery,
   useGetFollowingQuery,
+  useIsFollowingUserQuery,
+  useAddFollowingRelationShipMutation,
+  useDeleteFollowingRelationShipMutation,
 } from "../../api/userProfile";
-import { useViewPostMutation } from "../../api/post";
+import { useGetPostsQuery, useViewPostMutation } from "../../api/post";
+import { useCreateChatMutation } from "../../api/chat";
 import { FollowModal } from "../FollowModal";
-import { Link } from "@/src/i18n/navigation";
 import LogoutModal from "../LogoutModal";
 import { logoutUser } from "@/src/utils/token";
 
@@ -86,6 +92,7 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
   onClose,
 }) => {
   const filename = post.images?.[0];
+  const locale = useLocale();
   return (
     <div
       className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
@@ -176,29 +183,20 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
             {post.comments?.map((c) => (
               <div key={c.postCommentId} className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0">
-                  {c.userImage ? (
-                    <img
-                      src={`${FILE_URL}${c.userImage}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) =>
-                        (e.currentTarget.src =
-                          "/istockphoto-2151669184-612x612.jpg")
-                      }
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="w-2/3 h-2/3 text-gray-300"
-                        fill="currentColor"
-                      >
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                      </svg>
-                    </div>
-                  )}
+                  <Link href={`/profile/${c.userId}`}>
+                    {c.userImage ? (
+                      <img src={`${FILE_URL}${c.userImage}`} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                        </svg>
+                      </div>
+                    )}
+                  </Link>
                 </div>
                 <p className="text-sm">
-                  <span className="font-semibold mr-1">{c.userName}</span>
+                  <Link href={`/profile/${c.userId}`} className="font-semibold mr-1 hover:underline">{c.userName}</Link>
                   {c.comment}
                 </p>
               </div>
@@ -363,7 +361,9 @@ const EmptyStateForSaved: React.FC = () => (
   </div>
 );
 
-const ProfileUi = () => {
+const ProfileUi = ({ userId }: { userId?: string }) => {
+  const router = useRouter();
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<Tab>("posts");
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
 
@@ -378,48 +378,87 @@ const ProfileUi = () => {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const {
-    data: profileData,
-    isLoading: profileLoading,
-    refetch: refetchProfile,
-  } = useGetMyProfileQuery();
+  const [showAvatarPreview, setShowAvatarPreview] = useState(false);
+
+  // --- Dynamic logic start ---
+  const isMyProfile = !userId;
+  const { data: myProfileData, isLoading: myProfileLoading } = useGetMyProfileQuery(undefined, { skip: !isMyProfile });
+  const { data: otherProfileData, isLoading: otherProfileLoading } = useGetUserProfileByIdQuery(userId || "", { skip: isMyProfile });
+  
+  const profile = isMyProfile ? myProfileData?.data : otherProfileData?.data;
+  const profileLoading = isMyProfile ? myProfileLoading : otherProfileLoading;
+
+  const { data: myPostsData, isLoading: myPostsLoading } = useGetMyPostsQuery(undefined, { skip: !isMyProfile });
+  const { data: allPostsData, isLoading: allPostsLoading } = useGetPostsQuery(undefined, { skip: isMyProfile });
+  
+  const postsLoading = isMyProfile ? myPostsLoading : allPostsLoading;
+
+  const [addFollow, { isLoading: isFollowingLoading }] = useAddFollowingRelationShipMutation();
+  const [deleteFollow, { isLoading: isUnfollowingLoading }] = useDeleteFollowingRelationShipMutation();
+  const { data: followStatus } = useIsFollowingUserQuery({ followingUserId: userId || "" }, { skip: isMyProfile });
+  const isFollowing = followStatus?.data ?? false;
+
+  const [createChat] = useCreateChatMutation();
   const [viewPost] = useViewPostMutation();
-  const profile = profileData?.data;
 
-  const { data: myPostsData, isLoading: postsLoading } = useGetMyPostsQuery();
-  // Handle various response structures: direct array, {data: [...]}, or {data: {data: [...]}}
-  const myPosts: IPost[] = Array.isArray(myPostsData)
-    ? myPostsData
-    : Array.isArray(myPostsData?.data)
-      ? myPostsData.data
-      : ((myPostsData as any)?.data?.data ?? []);
+  const handleFollow = async () => {
+    if (!userId) return;
+    try {
+      if (isFollowing) {
+        await deleteFollow({ followingUserId: userId }).unwrap();
+      } else {
+        await addFollow({ followingUserId: userId }).unwrap();
+      }
+    } catch (err) {
+      console.error("Follow action failed", err);
+    }
+  };
 
-  // Saved posts – only fetched when the tab is active
+  const handleMessageClick = async () => {
+    if (!userId) return;
+    try {
+      await createChat(userId).unwrap();
+      router.push("/messages");
+    } catch (error) {
+      console.error("Failed to create chat", error);
+      router.push("/messages");
+    }
+  };
+
+  // Helper to handle various response structures
+  const extractPosts = (data: any): IPost[] => {
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.data)) return data.data;
+    return (data as any)?.data?.data ?? [];
+  };
+
+  const myPosts = extractPosts(myPostsData);
+  const otherPosts = extractPosts(allPostsData).filter(p => p.userId === userId);
+
+  // Saved posts – only fetched when the tab is active and it's my profile
   const { data: favData, isLoading: favLoading } = useGetPostFavoritesQuery(
     { PageSize: 30 },
-    { skip: activeTab !== "saved" },
+    { skip: activeTab !== "saved" || !isMyProfile },
   );
-  const savedPosts: IPost[] = Array.isArray(favData)
-    ? favData
-    : Array.isArray(favData?.data)
-      ? favData.data
-      : ((favData as any)?.data?.data ?? []);
+  const savedPosts = extractPosts(favData);
+
+  const targetId = isMyProfile ? profile?.id : (profile?.userId || profile?.id);
 
   const { data: followersData, isFetching: followersLoading } =
     useGetFollowersQuery(
-      { userId: profile?.id ?? "", pageSize: 50 },
+      { userId: targetId ?? "", pageSize: 50 },
       {
         skip:
-          !followModal.open || followModal.type !== "followers" || !profile?.id,
+          !followModal.open || followModal.type !== "followers" || !targetId,
       },
     );
 
   const { data: followingData, isFetching: followingLoading } =
     useGetFollowingQuery(
-      { userId: profile?.id ?? "", pageSize: 50 },
+      { userId: targetId ?? "", pageSize: 50 },
       {
         skip:
-          !followModal.open || followModal.type !== "following" || !profile?.id,
+          !followModal.open || followModal.type !== "following" || !targetId,
       },
     );
 
@@ -438,12 +477,13 @@ const ProfileUi = () => {
     displayedPosts = savedPosts;
     isTabLoading = favLoading;
   } else if (activeTab === "reels") {
-    displayedPosts = myPosts.filter((p) => isVideoFile(p.images?.[0] ?? ""));
+    displayedPosts = (isMyProfile ? myPosts : otherPosts).filter((p) => isVideoFile(p.images?.[0] ?? ""));
     isTabLoading = postsLoading;
   } else {
-    displayedPosts = myPosts;
+    displayedPosts = isMyProfile ? myPosts : otherPosts;
     isTabLoading = postsLoading;
   }
+  // --- Dynamic logic end ---
 
   if (profileLoading) {
     return (
@@ -465,8 +505,8 @@ const ProfileUi = () => {
     <div className="max-w-[935px] mx-auto px-4 py-8 text-black bg-white">
       {/* Profile header */}
       <div className="flex items-start gap-8 md:gap-20 mb-12">
-        <div className="shrink-0 relative group">
-          <div className="w-[80px] h-[80px] md:w-[150px] md:h-[150px] rounded-full overflow-hidden bg-gray-50 border border-gray-200">
+        <div className="shrink-0 relative group" onClick={() => setShowAvatarPreview(true)}>
+          <div className="w-[80px] h-[80px] md:w-[150px] md:h-[150px] rounded-full overflow-hidden bg-gray-50 border border-gray-200 cursor-pointer">
             {profile.image ? (
               <img
                 src={`${FILE_URL}${profile.image}`}
@@ -488,94 +528,159 @@ const ProfileUi = () => {
               </div>
             )}
           </div>
-          {/* Camera icon overlay */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-full cursor-pointer">
-            <svg fill="white" height="32" viewBox="0 0 24 24" width="32">
-              <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z" />
-              <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z" />
-            </svg>
-          </div>
+          {/* Camera icon overlay - only if my profile */}
+          {isMyProfile && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-full cursor-pointer">
+              <svg fill="white" height="32" viewBox="0 0 24 24" width="32">
+                <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z" />
+                <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z" />
+              </svg>
+            </div>
+          )}
         </div>
         <div className="flex-1 pt-2 text-black">
-          <div className="flex items-center gap-4 mb-5 flex-wrap">
-            <h2 className="text-xl font-light">{profile.userName}</h2>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/profile/edit"
-                className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200"
+          <div className="flex items-center justify-between mb-4 relative">
+            <div className="flex items-center gap-4">
+              <h2 className="text-sm md:text-xl font-normal text-gray-900">
+                {profile.userName}
+              </h2>
+              {isMyProfile && (
+                <div className="hidden md:flex items-center gap-2">
+                   <Link 
+                     href="/profile/edit" 
+                     className="px-4 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200"
+                   >
+                     Edit profile
+                   </Link>
+                   <button className="px-4 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200">
+                      View archive
+                   </button>
+                </div>
+              )}
+              {!isMyProfile && (
+                <div className="flex gap-2">
+                   <button 
+                     onClick={handleFollow} 
+                     disabled={isFollowingLoading || isUnfollowingLoading}
+                     className={`px-6 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+                       isFollowing 
+                         ? "bg-[#efefef] hover:bg-gray-200 text-black" 
+                         : "bg-[#0095f6] text-white hover:bg-[#1877f2]"
+                     }`}
+                   >
+                     {isFollowingLoading || isUnfollowingLoading ? "..." : (isFollowing ? "Following" : "Follow")}
+                   </button>
+                   <button onClick={handleMessageClick} className="px-4 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black">Message</button>
+                </div>
+              )}
+            </div>
+            
+            <div className="relative">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-black"
+              >
+                <img src="/menu.svg" alt="Options" className="w-6 h-6" />
+              </button>
+
+              {isMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setIsMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-[260px] bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-gray-100 z-20 py-2 overflow-hidden">
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                      QR code
+                    </button>
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                      Notification
+                    </button>
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                      Settings and privacy
+                    </button>
+                    {isMyProfile && (
+                      <>
+                        <div className="h-[1px] bg-gray-100 my-1" />
+                        <button
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setShowLogoutModal(true);
+                          }}
+                          className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-[#ed4956] font-medium"
+                        >
+                          Log out
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile buttons */}
+          {isMyProfile && (
+            <div className="flex md:hidden gap-2 mb-4">
+              <Link 
+                href="/profile/edit" 
+                className="flex-1 text-center py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200"
               >
                 Edit profile
               </Link>
-              <button className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200">
+              <button className="flex-1 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200">
                 View archive
               </button>
-              <div className="relative">
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-black"
-                >
-                  <img src="/menu.svg" alt="Options" className="w-6 h-6" />
-                </button>
-
-                {isMenuOpen && (
-                  <>
-                    {/* Backdrop to close menu */}
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setIsMenuOpen(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-2 w-[260px] bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-gray-100 z-20 py-2 overflow-hidden">
-                      <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
-                        QR code
-                      </button>
-                      <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
-                        Notification
-                      </button>
-                      <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
-                        Settings and privacy
-                      </button>
-                      <div className="h-[1px] bg-gray-100 my-1" />
-                      <button
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          setShowLogoutModal(true);
-                        }}
-                        className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-[#ed4956] font-medium"
-                      >
-                        Log out
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
             </div>
-          </div>
+          )}
 
           <div className="mb-4">
             <p className="font-semibold text-sm text-gray-900">
               {profile.fullName || profile.userName}
             </p>
+<<<<<<< HEAD
           </div>
 
           <div className="flex items-center gap-5 mb-6 text-black">
             <div className="text-[15px]">
               <span className="font-bold mr-1">
                 {profile.postCount ?? myPosts.length}
+=======
+            {profile.about && <p className="text-sm mt-1 whitespace-pre-line">{profile.about}</p>}
+          </div>
+
+          <div className="flex items-center gap-5 mb-6 text-black">
+            <div className="text-sm md:text-[15px]">
+              <span className="font-bold mr-1">
+                {profile.postCount ?? displayedPosts.length}
+>>>>>>> main
               </span>
               <span className="text-gray-900">posts</span>
             </div>
             <button
               onClick={() => setFollowModal({ type: "followers", open: true })}
+<<<<<<< HEAD
               className="text-[15px] hover:opacity-70 transition-opacity"
+=======
+              className="text-sm md:text-[15px] hover:opacity-70 transition-opacity"
+>>>>>>> main
             >
               <span className="font-bold mr-1">
                 {(profile.followersCount ?? 0).toLocaleString()}
               </span>
+<<<<<<< HEAD
               <span className="text-gray-900">follower</span>
             </button>
             <button
               onClick={() => setFollowModal({ type: "following", open: true })}
               className="text-[15px] hover:opacity-70 transition-opacity"
+=======
+              <span className="text-gray-900">followers</span>
+            </button>
+            <button
+              onClick={() => setFollowModal({ type: "following", open: true })}
+              className="text-sm md:text-[15px] hover:opacity-70 transition-opacity"
+>>>>>>> main
             >
               <span className="font-bold mr-1">
                 {(profile.followingCount ?? 0).toLocaleString()}
@@ -586,6 +691,7 @@ const ProfileUi = () => {
         </div>
       </div>
 
+<<<<<<< HEAD
       <div className="flex gap-8 mb-12 px-4">
         <div className="flex flex-col items-center gap-2 group cursor-pointer">
           <div className="w-[77px] h-[77px] rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-gray-50 transition-colors">
@@ -606,6 +712,9 @@ const ProfileUi = () => {
       </div>
 
       <div className="border -t border-gray-200">
+=======
+      <div className="border-t border-gray-200">
+>>>>>>> main
         <div className="flex items-center justify-center gap-16">
           <button
             onClick={() => setActiveTab("posts")}
@@ -709,6 +818,7 @@ const ProfileUi = () => {
             </svg>
             REELS
           </button>
+<<<<<<< HEAD
           <button
             onClick={() => setActiveTab("saved")}
             className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
@@ -735,6 +845,36 @@ const ProfileUi = () => {
             </svg>
             SAVED
           </button>
+=======
+          {isMyProfile && (
+            <button
+              onClick={() => setActiveTab("saved")}
+              className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
+                activeTab === "saved"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-400 hover:text-gray-500"
+              }`}
+            >
+              <svg
+                aria-label="Saved"
+                color="currentColor"
+                fill="currentColor"
+                height="12"
+                role="img"
+                viewBox="0 0 24 24"
+                width="12"
+              >
+                <polygon
+                  fill="none"
+                  points="20 21 12 13.44 4 21 4 3 20 3 20 21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                ></polygon>
+              </svg>
+              SAVED
+            </button>
+          )}
+>>>>>>> main
         </div>
       </div>
 
@@ -770,7 +910,10 @@ const ProfileUi = () => {
         <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />
       )}
 
+<<<<<<< HEAD
       {/* Followers / Following Modal */}
+=======
+>>>>>>> main
       {followModal.open && (
         <FollowModal
           title={followModal.type === "followers" ? "Followers" : "Following"}
@@ -779,7 +922,10 @@ const ProfileUi = () => {
         />
       )}
 
+<<<<<<< HEAD
       {/* Loading overlay for modal */}
+=======
+>>>>>>> main
       {modalLoading && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-gray-300 border-t-[#0095f6] rounded-full animate-spin" />
@@ -788,6 +934,7 @@ const ProfileUi = () => {
 
       <ProfileFooter />
 
+<<<<<<< HEAD
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
         <LogoutModal onClose={() => setShowLogoutModal(false)} />
@@ -796,4 +943,42 @@ const ProfileUi = () => {
   );
 };
 
+=======
+      {showLogoutModal && (
+        <LogoutModal onClose={() => setShowLogoutModal(false)} />
+      )}
+
+      {/* Avatar Preview Modal */}
+      {showAvatarPreview && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-[110] flex items-center justify-center p-4"
+          onClick={() => setShowAvatarPreview(false)}
+        >
+          <button 
+            className="absolute top-4 right-4 text-white hover:opacity-70 z-[120]"
+            onClick={() => setShowAvatarPreview(false)}
+          >
+            <svg fill="currentColor" height="32" viewBox="0 0 24 24" width="32"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+          <div className="relative max-w-[90vw] max-h-[90vh] bg-white rounded-full overflow-hidden aspect-square flex items-center justify-center shadow-2xl border-4 border-white/20" onClick={(e) => e.stopPropagation()}>
+            {profile.image ? (
+              <img 
+                src={`${FILE_URL}${profile.image}`} 
+                alt={profile.userName} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-64 h-64 md:w-96 md:h-96 bg-gray-50 flex items-center justify-center">
+                 <svg viewBox="0 0 24 24" className="w-1/2 h-1/2 text-gray-200" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                 </svg>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+>>>>>>> main
 export default ProfileUi;

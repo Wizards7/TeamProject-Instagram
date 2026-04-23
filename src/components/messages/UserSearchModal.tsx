@@ -56,19 +56,27 @@ const UserSearchModal: React.FC<UserSearchModalProps> = ({ onClose, onSelectUser
           <input
             type="text"
             placeholder="Search..."
-            className="flex-1 outline-none text-[15px] font-medium placeholder:text-gray-400"
+            className="flex-1 outline-none text-[15px] font-medium placeholder:text-gray-400 pr-10"
             value={searchTerm}
             onChange={handleSearch}
             autoFocus
           />
+          {isFetching && (
+            <div className="absolute right-5">
+              <div className="w-4 h-4 border-2 border-gray-100 border-t-[#0095f6] rounded-full animate-spin"></div>
+            </div>
+          )}
         </div>
 
         {/* Results Area */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {isFetching ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-[#0095f6]"></div>
-              <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">Searching...</span>
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-[3px] border-gray-100 border-t-[#0095f6]"></div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Searching users...</span>
+                <span className="text-[10px] text-gray-300 font-medium mt-1">Please wait while we connect</span>
+              </div>
             </div>
           ) : data?.data && data.data.length > 0 ? (
             <div className="py-2">
@@ -90,12 +98,14 @@ const UserSearchModal: React.FC<UserSearchModalProps> = ({ onClose, onSelectUser
                           alt={user.userName}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/image.webp";
+                            (e.target as HTMLImageElement).src = "/istockphoto-2151669184-612x612.jpg";
                           }}
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-tr from-gray-100 to-gray-200 flex items-center justify-center text-sm font-bold text-gray-500 capitalize">
-                          {user.userName[0]}
+                        <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+                          <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                          </svg>
                         </div>
                       )}
                     </div>
@@ -107,7 +117,7 @@ const UserSearchModal: React.FC<UserSearchModalProps> = ({ onClose, onSelectUser
                       </div>
                       <div className="flex items-center gap-1.5 text-xs text-[#737373] font-medium truncate">
                         <span>{user.fullName || user.userName}</span>
-                        {user.subscribersCount > 0 && (
+                        {user.subscribersCount !== undefined && user.subscribersCount > 0 && (
                           <>
                             <span>•</span>
                             <span>{user.subscribersCount} followers</span>

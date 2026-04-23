@@ -1,4 +1,4 @@
-import LoginUi from "@/src/components/loginUi";
+import LoginUi from "@/src/components/Auth/loginUi";
 import React from "react";
 
 const Login = () => {

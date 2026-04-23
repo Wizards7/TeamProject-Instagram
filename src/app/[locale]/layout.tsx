@@ -4,7 +4,9 @@ import { routing } from "@/src/i18n/routing";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import Providers from "@/src/components/ProvidersUi";
-import Sidebar from "@/src/components/SidebarUi";
+import Sidebar from "@/src/components/navBar/SidebarUi";
+
+import MobileNav from "@/src/components/navBar/MobileNav";
 
 export const dynamic = "force-dynamic";
 
@@ -39,20 +41,22 @@ export default async function RootLayout({
               )}
 
               {/* Main Content Area: Margin only if sidebar is present */}
-              <main className={`flex-1 transition-all duration-300 ${isLoggedIn ? "lg:ml-[245px]" : ""}`}>
-                <div className={isLoggedIn ? "max-w-[975px] mx-auto pt-8 px-4 sm:px-8" : "w-full min-h-screen"}>
+              <main
+                className={`flex-1 transition-all duration-300 ${isLoggedIn ? "lg:ml-[245px]" : ""}`}
+              >
+                <div
+                  className={
+                    isLoggedIn
+                      ? "max-w-[975px] mx-auto pt-8 px-4 sm:px-8"
+                      : "w-full min-h-screen"
+                  }
+                >
                   {children}
                 </div>
               </main>
 
               {/* Mobile Bottom Nav: Only show if logged in */}
-              {isLoggedIn && (
-                <div className="lg:hidden fixed bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-200 z-50 flex items-center justify-around px-4">
-                  <span className="text-[10px] text-gray-400">
-                    Mobile Nav placeholder
-                  </span>
-                </div>
-              )}
+              {isLoggedIn && <MobileNav />}
             </div>
           </NextIntlClientProvider>
         </Providers>
