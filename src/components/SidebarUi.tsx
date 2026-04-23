@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { Link, usePathname } from "@/src/i18n/navigation";
 import { logoutUser } from "../utils/token";
+import { useGetMyProfileQuery } from "../api/userProfile";
+
+const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
 const sidebarItems = [
   {
@@ -165,6 +168,9 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
+  const { data: profileData } = useGetMyProfileQuery();
+  const profile = profileData?.data;
+
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[245px] border-r border-[#dbdbdb] py-2 px-3 flex flex-col z-50 bg-white group transition-all duration-300">
       {/* Logo */}
@@ -213,14 +219,20 @@ export default function Sidebar() {
             ${pathname === "/profile" ? "text-[#0095f6]" : "hover:bg-[#fafafa] text-[#262626]"}`}
         >
           <div
-            className={`w-6 h-6 rounded-full overflow-hidden border transition-all group-hover:scale-110 
+            className={`w-6 h-6 rounded-full overflow-hidden border transition-all group-hover:scale-110 flex items-center justify-center bg-gray-100
             ${pathname === "/profile" ? "border-[#0095f6]" : "border-gray-300"}`}
           >
-            <img
-              src="/image.webp"
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
+            {profile?.image ? (
+              <img
+                src={`${FILE_URL}${profile.image}`}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-[10px] font-bold text-gray-500 uppercase">
+                {profile?.userName?.[0] || "P"}
+              </span>
+            )}
           </div>
           <span
             className={`text-base tracking-wide ${pathname === "/profile" ? "font-bold" : "font-normal"}`}

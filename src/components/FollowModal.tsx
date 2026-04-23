@@ -9,8 +9,6 @@ import {
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
-
-
 export const FollowModal: React.FC<FollowModalProps> = ({ title, users, onClose }) => {
   const [followingState, setFollowingState] = useState<Record<string, boolean>>({});
   const [followUser] = useAddFollowingRelationShipMutation();

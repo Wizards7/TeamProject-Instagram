@@ -9,6 +9,7 @@ import {
   useGetFollowingQuery,
 } from "../api/userProfile";
 import { FollowModal } from "./FollowModal";
+import { Link } from "@/src/i18n/navigation";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -318,9 +319,12 @@ const ProfileUi = () => {
         <div className="flex-1">
           <div className="flex items-center gap-4 mb-5 flex-wrap">
             <h2 className="text-xl font-light">{profile.userName}</h2>
-            <button className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200">
+            <Link
+              href="/profile/edit"
+              className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200"
+            >
               Edit profile
-            </button>
+            </Link>
             <button className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200">
               View archive
             </button>
