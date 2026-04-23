@@ -27,7 +27,8 @@ import {
   useSendMessageMutation,
   useGetChatByIdQuery,
   useDeleteMessageMutation,
-  useDeleteChatMutation
+  useDeleteChatMutation,
+  useClearChatMutation
 } from "../../api/chat";
 
 interface ChatViewProps {
@@ -37,7 +38,7 @@ interface ChatViewProps {
 
 const COMMON_REACTIONS = ["❤️", "😂", "😮", "😢", "👍", "🔥"];
 
-const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean }> = ({ src, isMine }) => {
+const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean, onAlert?: (msg: string) => void }> = ({ src, isMine, onAlert }) => {
   const t = useTranslations("Chat");
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -51,7 +52,7 @@ const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean }> = ({ src, i
       } else {
         audioRef.current.play().catch(err => {
           console.error("Playback failed:", err);
-          alert(t("errorPlayback"));
+          if (onAlert) onAlert(t("errorPlayback"));
         });
       }
       setIsPlaying(!isPlaying);
@@ -134,7 +135,7 @@ const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean }> = ({ src, i
   );
 };
 
-const CallModal: React.FC<{ type: 'audio' | 'video', chat: IChat, onClose: (duration: number) => void }> = ({ type, chat, onClose }) => {
+const CallModal: React.FC<{ type: 'audio' | 'video', chat: IChat, onClose: (duration: number) => void, onAlert?: (msg: string) => void }> = ({ type, chat, onClose, onAlert }) => {
   const t = useTranslations("Chat");
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -153,7 +154,7 @@ const CallModal: React.FC<{ type: 'audio' | 'video', chat: IChat, onClose: (dura
         }
       } catch (err) {
         console.error("Call failed:", err);
-        alert("Иҷозати камера ё микрофон дастрас нест.");
+        if (onAlert) onAlert("Иҷозати камера ё микрофон дастрас нест.");
         onClose(0);
       }
     };
@@ -243,10 +244,49 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [previewProgress, setPreviewProgress] = useState(0);
   const isHoldingMicRef = useRef(false);
+  const [messageReactions, setMessageReactions] = useState<Record<number, string>>({});
+  const [lastReactedId, setLastReactedId] = useState<number | null>(null);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "alert" | "confirm";
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "alert"
+  });
+
+  const showAlert = (message: string, title: string = t("info")) => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      message,
+      type: "alert",
+      confirmText: t("ok") || "OK"
+    });
+  };
+
+  const showConfirm = (message: string, onConfirm: () => void, title: string = t("confirmTitle")) => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      message,
+      type: "confirm",
+      confirmText: t("confirm") || "Confirm",
+      cancelText: t("cancel") || "Cancel",
+      onConfirm
+    });
+  };
 
   const [sendMessage] = useSendMessageMutation();
   const [deleteMessage] = useDeleteMessageMutation();
   const [deleteChat] = useDeleteChatMutation();
+  const [clearChat] = useClearChatMutation();
   const { data: messagesData, isLoading: messagesLoading } = useGetChatByIdQuery(chat.chatId, {
     pollingInterval: 3000,
   });
@@ -317,7 +357,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
       timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
     } catch (err) {
       console.error("Microphone access denied:", err);
-      alert("Барои сабти овоз иҷозати микрофон лозим аст.");
+      showAlert("Барои сабти овоз иҷозати микрофон лозим аст.", "Хатогӣ");
     }
   };
 
@@ -448,13 +488,42 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
   };
 
   const handleChatDelete = async () => {
-    if (window.confirm(t("deleteConfirm"))) {
+    showConfirm(t("deleteConfirm"), async () => {
       try {
         await deleteChat(chat.chatId).unwrap();
         if (onDeleteChat) onDeleteChat();
       } catch (err) {
         console.error("Failed to delete chat:", err);
       }
+    });
+  };
+
+  const handleClearChat = async () => {
+    showConfirm(t("clearConfirm") || "Очистить чат?", async () => {
+      try {
+        await clearChat(chat.chatId).unwrap();
+        setIsMenuOpen(false);
+      } catch (err) {
+        console.error("Failed to clear chat:", err);
+      }
+    });
+  };
+
+  const handleAddReaction = (msgId: number, emoji: string) => {
+    setMessageReactions(prev => ({ ...prev, [msgId]: emoji }));
+    setLastReactedId(msgId);
+    setActiveMessageMenu(null);
+    // Reset last reacted after animation
+    setTimeout(() => setLastReactedId(null), 1000);
+  };
+
+  const getReactionColor = (emoji: string) => {
+    switch (emoji) {
+      case "❤️": return "rgba(255, 48, 64, 0.15)";
+      case "😂": return "rgba(255, 204, 0, 0.15)";
+      case "🔥": return "rgba(255, 127, 0, 0.15)";
+      case "👍": return "rgba(0, 149, 246, 0.15)";
+      default: return "rgba(0, 0, 0, 0.05)";
     }
   };
 
@@ -485,6 +554,10 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
             <AnimatePresence>
               {isMenuOpen && (
                 <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 mt-3 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[100] py-2 overflow-hidden">
+                  <button onClick={handleClearChat} className="w-full text-left px-5 py-3.5 text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors font-semibold text-sm">
+                    <Trash2 size={18} /> {t("clearChat") || "Очистить чат"}
+                  </button>
+                  <div className="h-[1px] bg-gray-50 my-1 mx-2" />
                   <button onClick={handleChatDelete} className="w-full text-left px-5 py-3.5 text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors font-semibold text-sm">
                     <Trash2 size={18} /> {t("deleteChat")}
                   </button>
@@ -540,25 +613,75 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
                             onMouseLeave={handleLongPressEnd}
                             onTouchStart={() => handleLongPressStart(msg.messageId)}
                             onTouchEnd={handleLongPressEnd}
-                            className={`px-4 py-2.5 rounded-[22px] text-[14.5px] leading-relaxed shadow-sm transition-all cursor-pointer relative ${isMine ? "bg-[#0095f6] text-white rounded-br-sm shadow-blue-500/10" : "bg-[#efefef] text-[#262626] rounded-bl-sm"} ${activeMessageMenu === msg.messageId ? "ring-2 ring-black/10 scale-[0.98] blur-[0.5px]" : "hover:opacity-95"}`}
+                            className={`px-4 py-2.5 rounded-[22px] text-[14.5px] leading-relaxed shadow-sm transition-all cursor-pointer relative overflow-hidden ${isMine ? "bg-[#0095f6] text-white rounded-br-sm shadow-blue-500/10" : "bg-[#efefef] text-[#262626] rounded-bl-sm"} ${activeMessageMenu === msg.messageId ? "ring-2 ring-black/10 scale-[0.98] blur-[0.5px]" : "hover:opacity-95"}`}
                           >
-                            {msg.messageText}
+                            {/* Top-half Color Fill Animation */}
+                            <AnimatePresence>
+                              {messageReactions[msg.messageId] && lastReactedId === msg.messageId && (
+                                <motion.div
+                                  initial={{ height: 0 }}
+                                  animate={{ height: "50%" }}
+                                  exit={{ opacity: 0 }}
+                                  style={{ backgroundColor: getReactionColor(messageReactions[msg.messageId]) }}
+                                  className="absolute top-0 left-0 right-0 pointer-events-none z-0"
+                                />
+                              )}
+                            </AnimatePresence>
+
+                            <span className="relative z-10">{msg.messageText}</span>
                             {msg.file && (
-                              <div className="mt-2 rounded-xl overflow-hidden border border-black/5 bg-transparent">
+                              <div className="mt-2 rounded-xl overflow-hidden border border-black/5 bg-transparent relative z-10">
                                 {msg.file.toLowerCase().match(/\.(webm|mp3|wav|ogg|m4a|aac)$/) ? (
-                                  <VoiceMessagePlayer src={API_IMAGE_URL + msg.file} isMine={isMine} />
+                                  <VoiceMessagePlayer src={API_IMAGE_URL + msg.file} isMine={isMine} onAlert={showAlert} />
                                 ) : (
                                   <img src={API_IMAGE_URL + msg.file} alt="file" className="max-w-full max-h-[300px] object-cover" />
                                 )}
                               </div>
                             )}
                           </motion.div>
-                          {index % 7 === 1 && <div className={`absolute -bottom-2 ${isMine ? "right-2" : "left-2"} bg-white rounded-full px-1.5 py-0.5 shadow-md border border-gray-100 flex items-center gap-0.5 scale-90 z-20`}><span className="text-[12px]">❤️</span></div>}
-                          <AnimatePresence> 
+
+                          {/* Reaction Display */}
+                          <AnimatePresence>
+                            {messageReactions[msg.messageId] && (
+                              <motion.div
+                                initial={{ scale: 0, y: 10 }}
+                                animate={{
+                                  scale: 1,
+                                  y: 0,
+                                  x: lastReactedId === msg.messageId ? [0, -2, 2, -2, 2, 0] : 0
+                                }}
+                                transition={{
+                                  scale: { type: "spring", stiffness: 500, damping: 15 },
+                                  x: { duration: 0.4, repeat: lastReactedId === msg.messageId ? 2 : 0 }
+                                }}
+                                className={`absolute -bottom-2 ${isMine ? "right-2" : "left-2"} bg-white rounded-full px-1.5 py-0.5 shadow-md border border-gray-100 flex items-center gap-0.5 z-20 cursor-pointer hover:scale-110 transition-transform`}
+                                onClick={() => setMessageReactions(prev => {
+                                  const next = { ...prev };
+                                  delete next[msg.messageId];
+                                  return next;
+                                })}
+                              >
+                                <span className="text-[12px]">{messageReactions[msg.messageId]}</span>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                          <AnimatePresence>
                             {activeMessageMenu === msg.messageId && (
                               <div ref={msgMenuRef} className={`absolute z-[100] ${isMine ? "right-full mr-3 bottom-0" : "left-full ml-3 bottom-0"}`}>
                                 <motion.div initial={{ opacity: 0, scale: 0.9, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 15 }} className="w-52 bg-[#1c1c1e]/95 backdrop-blur-xl rounded-[20px] shadow-2xl overflow-hidden border border-white/10">
-                                  <div className="flex items-center justify-between px-3 py-3 border-b border-white/5 bg-white/5">{COMMON_REACTIONS.map(emoji => <motion.button key={emoji} whileHover={{ scale: 1.4, y: -2 }} whileTap={{ scale: 0.8 }} className="text-xl px-1">{emoji}</motion.button>)}</div>
+                                  <div className="flex items-center justify-between px-3 py-3 border-b border-white/5 bg-white/5">
+                                    {COMMON_REACTIONS.map(emoji => (
+                                      <motion.button
+                                        key={emoji}
+                                        onClick={() => handleAddReaction(msg.messageId, emoji)}
+                                        whileHover={{ scale: 1.4, y: -2 }}
+                                        whileTap={{ scale: 0.8 }}
+                                        className="text-xl px-1"
+                                      >
+                                        {emoji}
+                                      </motion.button>
+                                    ))}
+                                  </div>
                                   <div className="p-1.5 flex flex-col gap-0.5">
                                     <button onClick={() => handleEdit(msg)} className="flex items-center justify-between px-3.5 py-3 text-white text-[13px] font-medium hover:bg-white/10 rounded-xl transition-colors">{t("edit")} <Edit3 size={16} className="opacity-50" /></button>
                                     <button onClick={() => { setReplyingTo(msg); setActiveMessageMenu(null); }} className="flex items-center justify-between px-3.5 py-3 text-white text-[13px] font-medium hover:bg-white/10 rounded-xl transition-colors">{t("reply")} <Reply size={16} className="opacity-50" /></button>
@@ -757,6 +880,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
           <CallModal
             type={activeCall}
             chat={chat}
+            onAlert={showAlert}
             onClose={async (duration) => {
               setActiveCall(null);
               if (duration > 0) {
@@ -771,6 +895,44 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
               }
             }}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {modalConfig.isOpen && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[4px]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-[24px] w-full max-w-sm o
+              verflow-hidden shadow-2xl border border-gray-100"
+            >
+              <div className="p-8 text-center">
+                <h3 className="text-xl font-bold text-[#262626] mb-3">{modalConfig.title}</h3>
+                <p className="text-[15px] text-gray-500 leading-relaxed">{modalConfig.message}</p>
+              </div>
+              <div className="flex border-t border-gray-100">
+                {modalConfig.type === "confirm" && (
+                  <button
+                    onClick={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+                    className="flex-1 py-4 text-[15px] font-semibold text-gray-400 hover:bg-gray-50 transition-colors border-r border-gray-100"
+                  >
+                    {modalConfig.cancelText}
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setModalConfig(prev => ({ ...prev, isOpen: false }));
+                    if (modalConfig.onConfirm) modalConfig.onConfirm();
+                  }}
+                  className={`flex-1 py-4 text-[15px] font-bold transition-colors hover:bg-gray-50 ${modalConfig.type === "confirm" ? "text-red-500" : "text-[#0095f6]"}`}
+                >
+                  {modalConfig.confirmText}
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

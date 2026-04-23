@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Edit, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { IChat } from "../../types/interface";
+import { useGetMyProfileQuery } from "../../api/userProfile";
+import { useGetUsersQuery } from "../../api/user";
 
 interface ChatListProps {
   chats: IChat[];
@@ -25,6 +27,11 @@ export const ChatList: React.FC<ChatListProps> = ({
 }) => {
   const t = useTranslations("Chat");
   const API_IMAGE_URL = `${process.env.NEXT_PUBLIC_VITE_API_URL}/images/`;
+  const { data: profileData } = useGetMyProfileQuery();
+  const profile = profileData?.data;
+
+  const { data: usersData } = useGetUsersQuery({ PageSize: 10 });
+  const serverUsers = usersData?.data || [];
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-[#dbdbdb] select-none text-[#262626]">
@@ -46,6 +53,67 @@ export const ChatList: React.FC<ChatListProps> = ({
         >
           <Edit size={24} strokeWidth={1.5} />
         </motion.button>
+      </div>
+
+      {/* Notes Section */}
+      <div className="flex gap-5 px-5 py-5 overflow-x-auto hidden-scrollbar border-b border-[#efefef]">
+        {/* Your Note */}
+        <div className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+          <div className="relative">
+            {/* Note Bubble */}
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#f2f2f2] px-3 py-1.5 rounded-2xl shadow-sm border border-gray-100 z-10 min-w-[85px] max-w-[120px]">
+              <p className="text-[10px] text-[#737373] leading-tight text-center line-clamp-2">
+                Создайте первую заметку...
+              </p>
+              {/* Bubble Tail */}
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#f2f2f2] rotate-45 border-r border-b border-gray-100"></div>
+            </div>
+
+            <div className="w-16 h-16 rounded-full bg-[#fafafa] border border-gray-200 flex items-center justify-center overflow-hidden">
+              {profile?.image ? (
+                <img src={API_IMAGE_URL + profile.image} className="w-full h-full object-cover" alt="Me" />
+              ) : (
+                <svg viewBox="0 0 24 24" fill="#dbdbdb" className="w-10 h-10">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              )}
+              {/* Plus Icon Overlay */}
+              <div className="absolute bottom-0 right-0 w-5 h-5 bg-white rounded-full flex items-center justify-center border border-gray-100 shadow-sm">
+                <span className="text-[#0095f6] text-xl font-bold leading-none">+</span>
+              </div>
+            </div>
+          </div>
+          <span className="text-[11px] text-[#737373] font-medium">Ваша заметка</span>
+        </div>
+
+        {/* Users from Server */}
+        {serverUsers.map((user, idx) => (
+          <div key={user.id} className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+            <div className="relative">
+              {/* Note Bubble (Mocked text since server doesn't have note field) */}
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-white px-3 py-1.5 rounded-2xl shadow-md border border-gray-100 z-10 min-w-[85px] max-w-[120px] group-hover:scale-105 transition-transform duration-200">
+                <p className="text-[10px] text-[#262626] leading-tight text-center line-clamp-2 font-medium">
+                  {idx === 0 ? "Focus mode 💻" : idx === 1 ? "At gym 💪" : "Hello! ✨"}
+                </p>
+                {/* Bubble Tail */}
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rotate-45 border-r border-b border-gray-100"></div>
+              </div>
+
+              <div className="p-[2px] rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]">
+                <div className="w-16 h-16 rounded-full border-2 border-white overflow-hidden bg-gray-50 flex items-center justify-center">
+                  {user.avatar ? (
+                    <img src={API_IMAGE_URL + user.avatar} className="w-full h-full object-cover" alt={user.userName} />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 font-bold uppercase">
+                      {user.userName[0]}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <span className="text-[11px] text-[#737373] font-medium truncate max-w-[70px]">{user.userName}</span>
+          </div>
+        ))}
       </div>
 
       {/* Categories / Tabs */}

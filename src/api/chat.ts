@@ -47,6 +47,13 @@ export const chatApi = createApi({
       }),
       invalidatesTags: ["Chat"],
     }),
+    clearChat: build.mutation<IBaseResponse<any>, number>({
+      query: (chatId: number) => ({
+        url: `/Chat/delete-all-messages-in-chat?chatId=${chatId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Chat"],
+    }),
   }),
 })
 
@@ -57,4 +64,5 @@ export const {
   useSendMessageMutation,
   useDeleteMessageMutation,
   useDeleteChatMutation,
+  useClearChatMutation,
 } = chatApi;

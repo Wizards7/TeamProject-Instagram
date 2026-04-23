@@ -41,12 +41,12 @@ export const MessagesPage = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-100px)] border border-[#dbdbdb] rounded-sm overflow-hidden flex bg-white shadow-2xl shadow-black/5 max-w-[1200px] mx-auto my-1">
+    <div className="h-[calc(100vh-100px)] w-[98%] max-w-[1600px] border border-gray-100 rounded-2xl overflow-hidden flex bg-white shadow-[0_12px_40px_rgba(0,0,0,0.1)] mx-auto mt-2 mb-4">
       <div className="w-[350px] flex-shrink-0 border-r border-[#dbdbdb]">
         <ChatList
           chats={chats}
           selectedChatId={selectedChat?.chatId}
-          onSelectChat={(chat) => setSelectedChat(chat)}
+          onSelectChat={(chat: any) => setSelectedChat(chat)}
           onOpenNewChat={() => setIsSearchOpen(true)}
         />
       </div>
