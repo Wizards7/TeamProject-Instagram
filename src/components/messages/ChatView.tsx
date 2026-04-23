@@ -101,13 +101,14 @@ const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean }> = ({ src, i
         <div className="flex items-end gap-[2px] h-8 relative">
           {/* Waveform Bars */}
           {Array.from({ length: 35 }).map((_, i) => {
-            const height = 20 + Math.sin(i * 0.5) * 15 + Math.random() * 5;
+            // Stable height based on index to avoid jitter
+            const height = 25 + Math.abs(Math.sin(i * 0.8)) * 50 + (i % 3) * 5;
             const isFilled = (i / 35) * 100 <= progress;
             return (
               <div
                 key={i}
-                style={{ height: `${Math.max(4, height)}%` }}
-                className={`w-[3px] rounded-full transition-colors duration-300 ${isFilled ? "bg-current" : "bg-current opacity-20"}`}
+                style={{ height: `${Math.max(6, height)}%` }}
+                className={`w-[2px] rounded-full transition-colors duration-300 ${isFilled ? "bg-current" : "bg-current opacity-20"}`}
               />
             );
           })}
@@ -232,10 +233,16 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
   const [forwardingMessage, setForwardingMessage] = useState<IMessage | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [previewAudioUrl, setPreviewAudioUrl] = useState<string | null>(null);
+  const [recordedFile, setRecordedFile] = useState<File | null>(null);
   const [activeCall, setActiveCall] = useState<'audio' | 'video' | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<any>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+  const [previewProgress, setPreviewProgress] = useState(0);
+  const isHoldingMicRef = useRef(false);
 
   const [sendMessage] = useSendMessageMutation();
   const [deleteMessage] = useDeleteMessageMutation();
@@ -275,21 +282,38 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+          ? 'audio/ogg;codecs=opus'
+          : 'audio/webm';
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
+
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
+
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/mpeg" });
-        const audioFile = new File([audioBlob], `voice_${Date.now()}.mp3`, { type: "audio/mpeg" });
-        handleSend(undefined, audioFile);
+        const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
+        const url = URL.createObjectURL(audioBlob);
+        const extension = mediaRecorder.mimeType.includes('webm') ? 'webm' : 'ogg';
+        const file = new File([audioBlob], `voice_${Date.now()}.${extension}`, { type: mediaRecorder.mimeType });
+
+        setPreviewAudioUrl(url);
+        setRecordedFile(file);
         stream.getTracks().forEach(track => track.stop());
       };
+
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
+      setPreviewAudioUrl(null);
+      setRecordedFile(null);
+      setPreviewProgress(0);
       timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
     } catch (err) {
       console.error("Microphone access denied:", err);
@@ -305,6 +329,63 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
     }
   };
 
+  const handleMicPress = () => {
+    isHoldingMicRef.current = true;
+    startRecording();
+  };
+
+  const handleMicRelease = () => {
+    if (isHoldingMicRef.current) {
+      isHoldingMicRef.current = false;
+      stopRecording();
+    }
+  };
+
+  const handleDeletePreview = () => {
+    if (previewAudioUrl) {
+      URL.revokeObjectURL(previewAudioUrl);
+    }
+    setPreviewAudioUrl(null);
+    setRecordedFile(null);
+    setIsPlayingPreview(false);
+  };
+
+  const togglePreviewPlay = () => {
+    const audio = previewAudioRef.current;
+    if (audio) {
+      if (isPlayingPreview) {
+        audio.pause();
+      } else {
+        // Илова кардани promise барои пешгирии хатогиҳои браузер
+        audio.play().catch(e => console.error("Playback failed", e));
+      }
+      setIsPlayingPreview(!isPlayingPreview);
+    }
+  };
+
+
+  const onPreviewTimeUpdate = () => {
+    if (previewAudioRef.current && previewAudioRef.current.duration) {
+      const current = (previewAudioRef.current.currentTime / previewAudioRef.current.duration) * 100;
+      setPreviewProgress(current);
+    }
+  };
+
+  const onPreviewEnded = () => {
+    setIsPlayingPreview(false);
+    setPreviewProgress(0);
+  };
+
+  const handleSeekPreview = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (previewAudioRef.current && previewAudioRef.current.duration) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percentage = Math.max(0, Math.min(1, x / rect.width));
+      previewAudioRef.current.currentTime = percentage * previewAudioRef.current.duration;
+      setPreviewProgress(percentage * 100);
+    }
+  };
+
   const formatTimeSeconds = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -313,16 +394,20 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
 
   const handleSend = async (e?: React.FormEvent, file?: File) => {
     if (e) e.preventDefault();
-    if (!messageText.trim() && !file) return;
+    const fileToSend = file || recordedFile;
+    if (!messageText.trim() && !fileToSend) return;
+
     const formData = new FormData();
     formData.append("ChatId", chat.chatId.toString());
     if (messageText.trim()) formData.append("MessageText", messageText);
-    if (file) formData.append("File", file);
+    if (fileToSend) formData.append("File", fileToSend);
+
     try {
       await sendMessage(formData).unwrap();
       setMessageText("");
       setReplyingTo(null);
       setEditingMessage(null);
+      handleDeletePreview(); // Clear preview after sending
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -460,7 +545,11 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
                             {msg.messageText}
                             {msg.file && (
                               <div className="mt-2 rounded-xl overflow-hidden border border-black/5 bg-transparent">
-                                {msg.file.endsWith('.webm') || msg.file.endsWith('.mp3') || msg.file.endsWith('.wav') ? <VoiceMessagePlayer src={API_IMAGE_URL + msg.file} isMine={isMine} /> : <img src={API_IMAGE_URL + msg.file} alt="file" className="max-w-full max-h-[300px] object-cover" />}
+                                {msg.file.toLowerCase().match(/\.(webm|mp3|wav|ogg|m4a|aac)$/) ? (
+                                  <VoiceMessagePlayer src={API_IMAGE_URL + msg.file} isMine={isMine} />
+                                ) : (
+                                  <img src={API_IMAGE_URL + msg.file} alt="file" className="max-w-full max-h-[300px] object-cover" />
+                                )}
                               </div>
                             )}
                           </motion.div>
@@ -520,7 +609,8 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
             )}
           </AnimatePresence>
           <div className={`flex items-center gap-3 bg-white border border-gray-200 rounded-[32px] px-5 py-2.5 shadow-xl transition-all shadow-black/5 ${isRecording ? "ring-2 ring-red-400" : "focus-within:border-gray-400"}`}>
-            {!isRecording && <button onClick={() => setIsEmojiOpen(!isEmojiOpen)} className="p-1 hover:opacity-60 transition-opacity"><Smile size={26} /></button>}
+            {!isRecording && !previewAudioUrl && <button onClick={() => setIsEmojiOpen(!isEmojiOpen)} className="p-1 hover:opacity-60 transition-opacity"><Smile size={26} /></button>}
+
             {isRecording && (
               <div className="flex items-center gap-3 flex-1 text-red-500 font-bold text-sm">
                 <motion.div
@@ -541,11 +631,112 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
                 {t("recording")} {formatTimeSeconds(recordingTime)}
               </div>
             )}
-            <form onSubmit={handleSend} className={`flex-1 flex items-center ${isRecording ? "hidden" : "flex"}`}>
-              <input type="text" placeholder={t("messagePlaceholder")} value={messageText} onChange={(e) => setMessageText(e.target.value)} autoFocus className="flex-1 bg-transparent border-none outline-none text-[15px] py-1.5 font-medium placeholder:text-gray-400" />
-              <AnimatePresence>{messageText.trim() && <motion.button initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} type="submit" className="ml-2 font-bold text-[#0095f6] hover:text-[#00376b] transition-colors">{editingMessage ? t("save") : t("send")}</motion.button>}</AnimatePresence>
-            </form>
-            <div className="flex items-center gap-4 px-1">{isRecording ? <button onClick={stopRecording} className="text-[#0095f6] font-bold text-sm hover:scale-105 transition-transform">{t("finish")}</button> : <AnimatePresence>{!messageText.trim() && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-4"><button onClick={startRecording} className="hover:opacity-60 transition-opacity"><Mic size={26} /></button><label className="cursor-pointer hover:opacity-60 transition-opacity"><LucideImage size={26} /><input type="file" className="hidden" ref={fileInputRef} onChange={(e) => handleSend(undefined, e.target.files?.[0])} accept="image/*,video/*" /></label></motion.div>}</AnimatePresence>}</div>
+
+            {previewAudioUrl && (
+              <motion.div
+                initial={{ y: 20, opacity: 0, scale: 0.95 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: 20, opacity: 0, scale: 0.95 }}
+                className="flex items-center gap-3 flex-1 bg-gray-100/80 backdrop-blur-sm rounded-full px-3 py-1.5 border border-gray-200 shadow-sm"
+              >
+                {/* Тугмаи нест кардан */}
+                <button onClick={handleDeletePreview} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+                  <Trash2 size={18} />
+                </button>
+
+                <div className="flex-1 flex items-center gap-3">
+                  {/* Тугмаи Play/Pause */}
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={togglePreviewPlay}
+                    className="w-9 h-9 rounded-full bg-[#0095f6] text-white flex items-center justify-center shadow-md active:bg-[#007ccf]"
+                  >
+                    {isPlayingPreview ? (
+                      <div className="flex gap-1 items-center justify-center">
+                        <div className="w-1 h-3.5 bg-white rounded-full"></div>
+                        <div className="w-1 h-3.5 bg-white rounded-full"></div>
+                      </div>
+                    ) : (
+                      <Play size={14} fill="currentColor" className="ml-1" />
+                    )}
+                  </motion.button>
+
+                  {/* Прогресс Бар */}
+                  <div
+                    onClick={handleSeekPreview}
+                    className="flex-1 h-2 bg-gray-300 rounded-full overflow-hidden relative cursor-pointer group"
+                  >
+                    <motion.div
+                      style={{ width: `${previewProgress}%` }}
+                      className="h-full bg-[#0095f6] transition-all duration-100 ease-linear relative"
+                    >
+                      {/* Ин "доирача" (thumb) барои зебоӣ ва эҳсоси Antigravity */}
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full border-2 border-[#0095f6] shadow-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </motion.div>
+                  </div>
+
+                  <span className="text-[11px] font-bold text-gray-500 min-w-[35px]">
+                    {formatTimeSeconds(Math.floor(previewAudioRef.current?.currentTime || 0))}
+                  </span>
+                </div>
+
+                {/* Теги Audio - МАХФӢ */}
+                <audio
+                  ref={previewAudioRef}
+                  src={previewAudioUrl}
+                  onTimeUpdate={onPreviewTimeUpdate}
+                  onEnded={onPreviewEnded}
+                  preload="auto"
+                  className="hidden"
+                />
+              </motion.div>
+            )}
+
+            {!isRecording && !previewAudioUrl && (
+              <form onSubmit={handleSend} className="flex-1 flex items-center">
+                <input type="text" placeholder={t("messagePlaceholder")} value={messageText} onChange={(e) => setMessageText(e.target.value)} autoFocus className="flex-1 bg-transparent border-none outline-none text-[15px] py-1.5 font-medium placeholder:text-gray-400" />
+                <AnimatePresence>{messageText.trim() && <motion.button initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} type="submit" className="ml-2 font-bold text-[#0095f6] hover:text-[#00376b] transition-colors">{editingMessage ? t("save") : t("send")}</motion.button>}</AnimatePresence>
+              </form>
+            )}
+
+            <div className="flex items-center gap-4 px-1">
+              {isRecording ? (
+                <button onClick={stopRecording} className="text-[#0095f6] font-bold text-sm hover:scale-105 transition-transform">{t("finish")}</button>
+              ) : previewAudioUrl ? (
+                <button onClick={() => handleSend()} className="w-10 h-10 rounded-full bg-[#0095f6] text-white flex items-center justify-center shadow-lg shadow-blue-500/30 hover:bg-[#00376b] transition-all active:scale-90">
+                  <SendHorizontal size={20} />
+                </button>
+              ) : (
+                <AnimatePresence>
+                  {!messageText.trim() && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-4">
+                      <button
+                        onMouseDown={handleMicPress}
+                        onMouseUp={handleMicRelease}
+                        onMouseLeave={handleMicRelease}
+                        onTouchStart={handleMicPress}
+                        onTouchEnd={handleMicRelease}
+                        className="hover:opacity-60 transition-opacity relative"
+                      >
+                        <Mic size={26} />
+                        {isRecording && (
+                          <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0.2, 0.5] }}
+                            transition={{ repeat: Infinity, duration: 1.5 }}
+                            className="absolute inset-0 bg-[#0095f6] rounded-full -z-10"
+                          />
+                        )}
+                      </button>
+                      <label className="cursor-pointer hover:opacity-60 transition-opacity">
+                        <LucideImage size={26} />
+                        <input type="file" className="hidden" ref={fileInputRef} onChange={(e) => handleSend(undefined, e.target.files?.[0])} accept="image/*,video/*" />
+                      </label>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
+            </div>
           </div>
         </div>
       </div>
