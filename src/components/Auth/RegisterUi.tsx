@@ -51,13 +51,12 @@ const RegisterUi = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="flex flex-col gap-3 w-full max-w-[350px]">
         <div className="bg-white border border-gray-300 px-10 py-10 flex flex-col items-center">
-          <div className="mb-4">
-            <h1
-              className="text-[42px] tracking-tight text-[#262626] leading-none"
-              style={{ fontFamily: "var(--font-instagram)" }}
-            >
-              Instagram
-            </h1>
+          <div className="mb-4 mt-2">
+            <i 
+                className="bg-[url('https://static.cdninstagram.com/rsrc.php/v3/yS/r/aj_4-oR96_B.png')] bg-[position:0px_-52px] w-[175px] h-[51px] block scale-110"
+                aria-label="Instagram"
+                role="img"
+              ></i>
           </div>
 
           <h2 className="text-[#737373] text-[17px] font-semibold text-center leading-5 mb-6">
@@ -191,19 +190,19 @@ const RegisterUi = () => {
           </Link>
         </div>
 
-        {/* Language Dropdown at the bottom */}
-        <div className="flex flex-col items-center gap-4 mt-4">
-          <p className="text-[12px] text-gray-400">Get the app.</p>
-          <div className="flex gap-2">
+        {/* App Install Badges */}
+        <div className="flex flex-col items-center gap-4 mt-6">
+          <p className="text-[14px] font-medium">Get the app.</p>
+          <div className="flex gap-2 items-center h-[40px] md:h-[42px]">
             <img
-              src="https://static.cdninstagram.com/rsrc.php/v3/yz/r/c5Rp7YmS_iX.png"
+              src="/app_store_final.png"
               alt="App Store"
-              className="h-10 cursor-pointer"
+              className="h-full cursor-pointer w-auto object-contain"
             />
             <img
-              src="https://static.cdninstagram.com/rsrc.php/v3/yu/r/EHY6QnZYdNX.png"
+              src="/google_play_final.png"
               alt="Google Play"
-              className="h-10 cursor-pointer"
+              className="h-[135%] md:h-[140%] cursor-pointer w-auto object-contain"
             />
           </div>
           <SelectLanguage />

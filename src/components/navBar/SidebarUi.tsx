@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Link, usePathname } from "@/src/i18n/navigation";
+import { AnimatePresence } from "framer-motion";
 import { logoutUser } from "../../utils/token";
 import { useGetMyProfileQuery } from "../../api/userProfile";
+import LogoutModal from "../LogoutModal";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -178,167 +180,206 @@ const sidebarItems = [
   },
 ];
 
+import CreatePostModal from "../createPost/CreatePostModal";
+
 export default function Sidebar() {
   const pathname = usePathname();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const { data: profileData } = useGetMyProfileQuery();
   const profile = profileData?.data;
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[245px] border-r border-[#dbdbdb] py-2 px-3 flex flex-col z-50 bg-white group transition-all duration-300">
-      {/* Logo */}
-      <div className="pt-8 pb-10 px-3 flex items-center">
-        <Link href="/">
-          <img
-            src="/Frame 168.png"
-            alt="Instagram"
-            className="w-[153px] h-auto object-contain"
-          />
-        </Link>
-      </div>
+    <>
+      <aside className="fixed left-0 top-0 bottom-0 w-[245px] border-r border-[#dbdbdb] py-2 px-3 flex flex-col z-50 bg-white group transition-all duration-300">
+        {/* Logo */}
+        <div className="pt-8 pb-10 px-3 flex items-center">
+          <Link href="/">
+            <img
+              src="/Frame 168.png"
+              alt="Instagram"
+              className="w-[153px] h-auto object-contain"
+            />
+          </Link>
+        </div>
 
-      {/* Nav Items */}
-      <nav className="flex-1 flex flex-col gap-1">
-        {sidebarItems.map((item) => {
-          const isActive = pathname === item.href;
+        {/* Nav Items */}
+        <nav className="flex-1 flex flex-col gap-1">
+          {sidebarItems.map((item) => {
+            const isActive = pathname === item.href;
 
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group
-                ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
+            if (item.label === "Create") {
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group
+                    ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
+                >
+                  <div className="transition-transform duration-200 group-hover:scale-110">
+                    {item.icon(isActive)}
+                  </div>
+                  <span
+                    className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group
+                  ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
+              >
+                <div className="transition-transform duration-200 group-hover:scale-110">
+                  {item.icon(isActive)}
+                </div>
+                <span
+                  className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}
+                >
+                  {item.label}
+                </span>
+
+                {isActive && (
+                  <div className="absolute right-[-12px] top-1 bottom-1 w-1 bg-[#0095f6] rounded-l-full shadow-[0_0_8px_rgba(0,149,246,0.5)]" />
+                )}
+              </Link>
+            );
+          })}
+
+          {/* Profile (Special Item) */}
+          <Link
+            href="/profile"
+            className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-200 relative group
+              ${pathname === "/profile" ? "text-[#0095f6]" : "hover:bg-[#fafafa] text-[#262626]"}`}
+          >
+            <div
+              className={`w-6 h-6 rounded-full overflow-hidden border transition-all group-hover:scale-110 flex items-center justify-center bg-gray-100
+              ${pathname === "/profile" ? "border-[#0095f6]" : "border-gray-300"}`}
             >
-              <div className="transition-transform duration-200 group-hover:scale-110">
-                {item.icon(isActive)}
-              </div>
-              <span
-                className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}
-              >
-                {item.label}
-              </span>
-
-              {isActive && (
-                <div className="absolute right-[-12px] top-1 bottom-1 w-1 bg-[#0095f6] rounded-l-full shadow-[0_0_8px_rgba(0,149,246,0.5)]" />
+              {profile?.image ? (
+                <img
+                  src={`${FILE_URL}${profile.image}`}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-[10px] font-bold text-gray-500 uppercase">
+                  {profile?.userName?.[0] || "P"}
+                </span>
               )}
-            </Link>
-          );
-        })}
-
-        {/* Profile (Special Item) */}
-        <Link
-          href="/profile"
-          className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-200 relative group
-            ${pathname === "/profile" ? "text-[#0095f6]" : "hover:bg-[#fafafa] text-[#262626]"}`}
-        >
-          <div
-            className={`w-6 h-6 rounded-full overflow-hidden border transition-all group-hover:scale-110 flex items-center justify-center bg-gray-100
-            ${pathname === "/profile" ? "border-[#0095f6]" : "border-gray-300"}`}
-          >
-            {profile?.image ? (
-              <img
-                src={`${FILE_URL}${profile.image}`}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-[10px] font-bold text-gray-500 uppercase">
-                {profile?.userName?.[0] || "P"}
-              </span>
-            )}
-          </div>
-          <span
-            className={`text-base tracking-wide ${pathname === "/profile" ? "font-bold" : "font-normal"}`}
-          >
-            Profile
-          </span>
-          {pathname === "/profile" && (
-            <div className="absolute right-[-12px] top-1 bottom-1 w-1 bg-[#0095f6] rounded-l-full shadow-[0_0_8px_rgba(0,149,246,0.5)]" />
-          )}
-        </Link>
-      </nav>
-
-      {/* More Menu & Dropup */}
-      <div className="mt-auto pb-4 relative">
-        {/* Dropup Menu */}
-        {isMoreOpen && (
-          <div className="absolute bottom-[70px] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.1)] z-[100] overflow-hidden transform transition-all duration-200 min-w-[220px]">
-            <div className="flex flex-col p-2">
-              <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left">
-                <span>Settings</span>
-              </button>
-              <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left">
-                <span>Your activity</span>
-              </button>
-              <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left border-b border-gray-100 mb-1">
-                <span>Saved</span>
-              </button>
-              <button
-                onClick={logoutUser}
-                className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left"
-              >
-                <span className="text-[red]">Log out</span>
-              </button>
             </div>
-          </div>
-        )}
+            <span
+              className={`text-base tracking-wide ${pathname === "/profile" ? "font-bold" : "font-normal"}`}
+            >
+              Profile
+            </span>
+            {pathname === "/profile" && (
+              <div className="absolute right-[-12px] top-1 bottom-1 w-1 bg-[#0095f6] rounded-l-full shadow-[0_0_8px_rgba(0,149,246,0.5)]" />
+            )}
+          </Link>
+        </nav>
 
-        <button
-          onClick={() => setIsMoreOpen(!isMoreOpen)}
-          className={`flex items-center gap-4 p-3 w-full rounded-lg hover:bg-[#fafafa] transition-all text-[#262626] group ${isMoreOpen ? "bg-[#fafafa]" : ""}`}
-        >
-          <svg
-            aria-label="Settings"
-            color="#262626"
-            fill="none"
-            height="24"
-            role="img"
-            viewBox="0 0 24 24"
-            width="24"
-            className="group-hover:scale-110 transition-transform"
+        {/* More Menu & Dropup */}
+        <div className="mt-auto pb-4 relative">
+          {/* Dropup Menu */}
+          {isMoreOpen && (
+            <div className="absolute bottom-[70px] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.1)] z-[100] overflow-hidden transform transition-all duration-200 min-w-[220px]">
+              <div className="flex flex-col p-2">
+                <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left">
+                  <span>Settings</span>
+                </button>
+                <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left">
+                  <span>Your activity</span>
+                </button>
+                <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left border-b border-gray-100 mb-1">
+                  <span>Saved</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMoreOpen(false);
+                    setShowLogoutModal(true);
+                  }}
+                  className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left"
+                >
+                  <span className="text-[red]">Log out</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => setIsMoreOpen(!isMoreOpen)}
+            className={`flex items-center gap-4 p-3 w-full rounded-lg hover:bg-[#fafafa] transition-all text-[#262626] group ${isMoreOpen ? "bg-[#fafafa]" : ""}`}
           >
-            <line
+            <svg
+              aria-label="Settings"
+              color="#262626"
               fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={isMoreOpen ? 3 : 2}
-              x1="3"
-              x2="21"
-              y1="4"
-              y2="4"
-            ></line>
-            <line
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={isMoreOpen ? 3 : 2}
-              x1="3"
-              x2="21"
-              y1="12"
-              y2="12"
-            ></line>
-            <line
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={isMoreOpen ? 3 : 2}
-              x1="3"
-              x2="21"
-              y1="20"
-              y2="20"
-            ></line>
-          </svg>
-          <span
-            className={`text-base ${isMoreOpen ? "font-bold" : "font-normal"}`}
-          >
-            More
-          </span>
-        </button>
-      </div>
-    </aside>
+              height="24"
+              role="img"
+              viewBox="0 0 24 24"
+              width="24"
+              className="group-hover:scale-110 transition-transform"
+            >
+              <line
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={isMoreOpen ? 3 : 2}
+                x1="3"
+                x2="21"
+                y1="4"
+                y2="4"
+              ></line>
+              <line
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={isMoreOpen ? 3 : 2}
+                x1="3"
+                x2="21"
+                y1="12"
+                y2="12"
+              ></line>
+              <line
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={isMoreOpen ? 3 : 2}
+                x1="3"
+                x2="21"
+                y1="20"
+                y2="20"
+              ></line>
+            </svg>
+            <span
+              className={`text-base ${isMoreOpen ? "font-bold" : "font-normal"}`}
+            >
+              More
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      <AnimatePresence>
+        {isCreateModalOpen && (
+          <CreatePostModal onClose={() => setIsCreateModalOpen(false)} />
+        )}
+      </AnimatePresence>
+
+      {showLogoutModal && (
+        <LogoutModal onClose={() => setShowLogoutModal(false)} />
+      )}
+    </>
   );
 }

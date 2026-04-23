@@ -8,14 +8,18 @@ import {
   useGetFollowersQuery,
   useGetFollowingQuery,
 } from "../../api/userProfile";
+import { useViewPostMutation } from "../../api/post";
 import { FollowModal } from "../FollowModal";
 import { Link } from "@/src/i18n/navigation";
+import LogoutModal from "../LogoutModal";
+import { logoutUser } from "@/src/utils/token";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
-const isVideoFile = (filename: string) =>
-  filename?.toLowerCase().endsWith(".mp4") ||
-  filename?.toLowerCase().endsWith(".mov");
+const isVideoFile = (filename: string) => {
+  const videoExtensions = [".mp4", ".mov", ".wmv", ".avi", ".webm", ".mkv"];
+  return videoExtensions.some((ext) => filename?.toLowerCase().endsWith(ext));
+};
 
 const PostThumbnail: React.FC<{ post: IPost; onClick: () => void }> = ({
   post,
@@ -115,19 +119,26 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="flex items-center gap-3 p-4 border-b border-gray-200">
             <div className="w-8 h-8 rounded-full border border-gray-200 overflow-hidden bg-gray-100">
-                {post.userImage ? (
-                  <img
-                    src={`${FILE_URL}${post.userImage}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
-                  </div>
-                )}
+              {post.userImage ? (
+                <img
+                  src={`${FILE_URL}${post.userImage}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) =>
+                    (e.currentTarget.src =
+                      "/istockphoto-2151669184-612x612.jpg")
+                  }
+                />
+              ) : (
+                <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="w-2/3 h-2/3 text-gray-300"
+                    fill="currentColor"
+                  >
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </div>
+              )}
             </div>
             <span className="text-sm font-semibold">{post.userName}</span>
           </div>
@@ -139,11 +150,18 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
                     <img
                       src={`${FILE_URL}${post.userImage}`}
                       className="w-full h-full object-cover"
-                      onError={(e) => (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")}
+                      onError={(e) =>
+                        (e.currentTarget.src =
+                          "/istockphoto-2151669184-612x612.jpg")
+                      }
                     />
                   ) : (
                     <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
-                      <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="w-2/3 h-2/3 text-gray-300"
+                        fill="currentColor"
+                      >
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                       </svg>
                     </div>
@@ -162,11 +180,18 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
                     <img
                       src={`${FILE_URL}${c.userImage}`}
                       className="w-full h-full object-cover"
-                      onError={(e) => (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")}
+                      onError={(e) =>
+                        (e.currentTarget.src =
+                          "/istockphoto-2151669184-612x612.jpg")
+                      }
                     />
                   ) : (
                     <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
-                      <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="w-2/3 h-2/3 text-gray-300"
+                        fill="currentColor"
+                      >
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                       </svg>
                     </div>
@@ -206,65 +231,135 @@ const tabs: { key: Tab; label: string }[] = [
 ];
 
 const EmptyStateForPosts: React.FC = () => (
-  <div className="flex flex-col items-center justify-center py-16 text-center">
-    <div className="w-24 h-24 mb-6 flex items-center justify-center rounded-full bg-gray-100">
+  <div className="flex flex-col items-center justify-center py-16 text-center max-w-[400px] mx-auto">
+    <div className="w-[62px] h-[62px] mb-4 flex items-center justify-center rounded-full border border-black/80">
       <svg
-        width="48"
-        height="48"
+        aria-label="Camera"
+        color="currentColor"
+        fill="currentColor"
+        height="32"
+        role="img"
         viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+        width="32"
       >
-        <path
-          d="M12 3v18M3 12h18"
-          stroke="#8e8e8e"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-        <circle cx="12" cy="12" r="9" stroke="#8e8e8e" strokeWidth="1.5" />
+        <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z" />
+        <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z" />
       </svg>
     </div>
-    <h3 className="text-xl font-light mb-2">Share Photos</h3>
-    <p className="text-sm text-gray-500 mb-6 max-w-[300px]">
+    <h3 className="text-[32px] font-extrabold mb-2 tracking-tight text-black">
+      Share photos
+    </h3>
+    <p className="text-sm text-black/80 mb-6 leading-tight">
       When you share photos, they will appear on your profile.
     </p>
-    <button className="px-4 py-2 bg-[#0095f6] text-white text-sm font-semibold rounded-lg hover:bg-[#1877f2] transition-colors">
+    <button className="text-[#0095f6] text-sm font-semibold hover:text-[#00376b] transition-colors">
       Share your first photo
     </button>
   </div>
 );
 
+const ProfileFooter: React.FC = () => (
+  <footer className="mt-24 pb-12 px-4">
+    <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4">
+      {[
+        "Meta",
+        "About",
+        "Blog",
+        "Jobs",
+        "Help",
+        "API",
+        "Privacy",
+        "Terms",
+        "Locations",
+        "Instagram Lite",
+        "Threads",
+        "Contact uploading and non-users",
+        "Meta Verified",
+      ].map((link) => (
+        <a
+          key={link}
+          href="#"
+          className="text-xs text-gray-500 hover:underline"
+        >
+          {link}
+        </a>
+      ))}
+    </div>
+    <div className="flex justify-center items-center gap-4 text-xs text-gray-500">
+      <span className="flex items-center gap-1 cursor-pointer">
+        English (UK)
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+          <path d="M21 8.5l-9 9-9-9L4.5 7l7.5 7.5L19.5 7z" />
+        </svg>
+      </span>
+      <span>© 2026 Instagram from Meta</span>
+    </div>
+  </footer>
+);
+
 const EmptyStateForReels: React.FC = () => (
-  <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
-    <svg
-      fill="none"
-      height="48"
-      viewBox="0 0 24 24"
-      width="48"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <rect height="18" rx="3" width="18" x="3" y="3" />
-      <path d="M3 9h18M9 21V9" />
-    </svg>
-    <p className="text-sm">No reels yet</p>
+  <div className="flex flex-col items-center justify-center py-20 text-center max-w-[350px] mx-auto">
+    <div className="w-[62px] h-[62px] mb-4 flex items-center justify-center rounded-full border-2 border-black">
+      <svg
+        aria-label="Reels"
+        color="black"
+        fill="black"
+        height="32"
+        role="img"
+        viewBox="0 0 24 24"
+        width="32"
+      >
+        <rect
+          height="18"
+          rx="3"
+          width="18"
+          x="3"
+          y="3"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <path
+          d="M3 9h18M9 21V9"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+      </svg>
+    </div>
+    <h3 className="text-3xl font-extrabold mb-3 text-black">No reels yet</h3>
+    <p className="text-sm text-gray-600 font-medium">
+      Capture and share short, fun videos with your friends.
+    </p>
   </div>
 );
 
 const EmptyStateForSaved: React.FC = () => (
-  <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
-    <svg
-      fill="none"
-      height="48"
-      viewBox="0 0 24 24"
-      width="48"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <rect height="18" rx="3" width="18" x="3" y="3" />
-      <path d="M3 9h18M9 21V9" />
-    </svg>
-    <p className="text-sm">No saved posts yet</p>
+  <div className="flex flex-col items-center justify-center py-20 text-center max-w-[350px] mx-auto">
+    <div className="w-[62px] h-[62px] mb-4 flex items-center justify-center rounded-full border-2 border-black">
+      <svg
+        aria-label="Saved"
+        color="black"
+        fill="black"
+        height="32"
+        role="img"
+        viewBox="0 0 24 24"
+        width="32"
+      >
+        <polygon
+          fill="none"
+          points="20 21 12 13.44 4 21 4 3 20 3 20 21"
+          stroke="currentColor"
+          strokeWidth="2"
+        ></polygon>
+      </svg>
+    </div>
+    <h3 className="text-3xl font-extrabold mb-3 text-black">
+      Save items you like
+    </h3>
+    <p className="text-sm text-gray-600 font-medium">
+      Save posts to see them here later. No one can see what you've saved.
+    </p>
   </div>
 );
 
@@ -281,18 +376,34 @@ const ProfileUi = () => {
     open: false,
   });
 
-  const { data: profileData, isLoading: profileLoading, refetch: refetchProfile } = useGetMyProfileQuery();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const {
+    data: profileData,
+    isLoading: profileLoading,
+    refetch: refetchProfile,
+  } = useGetMyProfileQuery();
+  const [viewPost] = useViewPostMutation();
   const profile = profileData?.data;
 
   const { data: myPostsData, isLoading: postsLoading } = useGetMyPostsQuery();
-  const myPosts = myPostsData?.data ?? [];
+  // Handle various response structures: direct array, {data: [...]}, or {data: {data: [...]}}
+  const myPosts: IPost[] = Array.isArray(myPostsData)
+    ? myPostsData
+    : Array.isArray(myPostsData?.data)
+      ? myPostsData.data
+      : ((myPostsData as any)?.data?.data ?? []);
 
   // Saved posts – only fetched when the tab is active
   const { data: favData, isLoading: favLoading } = useGetPostFavoritesQuery(
     { PageSize: 30 },
     { skip: activeTab !== "saved" },
   );
-  const savedPosts = favData?.data ?? [];
+  const savedPosts: IPost[] = Array.isArray(favData)
+    ? favData
+    : Array.isArray(favData?.data)
+      ? favData.data
+      : ((favData as any)?.data?.data ?? []);
 
   const { data: followersData, isFetching: followersLoading } =
     useGetFollowersQuery(
@@ -351,100 +462,289 @@ const ProfileUi = () => {
   }
 
   return (
-    <div className="max-w-[935px] mx-auto px-4 py-8">
+    <div className="max-w-[935px] mx-auto px-4 py-8 text-black bg-white">
       {/* Profile header */}
-      <div className="flex items-start gap-16 mb-10">
-        <div className="shrink-0">
-          <div className="w-[150px] h-[150px] rounded-full border border-gray-200 overflow-hidden bg-gray-100">
-              {profile.image ? (
-                <img
-                  src={`${FILE_URL}${profile.image}`}
-                  alt={profile.userName}
-                  className="w-full h-full object-cover"
-                  onError={(e) =>
-                    (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")
-                  }
-                />
-              ) : (
-                <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
-                </div>
-              )}
+      <div className="flex items-start gap-8 md:gap-20 mb-12">
+        <div className="shrink-0 relative group">
+          <div className="w-[80px] h-[80px] md:w-[150px] md:h-[150px] rounded-full overflow-hidden bg-gray-50 border border-gray-200">
+            {profile.image ? (
+              <img
+                src={`${FILE_URL}${profile.image}`}
+                alt={profile.userName}
+                className="w-full h-full object-cover"
+                onError={(e) =>
+                  (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")
+                }
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-50 flex items-center justify-center">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-2/3 h-2/3 text-gray-200"
+                  fill="currentColor"
+                >
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              </div>
+            )}
+          </div>
+          {/* Camera icon overlay */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-full cursor-pointer">
+            <svg fill="white" height="32" viewBox="0 0 24 24" width="32">
+              <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z" />
+              <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z" />
+            </svg>
           </div>
         </div>
+        <div className="flex-1 pt-2 text-black">
+          <div className="flex items-center justify-between mb-4 relative">
+            <h2 className="text-xl font-normal text-gray-900">
+              {profile.userName}
+            </h2>
+            <div className="relative">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-black"
+              >
+                <img src="/menu.svg" alt="Options" className="w-6 h-6" />
+              </button>
 
-        <div className="flex-1">
-          <div className="flex items-center gap-4 mb-5 flex-wrap">
-            <h2 className="text-xl font-light">{profile.userName}</h2>
-            <Link
-              href="/profile/edit"
-              className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200"
-            >
-              Edit profile
-            </Link>
-            <button className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200">
-              View archive
-            </button>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/profile/edit"
+                className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200"
+              >
+                Edit profile
+              </Link>
+              <button className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200">
+                View archive
+              </button>
+              {isMenuOpen && (
+                <>
+                  {/* Backdrop to close menu */}
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setIsMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-[260px] bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-gray-100 z-20 py-2 overflow-hidden">
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                      QR code
+                    </button>
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                      Notification
+                    </button>
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                      Settings and privacy
+                    </button>
+                    <div className="h-[1px] bg-gray-100 my-1" />
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setShowLogoutModal(true);
+                      }}
+                      className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-[#ed4956] font-medium"
+                    >
+                      Log out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-8 mb-5">
-            <p className="text-sm">
-              <span className="font-bold">
+          <div className="mb-4">
+            <p className="font-semibold text-sm text-gray-900">
+              {profile.fullName || profile.userName}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-5 mb-6 text-black">
+            <div className="text-[15px]">
+              <span className="font-bold mr-1">
                 {profile.postCount ?? myPosts.length}
               </span>
-              <span className="text-[#262626]">posts</span>
-            </p>
+              <span className="text-gray-900">posts</span>
+            </div>
             <button
               onClick={() => setFollowModal({ type: "followers", open: true })}
-              className="text-sm hover:opacity-60 transition-opacity"
+              className="text-[15px] hover:opacity-70 transition-opacity"
             >
-              <span className="font-bold">
+              <span className="font-bold mr-1">
                 {(profile.followersCount ?? 0).toLocaleString()}
               </span>
-              <span className="text-[#262626]">followers</span>
+              <span className="text-gray-900">follower</span>
             </button>
             <button
               onClick={() => setFollowModal({ type: "following", open: true })}
-              className="text-sm hover:opacity-60 transition-opacity"
+              className="text-[15px] hover:opacity-70 transition-opacity"
             >
-              <span className="font-bold">
+              <span className="font-bold mr-1">
                 {(profile.followingCount ?? 0).toLocaleString()}
               </span>
-              <span className="text-[#262626]">following</span>
+              <span className="text-gray-900">following</span>
             </button>
-          </div>
-
-          <div className="text-sm space-y-1">
-            {profile.fullName && (
-              <p className="font-bold">{profile.fullName}</p>
-            )}
-            {profile.about && (
-              <p className="text-[#262626] whitespace-pre-line">
-                {profile.about}
-              </p>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-t border-gray-200">
-        <div className="flex items-center justify-center gap-12">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`py-3 text-xs font-semibold tracking-widest border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? "border-[#262626] text-[#262626]"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
+      <div className="flex gap-2 mb-12">
+        <button className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black">
+          Edit Profile
+        </button>
+        <button className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black">
+          View archive
+        </button>
+      </div>
+
+      <div className="flex gap-8 mb-12 px-4">
+        <div className="flex flex-col items-center gap-2 group cursor-pointer">
+          <div className="w-[77px] h-[77px] rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-gray-50 transition-colors">
+            <svg
+              aria-label="Plus icon"
+              color="black"
+              fill="black"
+              height="44"
+              role="img"
+              viewBox="0 0 24 24"
+              width="44"
             >
-              {tab.label}
-            </button>
-          ))}
+              <path d="M21 11.3h-8.2V3c0-.4-.3-.8-.8-.8s-.8.4-.8.8v8.2H3c-.4 0-.8.3-.8.8s.4.8.8.8h8.2V21c0 .4.3.8.8.8s.8-.4.8-.8v-8.2H21c.4 0 .8-.3.8-.8s-.4-.8-.8-.8z"></path>
+            </svg>
+          </div>
+          <span className="text-xs font-semibold text-gray-900">New</span>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-200">
+        <div className="flex items-center justify-center gap-16">
+          <button
+            onClick={() => setActiveTab("posts")}
+            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
+              activeTab === "posts"
+                ? "border-black text-black"
+                : "border-transparent text-gray-400 hover:text-gray-500"
+            }`}
+          >
+            <svg
+              aria-label="Posts"
+              color="currentColor"
+              fill="currentColor"
+              height="12"
+              role="img"
+              viewBox="0 0 24 24"
+              width="12"
+            >
+              <rect
+                fill="none"
+                height="18"
+                rx="0"
+                stroke="currentColor"
+                strokeWidth="2"
+                width="18"
+                x="3"
+                y="3"
+              ></rect>
+              <line
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                x1="9"
+                x2="9"
+                y1="3"
+                y2="21"
+              ></line>
+              <line
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                x1="15"
+                x2="15"
+                y1="3"
+                y2="21"
+              ></line>
+              <line
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                x1="3"
+                x2="21"
+                y1="9"
+                y2="9"
+              ></line>
+              <line
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                x1="3"
+                x2="21"
+                y1="15"
+                y2="15"
+              ></line>
+            </svg>
+            POSTS
+          </button>
+          <button
+            onClick={() => setActiveTab("reels")}
+            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
+              activeTab === "reels"
+                ? "border-black text-black"
+                : "border-transparent text-gray-400 hover:text-gray-500"
+            }`}
+          >
+            <svg
+              aria-label="Reels"
+              color="currentColor"
+              fill="currentColor"
+              height="12"
+              role="img"
+              viewBox="0 0 24 24"
+              width="12"
+            >
+              <rect
+                height="18"
+                rx="2"
+                width="18"
+                x="3"
+                y="3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="M7 3v18M17 3v18M3 7h4M3 12h4M3 17h4M17 7h4M17 12h4M17 17h4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+            </svg>
+            REELS
+          </button>
+          <button
+            onClick={() => setActiveTab("saved")}
+            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
+              activeTab === "saved"
+                ? "border-black text-black"
+                : "border-transparent text-gray-400 hover:text-gray-500"
+            }`}
+          >
+            <svg
+              aria-label="Saved"
+              color="currentColor"
+              fill="currentColor"
+              height="12"
+              role="img"
+              viewBox="0 0 24 24"
+              width="12"
+            >
+              <polygon
+                fill="none"
+                points="20 21 12 13.44 4 21 4 3 20 3 20 21"
+                stroke="currentColor"
+                strokeWidth="2"
+              ></polygon>
+            </svg>
+            SAVED
+          </button>
         </div>
       </div>
 
@@ -467,7 +767,10 @@ const ProfileUi = () => {
             <PostThumbnail
               key={post.postId}
               post={post}
-              onClick={() => setSelectedPost(post)}
+              onClick={() => {
+                setSelectedPost(post);
+                viewPost(post.postId);
+              }}
             />
           ))}
         </div>
@@ -491,6 +794,13 @@ const ProfileUi = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-gray-300 border-t-[#0095f6] rounded-full animate-spin" />
         </div>
+      )}
+
+      <ProfileFooter />
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <LogoutModal onClose={() => setShowLogoutModal(false)} />
       )}
     </div>
   );

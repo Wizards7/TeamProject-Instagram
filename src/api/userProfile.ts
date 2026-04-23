@@ -19,7 +19,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
     }),
 
     getMyPosts: builder.query<IPagedResponse<IPost>, void>({
-      query: () => "/Post/get-my-posts",
+      query: () => "/Post/get-my-posts?PageSize=100",
       providesTags: ["Post"],
     }),
 
