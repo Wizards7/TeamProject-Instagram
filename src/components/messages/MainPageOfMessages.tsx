@@ -86,7 +86,6 @@ export const MessagesPage = () => {
         </AnimatePresence>
       </div>
 
-      {/* Modern Modal Overlay */}
       <AnimatePresence>
         {isSearchOpen && (
           <UserSearchModal
