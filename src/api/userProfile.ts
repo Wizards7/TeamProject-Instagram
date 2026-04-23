@@ -7,6 +7,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
 
     getMyProfile: builder.query<{ data: IUserProfile }, void>({
       query: () => "/UserProfile/get-my-profile",
+      providesTags: ["Profile"],
     }),
 
     getUserProfileById: builder.query<{ data: IUserProfile }, string>({
@@ -17,7 +18,8 @@ export const userProfileApi = apiSlice.injectEndpoints({
     }),
 
     getMyPosts: builder.query<IPagedResponse<IPost>, void>({
-      query: () => "/Post/get-my-posts",
+      query: () => "/Post/get-my-posts?PageSize=100",
+      providesTags: ["Post"],
     }),
 
     getPostFavorites: builder.query<
