@@ -638,14 +638,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             <p className="font-semibold text-sm text-gray-900">
               {profile.fullName || profile.userName}
             </p>
-<<<<<<< HEAD
-          </div>
 
-          <div className="flex items-center gap-5 mb-6 text-black">
-            <div className="text-[15px]">
-              <span className="font-bold mr-1">
-                {profile.postCount ?? myPosts.length}
-=======
             {profile.about && <p className="text-sm mt-1 whitespace-pre-line">{profile.about}</p>}
           </div>
 
@@ -653,34 +646,21 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             <div className="text-sm md:text-[15px]">
               <span className="font-bold mr-1">
                 {profile.postCount ?? displayedPosts.length}
->>>>>>> main
               </span>
               <span className="text-gray-900">posts</span>
             </div>
             <button
               onClick={() => setFollowModal({ type: "followers", open: true })}
-<<<<<<< HEAD
-              className="text-[15px] hover:opacity-70 transition-opacity"
-=======
               className="text-sm md:text-[15px] hover:opacity-70 transition-opacity"
->>>>>>> main
             >
               <span className="font-bold mr-1">
                 {(profile.followersCount ?? 0).toLocaleString()}
               </span>
-<<<<<<< HEAD
-              <span className="text-gray-900">follower</span>
-            </button>
-            <button
-              onClick={() => setFollowModal({ type: "following", open: true })}
-              className="text-[15px] hover:opacity-70 transition-opacity"
-=======
               <span className="text-gray-900">followers</span>
             </button>
             <button
               onClick={() => setFollowModal({ type: "following", open: true })}
               className="text-sm md:text-[15px] hover:opacity-70 transition-opacity"
->>>>>>> main
             >
               <span className="font-bold mr-1">
                 {(profile.followingCount ?? 0).toLocaleString()}
@@ -691,30 +671,28 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         </div>
       </div>
 
-<<<<<<< HEAD
-      <div className="flex gap-8 mb-12 px-4">
-        <div className="flex flex-col items-center gap-2 group cursor-pointer">
-          <div className="w-[77px] h-[77px] rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-gray-50 transition-colors">
-            <svg
-              aria-label="Plus icon"
-              color="black"
-              fill="black"
-              height="44"
-              role="img"
-              viewBox="0 0 24 24"
-              width="44"
-            >
-              <path d="M21 11.3h-8.2V3c0-.4-.3-.8-.8-.8s-.8.4-.8.8v8.2H3c-.4 0-.8.3-.8.8s.4.8.8.8h8.2V21c0 .4.3.8.8.8s.8-.4.8-.8v-8.2H21c.4 0 .8-.3.8-.8s-.4-.8-.8-.8z"></path>
-            </svg>
+      {isMyProfile && (
+        <div className="flex gap-8 mb-12 px-4">
+          <div className="flex flex-col items-center gap-2 group cursor-pointer">
+            <div className="w-[77px] h-[77px] rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-gray-50 transition-colors">
+              <svg
+                aria-label="Plus icon"
+                color="black"
+                fill="black"
+                height="44"
+                role="img"
+                viewBox="0 0 24 24"
+                width="44"
+              >
+                <path d="M21 11.3h-8.2V3c0-.4-.3-.8-.8-.8s-.8.4-.8.8v8.2H3c-.4 0-.8.3-.8.8s.4.8.8.8h8.2V21c0 .4.3.8.8.8s.8-.4.8-.8v-8.2H21c.4 0 .8-.3.8-.8s-.4-.8-.8-.8z"></path>
+              </svg>
+            </div>
+            <span className="text-xs font-semibold text-gray-900">New</span>
           </div>
-          <span className="text-xs font-semibold text-gray-900">New</span>
         </div>
-      </div>
+      )}
 
-      <div className="border -t border-gray-200">
-=======
       <div className="border-t border-gray-200">
->>>>>>> main
         <div className="flex items-center justify-center gap-16">
           <button
             onClick={() => setActiveTab("posts")}
@@ -818,34 +796,6 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             </svg>
             REELS
           </button>
-<<<<<<< HEAD
-          <button
-            onClick={() => setActiveTab("saved")}
-            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
-              activeTab === "saved"
-                ? "border-black text-black"
-                : "border-transparent text-gray-400 hover:text-gray-500"
-            }`}
-          >
-            <svg
-              aria-label="Saved"
-              color="currentColor"
-              fill="currentColor"
-              height="12"
-              role="img"
-              viewBox="0 0 24 24"
-              width="12"
-            >
-              <polygon
-                fill="none"
-                points="20 21 12 13.44 4 21 4 3 20 3 20 21"
-                stroke="currentColor"
-                strokeWidth="2"
-              ></polygon>
-            </svg>
-            SAVED
-          </button>
-=======
           {isMyProfile && (
             <button
               onClick={() => setActiveTab("saved")}
@@ -874,7 +824,6 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
               SAVED
             </button>
           )}
->>>>>>> main
         </div>
       </div>
 
@@ -910,10 +859,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />
       )}
 
-<<<<<<< HEAD
-      {/* Followers / Following Modal */}
-=======
->>>>>>> main
+
       {followModal.open && (
         <FollowModal
           title={followModal.type === "followers" ? "Followers" : "Following"}
@@ -922,10 +868,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         />
       )}
 
-<<<<<<< HEAD
-      {/* Loading overlay for modal */}
-=======
->>>>>>> main
+
       {modalLoading && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-gray-300 border-t-[#0095f6] rounded-full animate-spin" />
@@ -934,16 +877,6 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
 
       <ProfileFooter />
 
-<<<<<<< HEAD
-      {/* Logout Confirmation Modal */}
-      {showLogoutModal && (
-        <LogoutModal onClose={() => setShowLogoutModal(false)} />
-      )}
-    </div>
-  );
-};
-
-=======
       {showLogoutModal && (
         <LogoutModal onClose={() => setShowLogoutModal(false)} />
       )}
@@ -980,5 +913,4 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
     </div>
   );
 };
->>>>>>> main
 export default ProfileUi;

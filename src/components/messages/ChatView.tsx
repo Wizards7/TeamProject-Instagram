@@ -113,7 +113,6 @@ const VoiceMessagePlayer: React.FC<{ src: string, isMine: boolean, onAlert?: (ms
             );
           })}
         </div>
-        </div>
         <div className="flex justify-between items-center opacity-60 text-[10px] font-bold">
           <span>{formatAudioTime(currentTime)}</span>
           <span className="tracking-tighter uppercase font-black">{t("voice")}</span>
