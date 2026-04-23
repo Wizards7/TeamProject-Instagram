@@ -55,6 +55,20 @@ export const postApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Post"],
     }),
+    addPost: builder.mutation<void, FormData>({
+      query: (formData) => ({
+        url: `/Post/add-post`,
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["Post", "Profile"],
+    }),
+    viewPost: builder.mutation<void, number>({
+      query: (postId) => ({
+        url: `/Post/view-post?postId=${postId}`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -62,5 +76,7 @@ export const {
   useGetPostsQuery, 
   useLikePostMutation, 
   useGetReelsQuery, 
-  useAddCommentMutation 
+  useAddCommentMutation,
+  useAddPostMutation,
+  useViewPostMutation 
 } = postApi;
