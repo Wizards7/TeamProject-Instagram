@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import { apiSlice } from "../api/apiSlice";
 import { chatApi } from "../api/chat";
 import { userApi } from "../api/user";
-import { userProfileApi } from "../api/userProfile";
 
 export const store = configureStore({
   reducer: {

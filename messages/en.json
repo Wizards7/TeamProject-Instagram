@@ -1,7 +1,4 @@
 {
-  "HomePage": {
-    "title": "Hello world!"
-  },
   "Auth": {
     "login": "Log in",
     "signup": "Sign up",

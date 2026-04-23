@@ -1,4 +1,4 @@
-import EditProfileUi from "@/src/components/EditProfileUi";
+import EditProfileUi from "@/src/components/ProfileUi/EditProfileUi";
 
 export default function EditProfilePage() {
   return (

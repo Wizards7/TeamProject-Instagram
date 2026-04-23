@@ -17,8 +17,8 @@ import {
 import { useGetPostsQuery, useViewPostMutation } from "../../api/post";
 import { useCreateChatMutation } from "../../api/chat";
 import { FollowModal } from "../FollowModal";
-import LogoutModal from "../LogoutModal";
 import { logoutUser } from "@/src/utils/token";
+import LogoutModal from "../Auth/LogoutModal";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -185,10 +185,17 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0">
                   <Link href={`/profile/${c.userId}`}>
                     {c.userImage ? (
-                      <img src={`${FILE_URL}${c.userImage}`} className="w-full h-full object-cover" />
+                      <img
+                        src={`${FILE_URL}${c.userImage}`}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
-                        <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="w-2/3 h-2/3 text-gray-300"
+                          fill="currentColor"
+                        >
                           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                         </svg>
                       </div>
@@ -196,7 +203,12 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
                   </Link>
                 </div>
                 <p className="text-sm">
-                  <Link href={`/profile/${c.userId}`} className="font-semibold mr-1 hover:underline">{c.userName}</Link>
+                  <Link
+                    href={`/profile/${c.userId}`}
+                    className="font-semibold mr-1 hover:underline"
+                  >
+                    {c.userName}
+                  </Link>
                   {c.comment}
                 </p>
               </div>
@@ -382,20 +394,33 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
 
   // --- Dynamic logic start ---
   const isMyProfile = !userId;
-  const { data: myProfileData, isLoading: myProfileLoading } = useGetMyProfileQuery(undefined, { skip: !isMyProfile });
-  const { data: otherProfileData, isLoading: otherProfileLoading } = useGetUserProfileByIdQuery(userId || "", { skip: isMyProfile });
-  
+  const { data: myProfileData, isLoading: myProfileLoading } =
+    useGetMyProfileQuery(undefined, { skip: !isMyProfile });
+  const { data: otherProfileData, isLoading: otherProfileLoading } =
+    useGetUserProfileByIdQuery(userId || "", { skip: isMyProfile });
+
   const profile = isMyProfile ? myProfileData?.data : otherProfileData?.data;
   const profileLoading = isMyProfile ? myProfileLoading : otherProfileLoading;
 
-  const { data: myPostsData, isLoading: myPostsLoading } = useGetMyPostsQuery(undefined, { skip: !isMyProfile });
-  const { data: allPostsData, isLoading: allPostsLoading } = useGetPostsQuery(undefined, { skip: isMyProfile });
-  
+  const { data: myPostsData, isLoading: myPostsLoading } = useGetMyPostsQuery(
+    undefined,
+    { skip: !isMyProfile },
+  );
+  const { data: allPostsData, isLoading: allPostsLoading } = useGetPostsQuery(
+    undefined,
+    { skip: isMyProfile },
+  );
+
   const postsLoading = isMyProfile ? myPostsLoading : allPostsLoading;
 
-  const [addFollow, { isLoading: isFollowingLoading }] = useAddFollowingRelationShipMutation();
-  const [deleteFollow, { isLoading: isUnfollowingLoading }] = useDeleteFollowingRelationShipMutation();
-  const { data: followStatus } = useIsFollowingUserQuery({ followingUserId: userId || "" }, { skip: isMyProfile });
+  const [addFollow, { isLoading: isFollowingLoading }] =
+    useAddFollowingRelationShipMutation();
+  const [deleteFollow, { isLoading: isUnfollowingLoading }] =
+    useDeleteFollowingRelationShipMutation();
+  const { data: followStatus } = useIsFollowingUserQuery(
+    { followingUserId: userId || "" },
+    { skip: isMyProfile },
+  );
   const isFollowing = followStatus?.data ?? false;
 
   const [createChat] = useCreateChatMutation();
@@ -433,7 +458,9 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
   };
 
   const myPosts = extractPosts(myPostsData);
-  const otherPosts = extractPosts(allPostsData).filter(p => p.userId === userId);
+  const otherPosts = extractPosts(allPostsData).filter(
+    (p) => p.userId === userId,
+  );
 
   // Saved posts – only fetched when the tab is active and it's my profile
   const { data: favData, isLoading: favLoading } = useGetPostFavoritesQuery(
@@ -442,7 +469,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
   );
   const savedPosts = extractPosts(favData);
 
-  const targetId = isMyProfile ? profile?.id : (profile?.userId || profile?.id);
+  const targetId = isMyProfile ? profile?.id : profile?.userId || profile?.id;
 
   const { data: followersData, isFetching: followersLoading } =
     useGetFollowersQuery(
@@ -477,7 +504,9 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
     displayedPosts = savedPosts;
     isTabLoading = favLoading;
   } else if (activeTab === "reels") {
-    displayedPosts = (isMyProfile ? myPosts : otherPosts).filter((p) => isVideoFile(p.images?.[0] ?? ""));
+    displayedPosts = (isMyProfile ? myPosts : otherPosts).filter((p) =>
+      isVideoFile(p.images?.[0] ?? ""),
+    );
     isTabLoading = postsLoading;
   } else {
     displayedPosts = isMyProfile ? myPosts : otherPosts;
@@ -505,7 +534,10 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
     <div className="max-w-[935px] mx-auto px-4 py-8 text-black bg-white">
       {/* Profile header */}
       <div className="flex items-start gap-8 md:gap-20 mb-12">
-        <div className="shrink-0 relative group" onClick={() => setShowAvatarPreview(true)}>
+        <div
+          className="shrink-0 relative group"
+          onClick={() => setShowAvatarPreview(true)}
+        >
           <div className="w-[80px] h-[80px] md:w-[150px] md:h-[150px] rounded-full overflow-hidden bg-gray-50 border border-gray-200 cursor-pointer">
             {profile.image ? (
               <img
@@ -544,37 +576,8 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
               <h2 className="text-sm md:text-xl font-normal text-gray-900">
                 {profile.userName}
               </h2>
-              {isMyProfile && (
-                <div className="hidden md:flex items-center gap-2">
-                   <Link 
-                     href="/profile/edit" 
-                     className="px-4 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200"
-                   >
-                     Edit profile
-                   </Link>
-                   <button className="px-4 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200">
-                      View archive
-                   </button>
-                </div>
-              )}
-              {!isMyProfile && (
-                <div className="flex gap-2">
-                   <button 
-                     onClick={handleFollow} 
-                     disabled={isFollowingLoading || isUnfollowingLoading}
-                     className={`px-6 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
-                       isFollowing 
-                         ? "bg-[#efefef] hover:bg-gray-200 text-black" 
-                         : "bg-[#0095f6] text-white hover:bg-[#1877f2]"
-                     }`}
-                   >
-                     {isFollowingLoading || isUnfollowingLoading ? "..." : (isFollowing ? "Following" : "Follow")}
-                   </button>
-                   <button onClick={handleMessageClick} className="px-4 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black">Message</button>
-                </div>
-              )}
             </div>
-            
+
             <div className="relative">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -619,29 +622,6 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             </div>
           </div>
 
-          {/* Mobile buttons */}
-          {isMyProfile && (
-            <div className="flex md:hidden gap-2 mb-4">
-              <Link 
-                href="/profile/edit" 
-                className="flex-1 text-center py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200"
-              >
-                Edit profile
-              </Link>
-              <button className="flex-1 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200">
-                View archive
-              </button>
-            </div>
-          )}
-
-          <div className="mb-4">
-            <p className="font-semibold text-sm text-gray-900">
-              {profile.fullName || profile.userName}
-            </p>
-
-            {profile.about && <p className="text-sm mt-1 whitespace-pre-line">{profile.about}</p>}
-          </div>
-
           <div className="flex items-center gap-5 mb-6 text-black">
             <div className="text-sm md:text-[15px]">
               <span className="font-bold mr-1">
@@ -656,7 +636,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
               <span className="font-bold mr-1">
                 {(profile.followersCount ?? 0).toLocaleString()}
               </span>
-              <span className="text-gray-900">followers</span>
+              <span className="text-gray-900">follower</span>
             </button>
             <button
               onClick={() => setFollowModal({ type: "following", open: true })}
@@ -668,7 +648,60 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
               <span className="text-gray-900">following</span>
             </button>
           </div>
+
+          <div className="mb-4">
+            <p className="font-semibold text-sm text-gray-900">
+              {profile.fullName || profile.userName}
+            </p>
+
+            {profile.about && (
+              <p className="text-sm mt-1 whitespace-pre-line">
+                {profile.about}
+              </p>
+            )}
+          </div>
         </div>
+      </div>
+
+      {/* Action Buttons Row */}
+      <div className="flex gap-2 mb-12">
+        {isMyProfile ? (
+          <>
+            <Link
+              href="/profile/edit"
+              className="flex-1 text-center py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black"
+            >
+              Edit Profile
+            </Link>
+            <button className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black">
+              View archive
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={handleFollow}
+              disabled={isFollowingLoading || isUnfollowingLoading}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                isFollowing
+                  ? "bg-[#efefef] hover:bg-gray-200 text-black"
+                  : "bg-[#0095f6] text-white hover:bg-[#1877f2]"
+              }`}
+            >
+              {isFollowingLoading || isUnfollowingLoading
+                ? "..."
+                : isFollowing
+                  ? "Following"
+                  : "Follow"}
+            </button>
+            <button
+              onClick={handleMessageClick}
+              className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black"
+            >
+              Message
+            </button>
+          </>
+        )}
       </div>
 
       {isMyProfile && (
@@ -859,7 +892,6 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />
       )}
 
-
       {followModal.open && (
         <FollowModal
           title={followModal.type === "followers" ? "Followers" : "Following"}
@@ -867,7 +899,6 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
           onClose={() => setFollowModal({ type: "followers", open: false })}
         />
       )}
-
 
       {modalLoading && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
@@ -883,28 +914,37 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
 
       {/* Avatar Preview Modal */}
       {showAvatarPreview && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/90 z-[110] flex items-center justify-center p-4"
           onClick={() => setShowAvatarPreview(false)}
         >
-          <button 
+          <button
             className="absolute top-4 right-4 text-white hover:opacity-70 z-[120]"
             onClick={() => setShowAvatarPreview(false)}
           >
-            <svg fill="currentColor" height="32" viewBox="0 0 24 24" width="32"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            <svg fill="currentColor" height="32" viewBox="0 0 24 24" width="32">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
           </button>
-          <div className="relative max-w-[90vw] max-h-[90vh] bg-white rounded-full overflow-hidden aspect-square flex items-center justify-center shadow-2xl border-4 border-white/20" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="relative max-w-[90vw] max-h-[90vh] bg-white rounded-full overflow-hidden aspect-square flex items-center justify-center shadow-2xl border-4 border-white/20"
+            onClick={(e) => e.stopPropagation()}
+          >
             {profile.image ? (
-              <img 
-                src={`${FILE_URL}${profile.image}`} 
-                alt={profile.userName} 
+              <img
+                src={`${FILE_URL}${profile.image}`}
+                alt={profile.userName}
                 className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-64 h-64 md:w-96 md:h-96 bg-gray-50 flex items-center justify-center">
-                 <svg viewBox="0 0 24 24" className="w-1/2 h-1/2 text-gray-200" fill="currentColor">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                 </svg>
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-1/2 h-1/2 text-gray-200"
+                  fill="currentColor"
+                >
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
               </div>
             )}
           </div>

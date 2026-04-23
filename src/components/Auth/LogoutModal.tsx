@@ -1,6 +1,6 @@
 "use client";
+import { logoutUser } from "@/src/utils/token";
 import React from "react";
-import { logoutUser } from "../utils/token";
 
 interface LogoutModalProps {
   onClose: () => void;

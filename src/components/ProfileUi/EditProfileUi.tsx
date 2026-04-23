@@ -6,13 +6,14 @@ import {
   useUpdateUserProfileMutation,
   useUpdateUserImageProfileMutation,
   useDeleteUserImageProfileMutation,
-} from "../api/userProfile";
+} from "../../api/userProfile";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
 const EditProfileUi = () => {
   const router = useRouter();
-  const { data: profileData, isLoading: isProfileLoading } = useGetMyProfileQuery();
+  const { data: profileData, isLoading: isProfileLoading } =
+    useGetMyProfileQuery();
   const profile = profileData?.data;
 
   const [about, setAbout] = useState("");
@@ -22,9 +23,12 @@ const EditProfileUi = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateUserProfileMutation();
-  const [updateImage, { isLoading: isUpdatingImage }] = useUpdateUserImageProfileMutation();
-  const [deleteImage, { isLoading: isDeletingImage }] = useDeleteUserImageProfileMutation();
+  const [updateProfile, { isLoading: isUpdatingProfile }] =
+    useUpdateUserProfileMutation();
+  const [updateImage, { isLoading: isUpdatingImage }] =
+    useUpdateUserImageProfileMutation();
+  const [deleteImage, { isLoading: isDeletingImage }] =
+    useDeleteUserImageProfileMutation();
 
   useEffect(() => {
     if (profile) {
@@ -86,7 +90,14 @@ const EditProfileUi = () => {
           Profile
         </Link>
         <span className="text-gray-400">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M9 18l6-6-6-6" />
           </svg>
         </span>
@@ -98,7 +109,11 @@ const EditProfileUi = () => {
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-200">
             {profile.image ? (
-              <img src={`${FILE_URL}${profile.image}`} alt={profile.userName} className="w-full h-full object-cover" />
+              <img
+                src={`${FILE_URL}${profile.image}`}
+                alt={profile.userName}
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-xl font-bold text-gray-400 uppercase">
                 {profile.userName?.[0]}
@@ -106,7 +121,9 @@ const EditProfileUi = () => {
             )}
           </div>
           <div>
-            <p className="font-bold text-sm leading-tight">{profile.userName}</p>
+            <p className="font-bold text-sm leading-tight">
+              {profile.userName}
+            </p>
             <p className="text-gray-500 text-sm">{profile.fullName}</p>
           </div>
         </div>
@@ -127,13 +144,21 @@ const EditProfileUi = () => {
             </button>
           )}
         </div>
-        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept="image/*"
+        />
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-1.5">
-          <label className="text-[13px] font-bold text-gray-500 px-1">Name</label>
+          <label className="text-[13px] font-bold text-gray-500 px-1">
+            Name
+          </label>
           <input
             type="text"
             value={fullName}
@@ -144,7 +169,9 @@ const EditProfileUi = () => {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[13px] font-bold text-gray-500 px-1">User name</label>
+          <label className="text-[13px] font-bold text-gray-500 px-1">
+            User name
+          </label>
           <input
             type="text"
             value={userName}
@@ -155,7 +182,9 @@ const EditProfileUi = () => {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[13px] font-bold text-gray-500 px-1">Bio</label>
+          <label className="text-[13px] font-bold text-gray-500 px-1">
+            Bio
+          </label>
           <textarea
             value={about}
             onChange={(e) => setAbout(e.target.value)}
@@ -166,24 +195,36 @@ const EditProfileUi = () => {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[13px] font-bold text-gray-500 px-1">Gender</label>
+          <label className="text-[13px] font-bold text-gray-500 px-1">
+            Gender
+          </label>
           <div className="relative">
             <select
               value={gender}
               onChange={(e) => setGender(Number(e.target.value))}
               className="w-full bg-[#efefef]/50 border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all appearance-none cursor-pointer text-gray-800"
             >
-              <option value={0}>Male</option>
-              <option value={1}>Female</option>
-              <option value={2}>Prefer not to say</option>
+              <option value={0}>Choose Gender</option>
+              <option value={1}>Male</option>
+              <option value={2}>Female</option>
+              <option value={3}>Prefer not to say</option>
             </select>
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </div>
           </div>
-          <p className="text-[11px] text-gray-400 px-1 mt-1">This won't be part of your public profile.</p>
+          <p className="text-[11px] text-gray-400 px-1 mt-1">
+            This won't be part of your public profile.
+          </p>
         </div>
 
         <div className="flex justify-center pt-4">

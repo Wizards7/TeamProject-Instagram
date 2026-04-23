@@ -5,7 +5,6 @@ import { Link, usePathname } from "@/src/i18n/navigation";
 import { AnimatePresence } from "framer-motion";
 import { logoutUser } from "../../utils/token";
 import { useGetMyProfileQuery } from "../../api/userProfile";
-import LogoutModal from "../LogoutModal";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -181,6 +180,7 @@ const sidebarItems = [
 ];
 
 import CreatePostModal from "../createPost/CreatePostModal";
+import LogoutModal from "../Auth/LogoutModal";
 
 export default function Sidebar() {
   const pathname = usePathname();
