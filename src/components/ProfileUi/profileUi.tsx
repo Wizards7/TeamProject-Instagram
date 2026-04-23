@@ -1,8 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, Link, usePathname } from "@/src/i18n/navigation";
 import { useLocale } from "next-intl";
-import Link from "next/link";
 import { IFollower, IPost } from "../../types/interface";
 import {
   useGetMyProfileQuery,
@@ -184,7 +183,7 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
             {post.comments?.map((c) => (
               <div key={c.postCommentId} className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0">
-                  <Link href={`/${locale}/profile/${c.userId}`}>
+                  <Link href={`/profile/${c.userId}`}>
                     {c.userImage ? (
                       <img src={`${FILE_URL}${c.userImage}`} className="w-full h-full object-cover" />
                     ) : (
@@ -197,7 +196,7 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
                   </Link>
                 </div>
                 <p className="text-sm">
-                  <Link href={`/${locale}/profile/${c.userId}`} className="font-semibold mr-1 hover:underline">{c.userName}</Link>
+                  <Link href={`/profile/${c.userId}`} className="font-semibold mr-1 hover:underline">{c.userName}</Link>
                   {c.comment}
                 </p>
               </div>
@@ -419,10 +418,10 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
     if (!userId) return;
     try {
       await createChat(userId).unwrap();
-      router.push(`/${locale}/messages`);
+      router.push("/messages");
     } catch (error) {
       console.error("Failed to create chat", error);
-      router.push(`/${locale}/messages`);
+      router.push("/messages");
     }
   };
 
@@ -542,9 +541,22 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         <div className="flex-1 pt-2 text-black">
           <div className="flex items-center justify-between mb-4 relative">
             <div className="flex items-center gap-4">
-              <h2 className="text-xl font-normal text-gray-900">
+              <h2 className="text-sm md:text-xl font-normal text-gray-900">
                 {profile.userName}
               </h2>
+              {isMyProfile && (
+                <div className="hidden md:flex items-center gap-2">
+                   <Link 
+                     href="/profile/edit" 
+                     className="px-4 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200"
+                   >
+                     Edit profile
+                   </Link>
+                   <button className="px-4 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200">
+                      View archive
+                   </button>
+                </div>
+              )}
               {!isMyProfile && (
                 <div className="flex gap-2">
                    <button 
@@ -607,6 +619,21 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             </div>
           </div>
 
+          {/* Mobile buttons */}
+          {isMyProfile && (
+            <div className="flex md:hidden gap-2 mb-4">
+              <Link 
+                href="/profile/edit" 
+                className="flex-1 text-center py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200"
+              >
+                Edit profile
+              </Link>
+              <button className="flex-1 py-1.5 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 text-black border border-gray-200">
+                View archive
+              </button>
+            </div>
+          )}
+
           <div className="mb-4">
             <p className="font-semibold text-sm text-gray-900">
               {profile.fullName || profile.userName}
@@ -615,7 +642,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
           </div>
 
           <div className="flex items-center gap-5 mb-6 text-black">
-            <div className="text-[15px]">
+            <div className="text-sm md:text-[15px]">
               <span className="font-bold mr-1">
                 {profile.postCount ?? displayedPosts.length}
               </span>
@@ -623,16 +650,16 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             </div>
             <button
               onClick={() => setFollowModal({ type: "followers", open: true })}
-              className="text-[15px] hover:opacity-70 transition-opacity"
+              className="text-sm md:text-[15px] hover:opacity-70 transition-opacity"
             >
               <span className="font-bold mr-1">
                 {(profile.followersCount ?? 0).toLocaleString()}
               </span>
-              <span className="text-gray-900">follower</span>
+              <span className="text-gray-900">followers</span>
             </button>
             <button
               onClick={() => setFollowModal({ type: "following", open: true })}
-              className="text-[15px] hover:opacity-70 transition-opacity"
+              className="text-sm md:text-[15px] hover:opacity-70 transition-opacity"
             >
               <span className="font-bold mr-1">
                 {(profile.followingCount ?? 0).toLocaleString()}
@@ -642,38 +669,6 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
           </div>
         </div>
       </div>
-
-      {isMyProfile && (
-        <div className="flex gap-2 mb-12">
-          <button className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black">
-            Edit Profile
-          </button>
-          <button className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black">
-            View archive
-          </button>
-        </div>
-      )}
-
-      {isMyProfile && (
-        <div className="flex gap-8 mb-12 px-4">
-          <div className="flex flex-col items-center gap-2 group cursor-pointer">
-            <div className="w-[77px] h-[77px] rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-gray-50 transition-colors">
-              <svg
-                aria-label="Plus icon"
-                color="black"
-                fill="black"
-                height="44"
-                role="img"
-                viewBox="0 0 24 24"
-                width="44"
-              >
-                <path d="M21 11.3h-8.2V3c0-.4-.3-.8-.8-.8s-.8.4-.8.8v8.2H3c-.4 0-.8.3-.8.8s.4.8.8.8h8.2V21c0 .4.3.8.8.8s.8-.4.8-.8v-8.2H21c.4 0 .8-.3.8-.8s-.4-.8-.8-.8z"></path>
-              </svg>
-            </div>
-            <span className="text-xs font-semibold text-gray-900">New</span>
-          </div>
-        </div>
-      )}
 
       <div className="border-t border-gray-200">
         <div className="flex items-center justify-center gap-16">

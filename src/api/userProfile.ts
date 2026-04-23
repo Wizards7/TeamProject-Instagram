@@ -1,5 +1,5 @@
 import { apiSlice } from "./apiSlice";
-import { IPost, IPagedResponse, IUserProfile, IFollower } from "../types/interface";
+import { IPost, IPaginatedResponse, IUserProfile, IFollower } from "../types/interface";
 
 
 export const userProfileApi = apiSlice.injectEndpoints({
@@ -18,13 +18,13 @@ export const userProfileApi = apiSlice.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
-    getMyPosts: builder.query<IPagedResponse<IPost>, void>({
+    getMyPosts: builder.query<IPaginatedResponse<IPost>, void>({
       query: () => "/Post/get-my-posts?PageSize=100",
       providesTags: ["Post"],
     }),
 
     getPostFavorites: builder.query<
-      IPagedResponse<IPost>,
+      IPaginatedResponse<IPost>,
       { PageNumber?: number; PageSize?: number }
     >({
       query: (params) => ({
