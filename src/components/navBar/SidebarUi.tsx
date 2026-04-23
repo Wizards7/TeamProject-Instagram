@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Link, usePathname } from "@/src/i18n/navigation";
-import { logoutUser } from "../utils/token";
+import { logoutUser } from "../../utils/token";
 
 const sidebarItems = [
   {
@@ -66,11 +66,18 @@ const sidebarItems = [
     label: "Reels",
     href: "/reels",
     icon: (active: boolean) => (
-      <img 
-        src="/video.svg" 
-        className={`w-6 h-6 transition-all duration-300 ${active ? "brightness-0 invert-[.5] sepia(1) saturate(5) hue-rotate(190deg)" : "brightness-0"}`} 
-        alt="Reels" 
-        style={active ? { filter: 'invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)' } : {}}
+      <img
+        src="/video.svg"
+        className={`w-6 h-6 transition-all duration-300 ${active ? "brightness-0 invert-[.5] sepia(1) saturate(5) hue-rotate(190deg)" : "brightness-0"}`}
+        alt="Reels"
+        style={
+          active
+            ? {
+                filter:
+                  "invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)",
+              }
+            : {}
+        }
       />
     ),
   },
@@ -78,11 +85,18 @@ const sidebarItems = [
     label: "Messages",
     href: "/messages",
     icon: (active: boolean) => (
-      <img 
-        src="/message.svg" 
-        className="w-6 h-6 transition-all duration-300" 
-        alt="Messages" 
-        style={active ? { filter: 'invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)' } : { filter: 'brightness(0)' }}
+      <img
+        src="/message.svg"
+        className="w-6 h-6 transition-all duration-300"
+        alt="Messages"
+        style={
+          active
+            ? {
+                filter:
+                  "invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)",
+              }
+            : { filter: "brightness(0)" }
+        }
       />
     ),
   },
@@ -216,11 +230,11 @@ export default function Sidebar() {
             className={`w-6 h-6 rounded-full overflow-hidden border transition-all group-hover:scale-110 
             ${pathname === "/profile" ? "border-[#0095f6]" : "border-gray-300"}`}
           >
-            <img
-              src="/image.webp"
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
+            <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            </div>
           </div>
           <span
             className={`text-base tracking-wide ${pathname === "/profile" ? "font-bold" : "font-normal"}`}

@@ -113,16 +113,20 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
         </div>
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="flex items-center gap-3 p-4 border-b border-gray-200">
-            <div className="w-8 h-8 rounded-full p-[1px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600">
-              <div className="w-full h-full rounded-full border border-white overflow-hidden bg-gray-100">
+            <div className="w-8 h-8 rounded-full border border-gray-200 overflow-hidden bg-gray-100">
                 {post.userImage ? (
-                  <img src={`${FILE_URL}${post.userImage}`} className="w-full h-full object-cover" />
+                  <img
+                    src={`${FILE_URL}${post.userImage}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")}
+                  />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400 uppercase">
-                    {post.userName?.[0]}
+                  <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
                   </div>
                 )}
-              </div>
             </div>
             <span className="text-sm font-semibold">{post.userName}</span>
           </div>
@@ -131,10 +135,16 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0">
                   {post.userImage ? (
-                    <img src={`${FILE_URL}${post.userImage}`} className="w-full h-full object-cover" />
+                    <img
+                      src={`${FILE_URL}${post.userImage}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")}
+                    />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400 uppercase">
-                      {post.userName?.[0]}
+                    <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
                     </div>
                   )}
                 </div>
@@ -148,10 +158,16 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
               <div key={c.postCommentId} className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0">
                   {c.userImage ? (
-                    <img src={`${FILE_URL}${c.userImage}`} className="w-full h-full object-cover" />
+                    <img
+                      src={`${FILE_URL}${c.userImage}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")}
+                    />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400 uppercase">
-                      {c.userName?.[0]}
+                    <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
                     </div>
                   )}
                 </div>
@@ -163,11 +179,16 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
             ))}
           </div>
           <div className="border-t border-gray-200 p-4">
-            <p className="text-sm font-bold">{post.postLikeCount.toLocaleString()} likes</p>
+            <p className="text-sm font-bold">
+              {post.postLikeCount.toLocaleString()} likes
+            </p>
           </div>
         </div>
       </div>
-      <button onClick={onClose} className="absolute top-4 right-4 text-white hover:opacity-70">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white hover:opacity-70"
+      >
         <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
           <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
         </svg>
@@ -186,9 +207,20 @@ const tabs: { key: Tab; label: string }[] = [
 const EmptyStateForPosts: React.FC = () => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
     <div className="w-24 h-24 mb-6 flex items-center justify-center rounded-full bg-gray-100">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 3v18M3 12h18" stroke="#8e8e8e" strokeWidth="1.5" strokeLinecap="round"/>
-        <circle cx="12" cy="12" r="9" stroke="#8e8e8e" strokeWidth="1.5"/>
+      <svg
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 3v18M3 12h18"
+          stroke="#8e8e8e"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <circle cx="12" cy="12" r="9" stroke="#8e8e8e" strokeWidth="1.5" />
       </svg>
     </div>
     <h3 className="text-xl font-light mb-2">Share Photos</h3>
@@ -203,7 +235,14 @@ const EmptyStateForPosts: React.FC = () => (
 
 const EmptyStateForReels: React.FC = () => (
   <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
-    <svg fill="none" height="48" viewBox="0 0 24 24" width="48" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      fill="none"
+      height="48"
+      viewBox="0 0 24 24"
+      width="48"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <rect height="18" rx="3" width="18" x="3" y="3" />
       <path d="M3 9h18M9 21V9" />
     </svg>
@@ -213,7 +252,14 @@ const EmptyStateForReels: React.FC = () => (
 
 const EmptyStateForSaved: React.FC = () => (
   <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
-    <svg fill="none" height="48" viewBox="0 0 24 24" width="48" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      fill="none"
+      height="48"
+      viewBox="0 0 24 24"
+      width="48"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <rect height="18" rx="3" width="18" x="3" y="3" />
       <path d="M3 9h18M9 21V9" />
     </svg>
@@ -226,12 +272,16 @@ const ProfileUi = () => {
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
 
   // State for follow modal
-  const [followModal, setFollowModal] = useState<{ type: "followers" | "following"; open: boolean }>({
+  const [followModal, setFollowModal] = useState<{
+    type: "followers" | "following";
+    open: boolean;
+  }>({
     type: "followers",
     open: false,
   });
 
-  const { data: profileData, isLoading: profileLoading } = useGetMyProfileQuery();
+  const { data: profileData, isLoading: profileLoading } =
+    useGetMyProfileQuery();
   const profile = profileData?.data;
 
   const { data: myPostsData, isLoading: postsLoading } = useGetMyPostsQuery();
@@ -240,23 +290,34 @@ const ProfileUi = () => {
   // Saved posts – only fetched when the tab is active
   const { data: favData, isLoading: favLoading } = useGetPostFavoritesQuery(
     { PageSize: 30 },
-    { skip: activeTab !== "saved" }
+    { skip: activeTab !== "saved" },
   );
   const savedPosts = favData?.data ?? [];
 
-  const { data: followersData, isFetching: followersLoading } = useGetFollowersQuery(
-    { userId: profile?.id ?? "", pageSize: 50 },
-    { skip: !followModal.open || followModal.type !== "followers" || !profile?.id }
-  );
+  const { data: followersData, isFetching: followersLoading } =
+    useGetFollowersQuery(
+      { userId: profile?.id ?? "", pageSize: 50 },
+      {
+        skip:
+          !followModal.open || followModal.type !== "followers" || !profile?.id,
+      },
+    );
 
-  const { data: followingData, isFetching: followingLoading } = useGetFollowingQuery(
-    { userId: profile?.id ?? "", pageSize: 50 },
-    { skip: !followModal.open || followModal.type !== "following" || !profile?.id }
-  );
+  const { data: followingData, isFetching: followingLoading } =
+    useGetFollowingQuery(
+      { userId: profile?.id ?? "", pageSize: 50 },
+      {
+        skip:
+          !followModal.open || followModal.type !== "following" || !profile?.id,
+      },
+    );
 
   const modalUsers: IFollower[] =
-    followModal.type === "followers" ? followersData?.data ?? [] : followingData?.data ?? [];
-  const modalLoading = followModal.type === "followers" ? followersLoading : followingLoading;
+    followModal.type === "followers"
+      ? (followersData?.data ?? [])
+      : (followingData?.data ?? []);
+  const modalLoading =
+    followModal.type === "followers" ? followersLoading : followingLoading;
 
   // Determine which posts to display
   let displayedPosts: IPost[] = [];
@@ -294,24 +355,23 @@ const ProfileUi = () => {
       {/* Profile header */}
       <div className="flex items-start gap-16 mb-10">
         <div className="shrink-0">
-          <div className="w-[150px] h-[150px] rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600">
-            <div className="w-full h-full rounded-full border-[3px] border-white overflow-hidden bg-gray-100">
+          <div className="w-[150px] h-[150px] rounded-full border border-gray-200 overflow-hidden bg-gray-100">
               {profile.image ? (
                 <img
                   src={`${FILE_URL}${profile.image}`}
                   alt={profile.userName}
                   className="w-full h-full object-cover"
                   onError={(e) =>
-                    (e.currentTarget.src =
-                      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150")
+                    (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")
                   }
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-gray-400 uppercase">
-                  {profile.userName?.[0]}
+                <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
                 </div>
               )}
-            </div>
           </div>
         </div>
 
@@ -328,29 +388,39 @@ const ProfileUi = () => {
 
           <div className="flex items-center gap-8 mb-5">
             <p className="text-sm">
-              <span className="font-bold">{profile.postCount ?? myPosts.length}</span>
+              <span className="font-bold">
+                {profile.postCount ?? myPosts.length}
+              </span>
               <span className="text-[#262626]">posts</span>
             </p>
             <button
               onClick={() => setFollowModal({ type: "followers", open: true })}
               className="text-sm hover:opacity-60 transition-opacity"
             >
-              <span className="font-bold">{(profile.followersCount ?? 0).toLocaleString()}</span>
+              <span className="font-bold">
+                {(profile.followersCount ?? 0).toLocaleString()}
+              </span>
               <span className="text-[#262626]">followers</span>
             </button>
             <button
               onClick={() => setFollowModal({ type: "following", open: true })}
               className="text-sm hover:opacity-60 transition-opacity"
             >
-              <span className="font-bold">{(profile.followingCount ?? 0).toLocaleString()}</span>
+              <span className="font-bold">
+                {(profile.followingCount ?? 0).toLocaleString()}
+              </span>
               <span className="text-[#262626]">following</span>
             </button>
           </div>
 
           <div className="text-sm space-y-1">
-            {profile.fullName && <p className="font-bold">{profile.fullName}</p>}
+            {profile.fullName && (
+              <p className="font-bold">{profile.fullName}</p>
+            )}
             {profile.about && (
-              <p className="text-[#262626] whitespace-pre-line">{profile.about}</p>
+              <p className="text-[#262626] whitespace-pre-line">
+                {profile.about}
+              </p>
             )}
           </div>
         </div>
@@ -400,7 +470,9 @@ const ProfileUi = () => {
         </div>
       )}
 
-      {selectedPost && <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
+      {selectedPost && (
+        <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />
+      )}
 
       {/* Followers / Following Modal */}
       {followModal.open && (

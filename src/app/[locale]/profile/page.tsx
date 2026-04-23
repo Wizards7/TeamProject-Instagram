@@ -1,5 +1,4 @@
-
-import ProfileUi from "@/src/components/profileUi";
+import ProfileUi from "@/src/components/ProfileUi/profileUi";
 import React from "react";
 
 const Profile = () => {
