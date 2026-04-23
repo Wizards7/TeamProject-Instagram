@@ -148,7 +148,6 @@ const EditProfileUi = () => {
           <input
             type="text"
             value={userName}
-            readOnly
             onChange={(e) => setUserName(e.target.value)}
             className="w-full bg-[#efefef]/50 border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all text-gray-800"
             placeholder="Username"
