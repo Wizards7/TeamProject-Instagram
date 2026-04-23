@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { useLocale } from "next-intl";
 import { useGetPostsQuery } from "@/src/api/post";
 import { useGetStoriesQuery } from "@/src/api/story";
 import PostCard from "@/src/components/PostCard";
@@ -8,6 +10,7 @@ import LoadingUi from "@/src/components/LoadingUi";
 import Suggestions from "@/src/components/Suggestions";
 
 export default function Home() {
+  const locale = useLocale();
   const { data: postData, isLoading: postLoading } = useGetPostsQuery();
   const { data: storyData } = useGetStoriesQuery();
 
@@ -26,7 +29,11 @@ export default function Home() {
           {/* Stories - No BG, only border bottom */}
           <div className="flex gap-4 overflow-x-auto no-scrollbar py-4 mb-2 border-b border-gray-200">
             {storyData?.map((story, index) => (
-              <div key={story.storyId || index} className="flex flex-col items-center gap-2 min-w-[66px] cursor-pointer group">
+              <Link 
+                href={`/${locale}/profile/${story.userId}`} 
+                key={story.storyId || index} 
+                className="flex flex-col items-center gap-2 min-w-[66px] cursor-pointer group"
+              >
                 <div className="w-[66px] h-[66px] rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 transition-transform active:scale-95">
                   <div className="w-full h-full rounded-full border-2 border-white overflow-hidden bg-gray-100">
                     <img 
@@ -39,7 +46,7 @@ export default function Home() {
                 <span className="text-[12px] text-black truncate w-[66px] text-center font-medium">
                   {story.userName}
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
 

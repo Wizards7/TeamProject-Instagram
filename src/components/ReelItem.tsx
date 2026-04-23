@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { useLocale } from "next-intl";
 import { IPost } from "../types/interface";
 import { useAddCommentMutation, useLikePostMutation } from "../api/post";
 
@@ -10,6 +12,7 @@ interface ReelItemProps {
 }
 
 const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
+  const locale = useLocale();
   const [likePost] = useLikePostMutation();
   const [addComment] = useAddCommentMutation();
   const [isPaused, setIsPaused] = useState(false);
@@ -124,10 +127,10 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4 pb-6 select-none pointer-events-none">
             <div className="flex flex-col gap-3 text-white max-w-[85%] pointer-events-auto">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full border border-white/50 overflow-hidden">
+                <Link href={`/${locale}/profile/${reel.userId}`} className="w-8 h-8 rounded-full border border-white/50 overflow-hidden cursor-pointer">
                   <img src={userImg} alt={reel.userName} className="w-full h-full object-cover" />
-                </div>
-                <span className="font-bold text-sm hover:underline cursor-pointer">{reel.userName}</span>
+                </Link>
+                <Link href={`/${locale}/profile/${reel.userId}`} className="font-bold text-sm hover:underline cursor-pointer">{reel.userName}</Link>
                 <button className="text-[12px] border border-white/50 px-3 py-1 rounded-lg font-bold hover:bg-white/10">Follow</button>
               </div>
               <p className="text-[14px] line-clamp-2 leading-snug">{reel.content || reel.title || "No caption"}</p>
@@ -187,14 +190,16 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
               {reel.comments?.length > 0 ? (
                 reel.comments.map((c) => (
                   <div key={c.postCommentId} className="flex gap-3 animate-fade-in text-gray-900">
-                    <img 
-                      src={c.userImage ? `${FILE_URL}${c.userImage}` : "/image.webp"} 
-                      className="w-8 h-8 rounded-full object-cover border border-gray-100"
-                      alt={c.userName}
-                    />
+                    <Link href={`/${locale}/profile/${c.userId}`} className="cursor-pointer shrink-0">
+                      <img 
+                        src={c.userImage ? `${FILE_URL}${c.userImage}` : "/image.webp"} 
+                        className="w-8 h-8 rounded-full object-cover border border-gray-100"
+                        alt={c.userName}
+                      />
+                    </Link>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs">{c.userName}</span>
+                        <Link href={`/${locale}/profile/${c.userId}`} className="font-bold text-xs hover:underline cursor-pointer">{c.userName}</Link>
                         <span className="text-[10px] text-gray-400 font-medium">{new Date(c.dateCommented).toLocaleDateString()}</span>
                       </div>
                       <p className="text-[13px] leading-tight mt-0.5">{c.comment}</p>

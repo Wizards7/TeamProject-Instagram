@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import Link from "next/link";
+import { useLocale } from "next-intl";
 import { FollowModalProps, IFollower } from "../types/interface";
 import {
   useAddFollowingRelationShipMutation,
@@ -10,6 +12,7 @@ import {
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
 export const FollowModal: React.FC<FollowModalProps> = ({ title, users, onClose }) => {
+  const locale = useLocale();
   const [followingState, setFollowingState] = useState<Record<string, boolean>>({});
   const [followUser] = useAddFollowingRelationShipMutation();
   const [unfollowUser] = useDeleteFollowingRelationShipMutation();
@@ -71,7 +74,7 @@ const FollowUserItem: React.FC<{
 
   return (
     <div className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg">
-      <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+      <Link href={`/${useLocale()}/profile/${user.id}`} className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 cursor-pointer">
         {user.image ? (
           <img src={`${FILE_URL}${user.image}`} className="w-full h-full object-cover" alt={user.userName} />
         ) : (
@@ -79,9 +82,9 @@ const FollowUserItem: React.FC<{
             {user.userName?.[0]}
           </div>
         )}
-      </div>
+      </Link>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm truncate">{user.userName}</p>
+        <Link href={`/${useLocale()}/profile/${user.id}`} className="font-semibold text-sm truncate hover:underline cursor-pointer block">{user.userName}</Link>
         <p className="text-xs text-gray-500 truncate">{user.fullName}</p>
       </div>
       <button
@@ -93,7 +96,7 @@ const FollowUserItem: React.FC<{
             : "bg-[#0095f6] text-white hover:bg-[#1877f2]"
         } ${checkingFollow ? "opacity-50 cursor-not-allowed" : ""}`}
       >
-        {checkingFollow ? (
+        {checkingFollow || followingState[user.id] !== undefined ? (
           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
         ) : isFollowing ? (
           "Following"

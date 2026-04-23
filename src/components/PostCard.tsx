@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { useLocale } from "next-intl";
 import { IPost } from "../types/interface";
 import { useLikePostMutation } from "../api/post";
 
@@ -9,6 +11,7 @@ interface PostCardProps {
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
+  const locale = useLocale();
   const [likePost] = useLikePostMutation();
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -112,7 +115,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       {/* Header */}
       <div className="flex items-center justify-between py-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full p-[1px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600">
+          <Link href={`/${locale}/profile/${post.userId}`} className="w-8 h-8 rounded-full p-[1px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600 cursor-pointer">
             <div className="w-full h-full rounded-full border border-white overflow-hidden bg-gray-100">
               {post.userImage ? (
                 <img src={`${FILE_URL}${post.userImage}`} className="w-full h-full object-cover" />
@@ -122,9 +125,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 </div>
               )}
             </div>
-          </div>
+          </Link>
           <div className="flex items-center gap-1.5 font-medium">
-            <span className="text-[13px] font-semibold text-black hover:opacity-60 cursor-pointer">{post.userName}</span>
+            <Link href={`/${locale}/profile/${post.userId}`} className="text-[13px] font-semibold text-black hover:opacity-60 cursor-pointer">
+              {post.userName}
+            </Link>
             <span className="text-gray-400 text-xs">• 1w</span>
           </div>
         </div>
@@ -156,7 +161,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         <div className="space-y-1">
           <p className="text-sm font-bold">{post.postLikeCount.toLocaleString()} likes</p>
           <div className="text-[14px]">
-            <span className="font-bold mr-2 text-black">{post.userName}</span>
+            <Link href={`/${locale}/profile/${post.userId}`} className="font-bold mr-2 text-black hover:opacity-60">
+              {post.userName}
+            </Link>
             <span className="text-gray-900 leading-relaxed">{post.content || post.title}</span>
           </div>
           <p className="text-sm text-gray-500 mt-2 hover:underline cursor-pointer">View all comments</p>

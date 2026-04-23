@@ -1,9 +1,12 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { useLocale } from "next-intl";
 import { useGetUsersQuery } from "../api/user";
 
 const Suggestions = () => {
+  const locale = useLocale();
   const { data: userData, isLoading } = useGetUsersQuery({ PageNumber: 1, PageSize: 5 });
   const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -20,7 +23,7 @@ const Suggestions = () => {
         {userData?.data?.map((user) => (
           <div key={user.id} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-100 bg-gray-50">
+              <Link href={`/${locale}/profile/${user.id}`} className="w-8 h-8 rounded-full overflow-hidden border border-gray-100 bg-gray-50 cursor-pointer">
                 {user.image ? (
                   <img src={`${FILE_URL}${user.image}`} className="w-full h-full object-cover" />
                 ) : (
@@ -28,11 +31,11 @@ const Suggestions = () => {
                     {user.userName[0]}
                   </div>
                 )}
-              </div>
+              </Link>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#262626] hover:underline cursor-pointer">
+                <Link href={`/${locale}/profile/${user.id}`} className="text-sm font-bold text-[#262626] hover:underline cursor-pointer">
                   {user.userName}
-                </span>
+                </Link>
                 <span className="text-xs text-gray-500">Followed by many</span>
               </div>
             </div>

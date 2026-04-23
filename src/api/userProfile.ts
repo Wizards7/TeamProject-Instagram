@@ -54,6 +54,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
         method: "POST",
         params: { followingUserId },
       }),
+      invalidatesTags: ["Profile", "Following"],
     }),
 
     deleteFollowingRelationShip: builder.mutation<void, { followingUserId: string }>({
@@ -62,6 +63,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
         method: "DELETE",
         params: { followingUserId },
       }),
+      invalidatesTags: ["Profile", "Following"],
     }),
 
     isFollowingUser: builder.query<{ data: boolean }, { followingUserId: string }>({
@@ -69,6 +71,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
         url: "/UserProfile/get-is-follow-user-profile-by-id",
         params: { followingUserId },
       }),
+      providesTags: ["Following"],
     }),
 
     updateUserProfile: builder.mutation<void, { about: string; gender: number }>({
