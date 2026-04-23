@@ -497,18 +497,8 @@ const ProfileUi = () => {
           </div>
         </div>
         <div className="flex-1 pt-2 text-black">
-          <div className="flex items-center justify-between mb-4 relative">
-            <h2 className="text-xl font-normal text-gray-900">
-              {profile.userName}
-            </h2>
-            <div className="relative">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-black"
-              >
-                <img src="/menu.svg" alt="Options" className="w-6 h-6" />
-              </button>
-
+          <div className="flex items-center gap-4 mb-5 flex-wrap">
+            <h2 className="text-xl font-light">{profile.userName}</h2>
             <div className="flex items-center gap-3">
               <Link
                 href="/profile/edit"
@@ -519,36 +509,45 @@ const ProfileUi = () => {
               <button className="px-4 py-1.5 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors border border-gray-200">
                 View archive
               </button>
-              {isMenuOpen && (
-                <>
-                  {/* Backdrop to close menu */}
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setIsMenuOpen(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-2 w-[260px] bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-gray-100 z-20 py-2 overflow-hidden">
-                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
-                      QR code
-                    </button>
-                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
-                      Notification
-                    </button>
-                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
-                      Settings and privacy
-                    </button>
-                    <div className="h-[1px] bg-gray-100 my-1" />
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        setShowLogoutModal(true);
-                      }}
-                      className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-[#ed4956] font-medium"
-                    >
-                      Log out
-                    </button>
-                  </div>
-                </>
-              )}
+              <div className="relative">
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-black"
+                >
+                  <img src="/menu.svg" alt="Options" className="w-6 h-6" />
+                </button>
+
+                {isMenuOpen && (
+                  <>
+                    {/* Backdrop to close menu */}
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setIsMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 w-[260px] bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-gray-100 z-20 py-2 overflow-hidden">
+                      <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                        QR code
+                      </button>
+                      <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                        Notification
+                      </button>
+                      <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                        Settings and privacy
+                      </button>
+                      <div className="h-[1px] bg-gray-100 my-1" />
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setShowLogoutModal(true);
+                        }}
+                        className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-[#ed4956] font-medium"
+                      >
+                        Log out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -585,15 +584,6 @@ const ProfileUi = () => {
             </button>
           </div>
         </div>
-      </div>
-
-      <div className="flex gap-2 mb-12">
-        <button className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black">
-          Edit Profile
-        </button>
-        <button className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black">
-          View archive
-        </button>
       </div>
 
       <div className="flex gap-8 mb-12 px-4">

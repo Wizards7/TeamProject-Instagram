@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Link, usePathname } from "@/src/i18n/navigation";
-import { useGetMyProfileQuery } from "../api/userProfile";
+import { useGetMyProfileQuery } from "@/src/api/userProfile";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -25,7 +25,7 @@ export default function MobileNav() {
       icon: (active: boolean) => (
         <svg aria-label="Search" color="black" fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
           <path d="M19 10.5A8.5 8.5 0 1110.5 2a8.5 8.5 0 018.5 8.5z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? "3" : "2"}></path>
-          <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? "3" : "2"} x1="16.511" x2="22" y1="16.511" x2="22" y1="16.511" y2="22"></line>
+          <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? "3" : "2"} x1="16.511" x2="22" y1="16.511" y2="22"></line>
         </svg>
       )
     },
