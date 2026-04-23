@@ -554,7 +554,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
                             )}
                           </motion.div>
                           {index % 7 === 1 && <div className={`absolute -bottom-2 ${isMine ? "right-2" : "left-2"} bg-white rounded-full px-1.5 py-0.5 shadow-md border border-gray-100 flex items-center gap-0.5 scale-90 z-20`}><span className="text-[12px]">❤️</span></div>}
-                          <AnimatePresence>
+                          <AnimatePresence> 
                             {activeMessageMenu === msg.messageId && (
                               <div ref={msgMenuRef} className={`absolute z-[100] ${isMine ? "right-full mr-3 bottom-0" : "left-full ml-3 bottom-0"}`}>
                                 <motion.div initial={{ opacity: 0, scale: 0.9, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 15 }} className="w-52 bg-[#1c1c1e]/95 backdrop-blur-xl rounded-[20px] shadow-2xl overflow-hidden border border-white/10">
