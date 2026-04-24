@@ -77,9 +77,9 @@ const sidebarItems = [
         style={
           active
             ? {
-                filter:
-                  "invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)",
-              }
+              filter:
+                "invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)",
+            }
             : {}
         }
       />
@@ -96,9 +96,9 @@ const sidebarItems = [
         style={
           active
             ? {
-                filter:
-                  "invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)",
-              }
+              filter:
+                "invert(48%) sepia(82%) saturate(2423%) hue-rotate(185deg) brightness(101%) contrast(101%)",
+            }
             : { filter: "brightness(0)" }
         }
       />

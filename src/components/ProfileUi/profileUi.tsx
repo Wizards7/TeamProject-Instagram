@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import { useRouter, Link, usePathname } from "@/src/i18n/navigation";
 import { useLocale } from "next-intl";
@@ -50,8 +51,8 @@ const PostThumbnail: React.FC<{ post: IPost; onClick: () => void }> = ({
             alt="post"
             className="w-full h-full object-cover"
             onError={(e) =>
-              (e.currentTarget.src =
-                "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400")
+            (e.currentTarget.src =
+              "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400")
             }
           />
         )
@@ -131,8 +132,8 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
                   src={`${FILE_URL}${post.userImage}`}
                   className="w-full h-full object-cover"
                   onError={(e) =>
-                    (e.currentTarget.src =
-                      "/istockphoto-2151669184-612x612.jpg")
+                  (e.currentTarget.src =
+                    "/istockphoto-2151669184-612x612.jpg")
                   }
                 />
               ) : (
@@ -158,8 +159,8 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
                       src={`${FILE_URL}${post.userImage}`}
                       className="w-full h-full object-cover"
                       onError={(e) =>
-                        (e.currentTarget.src =
-                          "/istockphoto-2151669184-612x612.jpg")
+                      (e.currentTarget.src =
+                        "/istockphoto-2151669184-612x612.jpg")
                       }
                     />
                   ) : (
@@ -533,12 +534,20 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
   return (
     <div className="max-w-[935px] mx-auto px-4 py-8 text-black bg-white">
       {/* Profile header */}
-      <div className="flex items-start gap-8 md:gap-20 mb-12">
+      <div className="flex items-start gap-8 md:gap-20 mb-5">
         <div
           className="shrink-0 relative group"
           onClick={() => setShowAvatarPreview(true)}
         >
-          <div className="w-[80px] h-[80px] md:w-[150px] md:h-[150px] rounded-full overflow-hidden bg-gray-50 border border-gray-200 cursor-pointer">
+          {/* Note bubble */}
+          <div className="absolute -top-3 -right-2 z-10">
+            <div className="bg-gray-100 border border-gray-200 text-[11px] text-gray-500 px-3 py-1.5 rounded-2xl shadow-xl relative animate-in fade-in zoom-in duration-300">
+              Заметка...
+              <div className="absolute -bottom-1 left-2 w-2 h-2 bg-gray-100 border-r border-b border-gray-200 rotate-45"></div>
+            </div>
+          </div>
+
+          <div className="w-[80px] h-[80px] md:w-[150px] md:h-[150px] rounded-full overflow-hidden bg-gray-100 border border-black/10 cursor-pointer">
             {profile.image ? (
               <img
                 src={`${FILE_URL}${profile.image}`}
@@ -549,10 +558,10 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
                 }
               />
             ) : (
-              <div className="w-full h-full bg-gray-50 flex items-center justify-center">
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                 <svg
                   viewBox="0 0 24 24"
-                  className="w-2/3 h-2/3 text-gray-200"
+                  className="w-2/3 h-2/3 text-gray-400"
                   fill="currentColor"
                 >
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
@@ -560,28 +569,18 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
               </div>
             )}
           </div>
-          {/* Camera icon overlay - only if my profile */}
-          {isMyProfile && (
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-full cursor-pointer">
-              <svg fill="white" height="32" viewBox="0 0 24 24" width="32">
-                <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z" />
-                <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z" />
-              </svg>
-            </div>
-          )}
         </div>
-        <div className="flex-1 pt-2 text-black">
-          <div className="flex items-center justify-between mb-4 relative">
-            <div className="flex items-center gap-4">
-              <h2 className="text-sm md:text-xl font-normal text-gray-900">
-                {profile.userName}
-              </h2>
-            </div>
 
+        <div className="flex-1 pt-2">
+          {/* Row 1: Username and Gear */}
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl md:text-2xl font-semibold text-black">
+              {profile.userName}
+            </h2>
             <div className="relative">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-black"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-black flex items-center justify-center"
               >
                 <img src="/menu.svg" alt="Options" className="w-6 h-6" />
               </button>
@@ -592,14 +591,14 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
                     className="fixed inset-0 z-10"
                     onClick={() => setIsMenuOpen(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-[260px] bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-gray-100 z-20 py-2 overflow-hidden">
-                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                  <div className="absolute right-0 top-full mt-2 w-[260px] bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-gray-200 z-20 py-2 overflow-hidden">
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-black">
                       QR code
                     </button>
-                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-black">
                       Notification
                     </button>
-                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-gray-900">
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-black">
                       Settings and privacy
                     </button>
                     {isMyProfile && (
@@ -610,7 +609,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
                             setIsMenuOpen(false);
                             setShowLogoutModal(true);
                           }}
-                          className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-50 transition-colors text-[#ed4956] font-medium"
+                          className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-[#ed4956] font-medium"
                         >
                           Log out
                         </button>
@@ -622,12 +621,23 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-5 mb-6 text-black">
+          {/* Row 2: Full Name */}
+          <div className="mb-4 flex items-center gap-2">
+            <p className="text-[15px] text-black">
+              {profile.firstName}
+            </p>
+            <p className="text-[15px] text-black">
+              {profile.lastName}
+            </p>
+          </div>
+
+          {/* Row 3: Stats */}
+          <div className="flex items-center gap-4 text-black">
             <div className="text-sm md:text-[15px]">
               <span className="font-bold mr-1">
                 {profile.postCount ?? displayedPosts.length}
               </span>
-              <span className="text-gray-900">posts</span>
+              <span className="text-black/60">публикация</span>
             </div>
             <button
               onClick={() => setFollowModal({ type: "followers", open: true })}
@@ -636,7 +646,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
               <span className="font-bold mr-1">
                 {(profile.followersCount ?? 0).toLocaleString()}
               </span>
-              <span className="text-gray-900">follower</span>
+              <span className="text-black/60">подписчик</span>
             </button>
             <button
               onClick={() => setFollowModal({ type: "following", open: true })}
@@ -645,36 +655,32 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
               <span className="font-bold mr-1">
                 {(profile.followingCount ?? 0).toLocaleString()}
               </span>
-              <span className="text-gray-900">following</span>
+              <span className="text-black/60">подписок</span>
             </button>
-          </div>
-
-          <div className="mb-4">
-            <p className="font-semibold text-sm text-gray-900">
-              {profile.fullName || profile.userName}
-            </p>
-
-            {profile.about && (
-              <p className="text-sm mt-1 whitespace-pre-line">
-                {profile.about}
-              </p>
-            )}
           </div>
         </div>
       </div>
 
+      {profile.about && (
+        <div className="mb-6 px-1">
+          <p className="text-sm font-normal whitespace-pre-line text-black leading-relaxed">
+            {profile.about}
+          </p>
+        </div>
+      )}
+
       {/* Action Buttons Row */}
-      <div className="flex gap-2 mb-12">
+      <div className="flex gap-2 mb-10">
         {isMyProfile ? (
           <>
             <Link
               href="/profile/edit"
-              className="flex-1 text-center py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black"
+              className="flex-1 text-center py-2 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black"
             >
-              Edit Profile
+              Редактировать профиль
             </Link>
-            <button className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black">
-              View archive
+            <button className="flex-1 py-2 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black">
+              Посмотреть архив
             </button>
           </>
         ) : (
@@ -682,11 +688,10 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             <button
               onClick={handleFollow}
               disabled={isFollowingLoading || isUnfollowingLoading}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                isFollowing
-                  ? "bg-[#efefef] hover:bg-gray-200 text-black"
-                  : "bg-[#0095f6] text-white hover:bg-[#1877f2]"
-              }`}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${isFollowing
+                ? "bg-gray-100 hover:bg-gray-200 text-black"
+                : "bg-[#0095f6] text-white hover:bg-[#1877f2]"
+                }`}
             >
               {isFollowingLoading || isUnfollowingLoading
                 ? "..."
@@ -696,7 +701,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             </button>
             <button
               onClick={handleMessageClick}
-              className="flex-1 py-2 bg-[#efefef] text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black"
+              className="flex-1 py-2 bg-gray-100 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors text-black"
             >
               Message
             </button>
@@ -704,8 +709,9 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         )}
       </div>
 
+      {/* Highlights Section */}
       {isMyProfile && (
-        <div className="flex gap-8 mb-12 px-4">
+        <div className="flex gap-8 mb-12">
           <div className="flex flex-col items-center gap-2 group cursor-pointer">
             <div className="w-[77px] h-[77px] rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-gray-50 transition-colors">
               <svg
@@ -720,7 +726,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
                 <path d="M21 11.3h-8.2V3c0-.4-.3-.8-.8-.8s-.8.4-.8.8v8.2H3c-.4 0-.8.3-.8.8s.4.8.8.8h8.2V21c0 .4.3.8.8.8s.8-.4.8-.8v-8.2H21c.4 0 .8-.3.8-.8s-.4-.8-.8-.8z"></path>
               </svg>
             </div>
-            <span className="text-xs font-semibold text-gray-900">New</span>
+            <span className="text-xs font-semibold text-black">Добавить</span>
           </div>
         </div>
       )}
@@ -729,11 +735,10 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         <div className="flex items-center justify-center gap-16">
           <button
             onClick={() => setActiveTab("posts")}
-            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
-              activeTab === "posts"
-                ? "border-black text-black"
-                : "border-transparent text-gray-400 hover:text-gray-500"
-            }`}
+            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${activeTab === "posts"
+              ? "border-black text-black"
+              : "border-transparent text-gray-400 hover:text-gray-500"
+              }`}
           >
             <svg
               aria-label="Posts"
@@ -795,11 +800,10 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
           </button>
           <button
             onClick={() => setActiveTab("reels")}
-            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
-              activeTab === "reels"
-                ? "border-black text-black"
-                : "border-transparent text-gray-400 hover:text-gray-500"
-            }`}
+            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${activeTab === "reels"
+              ? "border-black text-black"
+              : "border-transparent text-gray-400 hover:text-gray-500"
+              }`}
           >
             <svg
               aria-label="Reels"
@@ -832,11 +836,10 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
           {isMyProfile && (
             <button
               onClick={() => setActiveTab("saved")}
-              className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
-                activeTab === "saved"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-400 hover:text-gray-500"
-              }`}
+              className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${activeTab === "saved"
+                ? "border-black text-black"
+                : "border-transparent text-gray-400 hover:text-gray-500"
+                }`}
             >
               <svg
                 aria-label="Saved"
