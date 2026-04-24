@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { IPost } from "../types/interface";
 import { useAddCommentMutation, useLikePostMutation, useAddPostFavoriteMutation, useDeleteCommentMutation } from "../api/post";
 import { ShareModal } from "./ShareModal";
+import { addNotification } from "../utils/notifications";
 
 interface ReelItemProps {
   reel: IPost;
@@ -58,9 +59,24 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
     }
   };
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    likePost(reel.postId);
+    try {
+      await likePost(reel.postId).unwrap();
+      if (!reel.postLike) {
+        addNotification({
+          type: "like",
+          userId: reel.userId,
+          userName: reel.userName,
+          userImage: reel.userImage,
+          postId: reel.postId,
+          postImage: reel.images?.[0],
+          content: "liked your reel.",
+        });
+      }
+    } catch (err) {
+      console.error("Like failed", err);
+    }
   };
 
   const handleFavorite = (e: React.MouseEvent) => {
@@ -73,6 +89,15 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
     if (!commentText.trim()) return;
     try {
       await addComment({ postId: reel.postId, comment: commentText }).unwrap();
+      addNotification({
+        type: "comment",
+        userId: reel.userId,
+        userName: reel.userName,
+        userImage: reel.userImage,
+        postId: reel.postId,
+        postImage: reel.images?.[0],
+        content: `commented on your reel: ${commentText}`,
+      });
       setCommentText("");
     } catch (err) {
       console.error("Failed to add comment", err);

@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { IPost } from "../types/interface";
 import { useLikePostMutation, useAddCommentMutation, useAddPostFavoriteMutation, useDeleteCommentMutation } from "../api/post";
 import { ShareModal } from "./ShareModal";
+import { addNotification } from "../utils/notifications";
 
 interface PostCardProps {
   post: IPost;
@@ -44,11 +45,39 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     return () => observer.disconnect();
   }, []);
 
+  const handleLike = async () => {
+    try {
+      await likePost(post.postId).unwrap();
+      if (!post.postLike) { // If we are liking
+        addNotification({
+          type: "like",
+          userId: post.userId,
+          userName: post.userName,
+          userImage: post.userImage,
+          postId: post.postId,
+          postImage: post.images?.[0],
+          content: "liked your post.",
+        });
+      }
+    } catch (err) {
+      console.error("Like failed", err);
+    }
+  };
+
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim()) return;
     try {
       await addComment({ postId: post.postId, comment: commentText }).unwrap();
+      addNotification({
+        type: "comment",
+        userId: post.userId,
+        userName: post.userName,
+        userImage: post.userImage,
+        postId: post.postId,
+        postImage: post.images?.[0],
+        content: `commented: ${commentText}`,
+      });
       setCommentText("");
     } catch (error) {
       console.error("Failed to add comment:", error);
@@ -173,7 +202,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       <div className="py-3 px-1">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4 text-[#262626]">
-            <button onClick={() => likePost(post.postId)} className="hover:opacity-60 transform active:scale-125 transition-all">
+            <button onClick={handleLike} className="hover:opacity-60 transform active:scale-125 transition-all">
               {post.postLike ? (
                 <svg color="#ff3040" fill="#ff3040" height="24" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z"></path></svg>
               ) : (

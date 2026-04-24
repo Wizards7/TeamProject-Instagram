@@ -5,6 +5,7 @@ import { Link, usePathname } from "@/src/i18n/navigation";
 import { AnimatePresence } from "framer-motion";
 import { logoutUser } from "../../utils/token";
 import { useGetMyProfileQuery } from "../../api/userProfile";
+import { useNotifications } from "../../utils/notifications";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -107,24 +108,29 @@ const sidebarItems = [
   {
     label: "Notifications",
     href: "/notification",
-    icon: (active: boolean) => (
-      <svg
-        aria-label="Notifications"
-        color={active ? "#0095f6" : "#262626"}
-        fill={active ? "#0095f6" : "none"}
-        height="24"
-        role="img"
-        viewBox="0 0 24 24"
-        width="24"
-      >
-        <path
-          d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-        ></path>
-      </svg>
+    icon: (active: boolean, hasUnread?: boolean) => (
+      <div className="relative">
+        <svg
+          aria-label="Notifications"
+          color={active ? "#0095f6" : "#262626"}
+          fill={active ? "#0095f6" : "none"}
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+        >
+          <path
+            d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          ></path>
+        </svg>
+        {hasUnread && (
+          <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#ed4956] border-2 border-white rounded-full" />
+        )}
+      </div>
     ),
   },
   {
@@ -187,6 +193,8 @@ export default function Sidebar() {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const notifications = useNotifications();
+  const hasUnread = notifications.some(n => !n.isRead);
 
   const { data: profileData } = useGetMyProfileQuery();
   const profile = profileData?.data;
@@ -219,7 +227,9 @@ export default function Sidebar() {
                     ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
                 >
                   <div className="transition-transform duration-200 group-hover:scale-110">
-                    {item.icon(isActive)}
+                    {item.label === "Notifications" 
+                      ? (item.icon as any)(isActive, hasUnread) 
+                      : (item.icon as any)(isActive)}
                   </div>
                   <span
                     className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}
@@ -238,7 +248,9 @@ export default function Sidebar() {
                   ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
               >
                 <div className="transition-transform duration-200 group-hover:scale-110">
-                  {item.icon(isActive)}
+                  {item.label === "Notifications" 
+                    ? (item.icon as any)(isActive, hasUnread) 
+                    : (item.icon as any)(isActive)}
                 </div>
                 <span
                   className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}

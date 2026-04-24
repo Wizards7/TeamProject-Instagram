@@ -16,6 +16,7 @@ import {
   useDeleteFollowingRelationShipMutation,
 } from "../../api/userProfile";
 import { useGetPostsQuery, useViewPostMutation } from "../../api/post";
+import { addNotification } from "../../utils/notifications";
 import { useCreateChatMutation } from "../../api/chat";
 import { FollowModal } from "../FollowModal";
 import { logoutUser } from "@/src/utils/token";
@@ -434,6 +435,14 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         await deleteFollow({ followingUserId: userId }).unwrap();
       } else {
         await addFollow({ followingUserId: userId }).unwrap();
+        // Simulation: Notify current user that they followed someone (or someone followed them)
+        addNotification({
+          type: "follow",
+          userId: profile?.userId || profile?.id || userId,
+          userName: profile?.userName || "User",
+          userImage: profile?.image || null,
+          content: "started following you.",
+        });
       }
     } catch (err) {
       console.error("Follow action failed", err);
@@ -632,30 +641,30 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
           </div>
 
           {/* Row 3: Stats */}
-          <div className="flex items-center gap-4 text-black">
-            <div className="text-sm md:text-[15px]">
-              <span className="font-bold mr-1">
+          <div className="flex items-center gap-6 md:gap-10 text-black border-y md:border-none py-3 md:py-0 border-gray-100">
+            <div className="flex flex-col md:flex-row items-center gap-1">
+              <span className="font-bold text-[16px]">
                 {profile.postCount ?? displayedPosts.length}
               </span>
-              <span className="text-black/60">публикация</span>
+              <span className="text-gray-500 text-[14px]">posts</span>
             </div>
             <button
               onClick={() => setFollowModal({ type: "followers", open: true })}
-              className="text-sm md:text-[15px] hover:opacity-70 transition-opacity"
+              className="flex flex-col md:flex-row items-center gap-1 hover:opacity-70 transition-opacity"
             >
-              <span className="font-bold mr-1">
+              <span className="font-bold text-[16px]">
                 {(profile.followersCount ?? 0).toLocaleString()}
               </span>
-              <span className="text-black/60">подписчик</span>
+              <span className="text-gray-500 text-[14px]">followers</span>
             </button>
             <button
               onClick={() => setFollowModal({ type: "following", open: true })}
-              className="text-sm md:text-[15px] hover:opacity-70 transition-opacity"
+              className="flex flex-col md:flex-row items-center gap-1 hover:opacity-70 transition-opacity"
             >
-              <span className="font-bold mr-1">
+              <span className="font-bold text-[16px]">
                 {(profile.followingCount ?? 0).toLocaleString()}
               </span>
-              <span className="text-black/60">подписок</span>
+              <span className="text-gray-500 text-[14px]">following</span>
             </button>
           </div>
         </div>
@@ -731,132 +740,37 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         </div>
       )}
 
-      <div className="border-t border-gray-200">
-        <div className="flex items-center justify-center gap-16">
+      <div className="border-t border-gray-200 mt-4 md:mt-0">
+        <div className="flex items-center justify-center gap-12 md:gap-16">
           <button
             onClick={() => setActiveTab("posts")}
-            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${activeTab === "posts"
-              ? "border-black text-black"
-              : "border-transparent text-gray-400 hover:text-gray-500"
+            className={`flex items-center gap-1.5 py-3 md:py-4 text-[12px] font-semibold tracking-[1.2px] border-t transition-all duration-200 ${activeTab === "posts"
+              ? "border-black text-black -mt-[1px]"
+              : "border-transparent text-gray-500 hover:text-black"
               }`}
           >
-            <svg
-              aria-label="Posts"
-              color="currentColor"
-              fill="currentColor"
-              height="12"
-              role="img"
-              viewBox="0 0 24 24"
-              width="12"
-            >
-              <rect
-                fill="none"
-                height="18"
-                rx="0"
-                stroke="currentColor"
-                strokeWidth="2"
-                width="18"
-                x="3"
-                y="3"
-              ></rect>
-              <line
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                x1="9"
-                x2="9"
-                y1="3"
-                y2="21"
-              ></line>
-              <line
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                x1="15"
-                x2="15"
-                y1="3"
-                y2="21"
-              ></line>
-              <line
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                x1="3"
-                x2="21"
-                y1="9"
-                y2="9"
-              ></line>
-              <line
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                x1="3"
-                x2="21"
-                y1="15"
-                y2="15"
-              ></line>
-            </svg>
+            <svg aria-label="" color="currentColor" fill="currentColor" height="12" role="img" viewBox="0 0 24 24" width="12"><rect fill="none" height="18" rx="0" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="18" x="3" y="3"></rect><line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="9.015" x2="9.015" y1="3" y2="21"></line><line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="14.985" x2="14.985" y1="3" y2="21"></line><line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="21" x2="3" y1="9.015" y2="9.015"></line><line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="21" x2="3" y1="14.985" y2="14.985"></line></svg>
             POSTS
           </button>
           <button
             onClick={() => setActiveTab("reels")}
-            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${activeTab === "reels"
-              ? "border-black text-black"
-              : "border-transparent text-gray-400 hover:text-gray-500"
+            className={`flex items-center gap-1.5 py-3 md:py-4 text-[12px] font-semibold tracking-[1.2px] border-t transition-all duration-200 ${activeTab === "reels"
+              ? "border-black text-black -mt-[1px]"
+              : "border-transparent text-gray-500 hover:text-black"
               }`}
           >
-            <svg
-              aria-label="Reels"
-              color="currentColor"
-              fill="currentColor"
-              height="12"
-              role="img"
-              viewBox="0 0 24 24"
-              width="12"
-            >
-              <rect
-                height="18"
-                rx="2"
-                width="18"
-                x="3"
-                y="3"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <path
-                d="M7 3v18M17 3v18M3 7h4M3 12h4M3 17h4M17 7h4M17 12h4M17 17h4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-            </svg>
+            <svg aria-label="" color="currentColor" fill="currentColor" height="12" role="img" viewBox="0 0 24 24" width="12"><line fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" x1="2.049" x2="21.951" y1="7.002" y2="7.002"></line><line fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" x1="2.049" x2="21.951" y1="17.002" y2="17.002"></line><rect fill="none" height="19.901" rx="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="19.901" x="2.049" y="2.049"></rect><path d="M11.666 14.538l6.721-3.993a.5.5 0 000-.862l-6.721-3.993A.5.5 0 0011 6.121V14.11a.5.5 0 00.666.428z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path></svg>
             REELS
           </button>
           {isMyProfile && (
             <button
               onClick={() => setActiveTab("saved")}
-              className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${activeTab === "saved"
-                ? "border-black text-black"
-                : "border-transparent text-gray-400 hover:text-gray-500"
+              className={`flex items-center gap-1.5 py-3 md:py-4 text-[12px] font-semibold tracking-[1.2px] border-t transition-all duration-200 ${activeTab === "saved"
+                ? "border-black text-black -mt-[1px]"
+                : "border-transparent text-gray-500 hover:text-black"
                 }`}
             >
-              <svg
-                aria-label="Saved"
-                color="currentColor"
-                fill="currentColor"
-                height="12"
-                role="img"
-                viewBox="0 0 24 24"
-                width="12"
-              >
-                <polygon
-                  fill="none"
-                  points="20 21 12 13.44 4 21 4 3 20 3 20 21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                ></polygon>
-              </svg>
+              <svg aria-label="" color="currentColor" fill="currentColor" height="12" role="img" viewBox="0 0 24 24" width="12"><polygon fill="none" points="20 21 12 13.44 4 21 4 3 20 3 20 21" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></polygon></svg>
               SAVED
             </button>
           )}
@@ -933,7 +847,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             className="relative max-w-[90vw] max-h-[90vh] bg-white rounded-full overflow-hidden aspect-square flex items-center justify-center shadow-2xl border-4 border-white/20"
             onClick={(e) => e.stopPropagation()}
           >
-            {profile.image ? (
+            {profile?.image ? (
               <img
                 src={`${FILE_URL}${profile.image}`}
                 alt={profile.userName}
