@@ -556,7 +556,13 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
     return [];
   };
 
-  const myStories = useMemo(() => getStoriesArray(myStoriesData?.data), [myStoriesData]);
+  const myStories = useMemo(() => {
+    const stories = getStoriesArray(myStoriesData?.data);
+    if (isMyProfile && myProfileData?.data?.id) {
+      return stories.map((s: any) => ({ ...s, userId: myProfileData.data.id }));
+    }
+    return stories;
+  }, [myStoriesData, isMyProfile, myProfileData]);
   const otherUserStories = useMemo(() => getStoriesArray(otherUserStoriesData?.data), [otherUserStoriesData]);
   const activeStories = isMyProfile ? myStories : otherUserStories;
 

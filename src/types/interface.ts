@@ -139,6 +139,8 @@ export interface IStory {
   userAvatar: string | null;
   userName?: string; // Often needed for UI
   viewerDto?: IStoryViewer;
+  liked?: boolean;
+  likedCount?: number;
 }
 
 export interface IStoryViewResponse {
