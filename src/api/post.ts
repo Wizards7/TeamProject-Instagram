@@ -51,9 +51,48 @@ export const postApi = apiSlice.injectEndpoints({
       query: ({ postId, comment }) => ({
         url: `/Post/add-comment`,
         method: "POST",
-        params: { postId, comment },
+        body: { postId, comment },
       }),
       invalidatesTags: ["Post"],
+    }),
+    deleteComment: builder.mutation<void, number>({
+      query: (commentId) => ({
+        url: `/Post/delete-comment?commentId=${commentId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Post"],
+    }),
+    addPostFavorite: builder.mutation<void, number>({
+      query: (postId) => ({
+        url: `/Post/add-post-favorite`,
+        method: "POST",
+        body: { postId },
+      }),
+      async onQueryStarted(postId, { dispatch, queryFulfilled }) {
+        const patchFeed = dispatch(
+          postApi.util.updateQueryData("getPosts", undefined, (draft) => {
+            const post = draft.data.find((p) => p.postId === postId);
+            if (post) {
+              post.postFavorite = !post.postFavorite;
+            }
+          })
+        );
+        const patchReels = dispatch(
+          postApi.util.updateQueryData("getReels", undefined, (draft) => {
+            const reel = draft.data.find((p) => p.postId === postId);
+            if (reel) {
+              reel.postFavorite = !reel.postFavorite;
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchFeed.undo();
+          patchReels.undo();
+        }
+      },
+      invalidatesTags: ["Post", "Profile"],
     }),
     addPost: builder.mutation<void, FormData>({
       query: (formData) => ({
@@ -77,6 +116,8 @@ export const {
   useLikePostMutation, 
   useGetReelsQuery, 
   useAddCommentMutation,
+  useDeleteCommentMutation,
+  useAddPostFavoriteMutation,
   useAddPostMutation,
   useViewPostMutation 
 } = postApi;

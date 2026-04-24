@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { IPost } from "../types/interface";
-import { useLikePostMutation } from "../api/post";
+import { useLikePostMutation, useAddCommentMutation, useAddPostFavoriteMutation, useDeleteCommentMutation } from "../api/post";
 
 interface PostCardProps {
   post: IPost;
@@ -13,9 +13,14 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const locale = useLocale();
   const [likePost] = useLikePostMutation();
+  const [addComment] = useAddCommentMutation();
+  const [addFavorite] = useAddPostFavoriteMutation();
+  const [deleteComment] = useDeleteCommentMutation();
+  const [commentText, setCommentText] = useState("");
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showCenterIcon, setShowCenterIcon] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -36,6 +41,27 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     if (videoRef.current) observer.observe(videoRef.current);
     return () => observer.disconnect();
   }, []);
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+    try {
+      await addComment({ postId: post.postId, comment: commentText }).unwrap();
+      setCommentText("");
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (window.confirm("Delete this comment?")) {
+      try {
+        await deleteComment(commentId).unwrap();
+      } catch (err) {
+        console.error("Failed to delete comment:", err);
+      }
+    }
+  };
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -155,7 +181,13 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22l-1.344-4.992z"></path></svg>
             <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><line x1="22" y1="3" x2="9.218" y2="10.083"></line><polygon points="11.698 20.334 22 3.001 2 3.001 9.218 10.083 11.698 20.334"></polygon></svg>
           </div>
-          <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><polygon points="20 21 12 13.44 4 21 4 3 20 3 20 21"></polygon></svg>
+          <button onClick={() => addFavorite(post.postId)} className="hover:opacity-60 transform active:scale-125 transition-all">
+            {post.postFavorite ? (
+              <svg color="black" fill="black" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><polygon points="20 21 12 13.44 4 21 4 3 20 3 20 21"></polygon></svg>
+            ) : (
+              <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><polygon points="20 21 12 13.44 4 21 4 3 20 3 20 21"></polygon></svg>
+            )}
+          </button>
         </div>
 
         <div className="space-y-1">
@@ -166,7 +198,68 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             </Link>
             <span className="text-gray-900 leading-relaxed">{post.content || post.title}</span>
           </div>
-          <p className="text-sm text-gray-500 mt-2 hover:underline cursor-pointer">View all comments</p>
+          
+          {/* Comments List */}
+          {post.comments && post.comments.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {(showAllComments ? post.comments : post.comments.slice(-3)).map((c) => (
+                <div key={c.postCommentId} className="group flex items-start justify-between text-[14px]">
+                  <div className="flex items-start gap-2 flex-1">
+                    <Link href={`/${locale}/profile/${c.userId}`} className="shrink-0 mt-0.5">
+                      <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-100 border border-gray-100">
+                        {c.userImage ? (
+                          <img src={`${FILE_URL}${c.userImage}`} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[8px] font-bold text-gray-400 bg-gray-50 uppercase">
+                            {c.userName?.[0]}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                    <div className="flex-1">
+                      <Link href={`/${locale}/profile/${c.userId}`} className="font-bold mr-2 text-black hover:opacity-60 inline">
+                        {c.userName}
+                      </Link>
+                      <span className="text-gray-800 break-words leading-tight">{c.comment}</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleDeleteComment(c.postCommentId)}
+                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all ml-2 p-1"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {post.commentCount > 3 && (
+            <button 
+              onClick={() => setShowAllComments(!showAllComments)}
+              className="text-sm text-gray-500 mt-2 hover:opacity-60 transition-opacity font-medium"
+            >
+              {showAllComments ? "Hide comments" : `View all ${post.commentCount} comments`}
+            </button>
+          )}
+          
+          {/* Add Comment Input */}
+          <form onSubmit={handleAddComment} className="mt-3 flex items-center border-t border-gray-100 pt-3">
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-500"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+            />
+            <button 
+              type="submit" 
+              disabled={!commentText.trim()}
+              className="text-[#0095f6] font-semibold text-sm disabled:opacity-30 hover:text-[#00376b] transition-colors ml-2"
+            >
+              Post
+            </button>
+          </form>
         </div>
       </div>
     </div>
