@@ -12,7 +12,7 @@ import {
   useGetMyProfileQuery
 } from "../api/userProfile";
 import { ShareModal } from "./ShareModal";
-import { addNotification } from "../utils/notifications";
+
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -50,7 +50,7 @@ const PostCard = ({ post }: { post: IPost }) => {
 
   const handleLike = async () => {
     try {
-      await likePost({ postId: post.postId }).unwrap();
+      await likePost(post.postId).unwrap();
     } catch (err) {
       console.error("Like failed", err);
     }
@@ -305,6 +305,7 @@ const PostCard = ({ post }: { post: IPost }) => {
 
       {showShareModal && (
         <ShareModal 
+          postId={post.postId}
           onClose={() => setShowShareModal(false)} 
           postUrl={typeof window !== 'undefined' ? `${window.location.origin}/${locale}/post/${post.postId}` : ""} 
         />
