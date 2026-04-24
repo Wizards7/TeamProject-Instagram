@@ -573,53 +573,52 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
 
         <div className="flex-1 pt-2">
           {/* Row 1: Username and Gear */}
-          <div className="flex w-[60%] items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-xl md:text-2xl font-semibold text-black">
               {profile.userName}
             </h2>
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-1 hover:opacity-70 transition-opacity"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="black" className="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
+            <div className="relative">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-black flex items-center justify-center"
+              >
+                <img src="/menu.svg" alt="Options" className="w-6 h-6" />
+              </button>
 
-            </button>
-
-            {isMenuOpen && (
-              <div className="relative">
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setIsMenuOpen(false)}
-                />
-                <div className="absolute left-0 top-full mt-2 w-[260px] bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-gray-200 z-20 py-2 overflow-hidden">
-                  <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-black">
-                    QR code
-                  </button>
-                  <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-black">
-                    Notification
-                  </button>
-                  <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-black">
-                    Settings and privacy
-                  </button>
-                  {isMyProfile && (
-                    <>
-                      <div className="h-[1px] bg-gray-100 my-1" />
-                      <button
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          setShowLogoutModal(true);
-                        }}
-                        className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-[#ed4956] font-medium"
-                      >
-                        Log out
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
+              {isMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setIsMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-[260px] bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-gray-200 z-20 py-2 overflow-hidden">
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-black">
+                      QR code
+                    </button>
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-black">
+                      Notification
+                    </button>
+                    <button className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-black">
+                      Settings and privacy
+                    </button>
+                    {isMyProfile && (
+                      <>
+                        <div className="h-[1px] bg-gray-100 my-1" />
+                        <button
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setShowLogoutModal(true);
+                          }}
+                          className="w-full px-4 py-3 text-left text-[15px] hover:bg-gray-100 transition-colors text-[#ed4956] font-medium"
+                        >
+                          Log out
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Row 2: Full Name */}
@@ -663,8 +662,8 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
       </div>
 
       {profile.about && (
-        <div className="mb-8 ml-10">
-          <p className="text-lg font-semibold  whitespace-pre-line text-black/80">
+        <div className="mb-6 px-1">
+          <p className="text-sm font-normal whitespace-pre-line text-black leading-relaxed">
             {profile.about}
           </p>
         </div>
