@@ -592,13 +592,13 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         await deleteFollow({ followingUserId: targetId }).unwrap();
       } else {
         await addFollow({ followingUserId: targetId }).unwrap();
-        // Simulation: Notify target user
+        // Simulation: Add a follow request notification
         addNotification({
-          type: "follow",
-          userId: profile?.userId || profile?.id || targetId,
+          type: "follow_request",
+          userId: targetId,
           userName: profile?.userName || "User",
           userImage: profile?.image || null,
-          content: "started following you.",
+          content: "requested to follow you.",
         });
       }
     } catch (err: any) {

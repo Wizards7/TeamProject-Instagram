@@ -1,10 +1,8 @@
-"use client";
-
 import { useState, useEffect } from 'react';
 
 export interface INotification {
   id: string;
-  type: 'like' | 'comment' | 'follow';
+  type: 'like' | 'comment' | 'follow' | 'follow_request';
   userId: string;
   userName: string;
   userImage: string | null;
@@ -26,6 +24,17 @@ export const getNotifications = (): INotification[] => {
 export const addNotification = (notif: Omit<INotification, 'id' | 'date' | 'isRead'>) => {
   if (typeof window === 'undefined') return;
   const current = getNotifications();
+  
+  // Prevent duplicate notifications of same type from same user within short time
+  const isDuplicate = current.some(n => 
+    n.type === notif.type && 
+    n.userId === notif.userId && 
+    (notif.postId ? n.postId === notif.postId : true) &&
+    !n.isRead
+  );
+  
+  if (isDuplicate && notif.type !== 'comment') return;
+
   const newNotif: INotification = {
     ...notif,
     id: Date.now().toString(),
@@ -34,6 +43,14 @@ export const addNotification = (notif: Omit<INotification, 'id' | 'date' | 'isRe
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify([newNotif, ...current]));
   window.dispatchEvent(new Event('notifications_updated'));
+};
+
+export const deleteNotification = (id: string) => {
+    if (typeof window === 'undefined') return;
+    const current = getNotifications();
+    const updated = current.filter(n => n.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new Event('notifications_updated'));
 };
 
 export const markAllAsRead = () => {

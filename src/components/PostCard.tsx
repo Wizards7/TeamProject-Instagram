@@ -50,20 +50,9 @@ const PostCard = ({ post }: { post: IPost }) => {
 
   const handleLike = async () => {
     try {
-      await likePost(post.postId).unwrap();
-      if (!post.postLike) { // If we are liking
-        addNotification({
-          type: "like",
-          userId: post.userId,
-          userName: post.userName,
-          userImage: post.userImage,
-          postId: post.postId,
-          postImage: post.images?.[0],
-          content: "liked your post.",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to like post:", error);
+      await likePost({ postId: post.postId }).unwrap();
+    } catch (err) {
+      console.error("Like failed", err);
     }
   };
 
@@ -72,15 +61,6 @@ const PostCard = ({ post }: { post: IPost }) => {
     if (!commentText.trim()) return;
     try {
       await addComment({ postId: post.postId, comment: commentText }).unwrap();
-      addNotification({
-        type: "comment",
-        userId: post.userId,
-        userName: post.userName,
-        userImage: post.userImage,
-        postId: post.postId,
-        postImage: post.images?.[0],
-        content: `commented: ${commentText}`,
-      });
       setCommentText("");
     } catch (error) {
       console.error("Failed to add comment:", error);

@@ -30,23 +30,48 @@ const NotificationPage = () => {
         <h1 className="text-[28px] font-bold text-black dark:text-white mb-6">Notifications</h1>
         
         {/* Simple Tabs/Filters */}
-        <div className="flex gap-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+        <div className="flex gap-4 border-b border-gray-100 dark:border-gray-900 pb-2">
             <button 
                 onClick={() => setFilter("all")}
-                className={`text-sm font-semibold transition-colors ${filter === "all" ? "text-black dark:text-white border-b-2 border-black dark:border-white pb-2 -mb-[10px]" : "text-gray-400"}`}
+                className={`text-sm font-semibold transition-colors relative pb-2 ${filter === "all" ? "text-black dark:text-white" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"}`}
             >
                 All
+                {filter === "all" && <motion.div layoutId="activeTab" className="absolute bottom-[-2px] left-0 right-0 h-[2px] bg-black dark:bg-white" />}
             </button>
             <button 
                 onClick={() => setFilter("mentions")}
-                className={`text-sm font-semibold transition-colors ${filter === "mentions" ? "text-black dark:text-white border-b-2 border-black dark:border-white pb-2 -mb-[10px]" : "text-gray-400"}`}
+                className={`text-sm font-semibold transition-colors relative pb-2 ${filter === "mentions" ? "text-black dark:text-white" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"}`}
             >
                 Mentions
+                {filter === "mentions" && <motion.div layoutId="activeTab" className="absolute bottom-[-2px] left-0 right-0 h-[2px] bg-black dark:bg-white" />}
             </button>
         </div>
       </div>
 
       <div className="space-y-6">
+        {/* Follow Requests Entry */}
+        {notifications.some(n => n.type === 'follow_request') && (
+            <div className="flex items-center justify-between py-2 px-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all">
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[2px]">
+                            <div className="w-full h-full rounded-full bg-white dark:bg-black flex items-center justify-center border-2 border-white dark:border-black">
+                                <svg fill="currentColor" height="20" viewBox="0 0 24 24" width="20"><path d="M18.984 12.984h-4v4h-2v-4h-4v-2h4v-4h2v4h4v2zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+                            </div>
+                        </div>
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white dark:border-black">
+                            {notifications.filter(n => n.type === 'follow_request').length}
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-[14px] font-bold text-black dark:text-white">Follow requests</p>
+                        <p className="text-[13px] text-gray-500">Approve or ignore requests</p>
+                    </div>
+                </div>
+                <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" className="text-gray-400"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>
+            </div>
+        )}
+
         {notifications.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -70,7 +95,7 @@ const NotificationPage = () => {
               >
                 <h2 className="text-[16px] font-bold text-black dark:text-white">New</h2>
                 <div className="space-y-1">
-                  {newNotifications.map((notif) => (
+                  {newNotifications.filter(n => n.type !== 'follow_request').map((notif) => (
                     <NotificationItem key={notif.id} notif={notif} locale={locale} />
                   ))}
                 </div>
@@ -86,7 +111,7 @@ const NotificationPage = () => {
               >
                 <h2 className="text-[16px] font-bold text-black dark:text-white">Earlier</h2>
                 <div className="space-y-1">
-                  {olderNotifications.map((notif) => (
+                  {olderNotifications.filter(n => n.type !== 'follow_request').map((notif) => (
                     <NotificationItem key={notif.id} notif={notif} locale={locale} />
                   ))}
                 </div>
@@ -102,6 +127,7 @@ const NotificationPage = () => {
 const NotificationItem = ({ notif, locale }: { notif: any, locale: string }) => {
   const [imgError, setImgError] = useState(false);
   const [postImgError, setPostImgError] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   return (
     <motion.div 
@@ -129,24 +155,31 @@ const NotificationItem = ({ notif, locale }: { notif: any, locale: string }) => 
         </Link>
         
         <div className="flex-1 text-[14px] leading-tight">
-          <p className="text-black dark:text-white">
+          <div className="text-black dark:text-white">
             <Link href={`/profile/${notif.userId}`} className="font-bold hover:underline">
                 {notif.userName}
             </Link>{" "}
             <span className="font-normal opacity-90">{notif.content}</span>{" "}
             <span className="text-gray-400 dark:text-gray-500 text-xs ml-1 whitespace-nowrap">{notif.date}</span>
-          </p>
+          </div>
         </div>
       </div>
 
       <div className="shrink-0 flex items-center gap-2">
         {notif.type === "follow" ? (
-            <button className="bg-[#0095f6] hover:bg-[#1877f2] active:scale-95 text-white px-5 py-1.5 rounded-lg text-sm font-semibold transition-all shadow-md shadow-blue-500/20">
-                Follow
+            <button 
+              onClick={() => setIsFollowing(!isFollowing)}
+              className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all shadow-sm ${
+                isFollowing 
+                ? "bg-[#efefef] dark:bg-[#363636] text-black dark:text-white" 
+                : "bg-[#0095f6] hover:bg-[#1877f2] text-white shadow-blue-500/10"
+              }`}
+            >
+                {isFollowing ? "Following" : "Follow"}
             </button>
         ) : notif.postId ? (
             <Link href={`/post/${notif.postId}`} className="block">
-                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-100 dark:border-white/10 group-hover:scale-105 transition-transform shadow-sm">
+                <div className="w-11 h-11 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-100 dark:border-white/10 group-hover:scale-105 transition-transform shadow-sm">
                     {notif.postImage && !postImgError ? (
                         <img 
                             src={`${FILE_URL}${notif.postImage}`} 

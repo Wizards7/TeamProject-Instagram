@@ -110,17 +110,6 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
     e.stopPropagation();
     try {
       await likePost(reel.postId).unwrap();
-      if (!reel.postLike) {
-        addNotification({
-          type: "like",
-          userId: reel.userId,
-          userName: reel.userName,
-          userImage: reel.userImage,
-          postId: reel.postId,
-          postImage: reel.images?.[0],
-          content: "liked your reel.",
-        });
-      }
     } catch (err) {
       console.error("Like failed", err);
     }
@@ -136,15 +125,6 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
     if (!commentText.trim()) return;
     try {
       await addComment({ postId: reel.postId, comment: commentText }).unwrap();
-      addNotification({
-        type: "comment",
-        userId: reel.userId,
-        userName: reel.userName,
-        userImage: reel.userImage,
-        postId: reel.postId,
-        postImage: reel.images?.[0],
-        content: `commented on your reel: ${commentText}`,
-      });
       setCommentText("");
     } catch (err) {
       console.error("Failed to add comment", err);
