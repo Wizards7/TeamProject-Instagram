@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter, Link, usePathname } from "@/src/i18n/navigation";
 import { useLocale } from "next-intl";
 import { IFollower, IPost } from "../../types/interface";
@@ -15,11 +15,12 @@ import {
   useAddFollowingRelationShipMutation,
   useDeleteFollowingRelationShipMutation,
 } from "../../api/userProfile";
-import { useGetPostsQuery, useViewPostMutation } from "../../api/post";
+import { useGetPostsQuery, useViewPostMutation, useLikePostMutation, useAddCommentMutation } from "../../api/post";
 import { useCreateChatMutation } from "../../api/chat";
 import { FollowModal } from "../FollowModal";
 import { logoutUser } from "@/src/utils/token";
 import LogoutModal from "../Auth/LogoutModal";
+import { motion, AnimatePresence } from "framer-motion";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -51,8 +52,8 @@ const PostThumbnail: React.FC<{ post: IPost; onClick: () => void }> = ({
             alt="post"
             className="w-full h-full object-cover"
             onError={(e) =>
-            (e.currentTarget.src =
-              "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400")
+              (e.currentTarget.src =
+                "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400")
             }
           />
         )
@@ -94,25 +95,131 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
 }) => {
   const filename = post.images?.[0];
   const locale = useLocale();
+  const [likePost] = useLikePostMutation();
+  const [addComment] = useAddCommentMutation();
+  
+  const [isPaused, setIsPaused] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [commentText, setCommentText] = useState("");
+  const [showCenterIcon, setShowCenterIcon] = useState<"play" | "pause" | null>(null);
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Track video progress
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateProgress = () => {
+      const p = (video.currentTime / video.duration) * 100;
+      setProgress(p);
+    };
+
+    video.addEventListener("timeupdate", updateProgress);
+    return () => video.removeEventListener("timeupdate", updateProgress);
+  }, []);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play().catch(() => {});
+        setIsPaused(false);
+        setShowCenterIcon("play");
+      } else {
+        videoRef.current.pause();
+        setIsPaused(true);
+        setShowCenterIcon("pause");
+      }
+      setTimeout(() => setShowCenterIcon(null), 500);
+    }
+  };
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+    try {
+      await addComment({ postId: post.postId, comment: commentText }).unwrap();
+      setCommentText("");
+    } catch (err) {
+      console.error("Failed to add comment", err);
+    }
+  };
+
   return (
     <div
-      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 md:p-10 backdrop-blur-sm"
       onClick={onClose}
     >
-      <div
-        className="bg-white flex max-w-[900px] w-full max-h-[90vh] rounded-sm overflow-hidden"
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white flex flex-col md:flex-row max-w-[1200px] w-full max-h-[90vh] md:max-h-[850px] rounded-lg overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-[55%] bg-black flex items-center justify-center shrink-0">
+        {/* Media Section */}
+        <div 
+          className="w-full md:w-[60%] bg-black flex items-center justify-center shrink-0 relative group cursor-pointer overflow-hidden"
+          onClick={togglePlay}
+        >
           {filename ? (
             isVideoFile(filename) ? (
-              <video
-                src={`${FILE_URL}${filename}`}
-                className="max-h-[90vh] w-full object-contain"
-                controls
-                autoPlay
-                muted
-              />
+              <>
+                <video
+                  ref={videoRef}
+                  src={`${FILE_URL}${filename}`}
+                  className="max-h-[90vh] w-full object-contain"
+                  autoPlay
+                  loop
+                  muted={isMuted}
+                  playsInline
+                />
+                
+                {/* Custom Video Controls Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <div className="absolute bottom-4 right-4 pointer-events-auto">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
+                      className="bg-black/20 backdrop-blur-md p-2 rounded-full text-white border border-white/10 hover:bg-black/40 transition-all"
+                    >
+                      {isMuted ? (
+                        <svg fill="white" height="18" viewBox="0 0 24 24" width="18"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.37.28-.78.52-1.25.68v2.02c1.01-.21 1.94-.65 2.75-1.26L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                      ) : (
+                        <svg fill="white" height="18" viewBox="0 0 24 24" width="18"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                      )}
+                    </button>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                    <div 
+                      className="h-full bg-white transition-all duration-100" 
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Center Feedback Icon */}
+                <AnimatePresence>
+                  {showCenterIcon && (
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    >
+                      <div className="bg-black/20 backdrop-blur-md p-6 rounded-full border border-white/20">
+                          {showCenterIcon === "play" ? (
+                            <svg viewBox="0 0 24 24" width="40" height="40" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                          ) : (
+                            <svg viewBox="0 0 24 24" width="40" height="40" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                          )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
             ) : (
               <img
                 src={`${FILE_URL}${filename}`}
@@ -124,109 +231,138 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
             <div className="text-white text-sm">No content</div>
           )}
         </div>
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <div className="flex items-center gap-3 p-4 border-b border-gray-200">
-            <div className="w-8 h-8 rounded-full border border-gray-200 overflow-hidden bg-gray-100">
-              {post.userImage ? (
-                <img
-                  src={`${FILE_URL}${post.userImage}`}
-                  className="w-full h-full object-cover"
-                  onError={(e) =>
-                  (e.currentTarget.src =
-                    "/istockphoto-2151669184-612x612.jpg")
-                  }
-                />
-              ) : (
-                <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-2/3 h-2/3 text-gray-300"
-                    fill="currentColor"
-                  >
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
-                </div>
-              )}
+
+        {/* Interaction Panel */}
+        <div className="flex flex-col flex-1 overflow-hidden bg-white">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <Link href={`/profile/${post.userId}`} className="w-8 h-8 rounded-full border border-gray-200 overflow-hidden bg-gray-100 shrink-0">
+                {post.userImage ? (
+                  <img
+                    src={`${FILE_URL}${post.userImage}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                  </div>
+                )}
+              </Link>
+              <div className="flex flex-col">
+                <Link href={`/profile/${post.userId}`} className="text-sm font-bold hover:opacity-70 transition-opacity">{post.userName}</Link>
+                <span className="text-[10px] text-gray-500">Original Audio</span>
+              </div>
             </div>
-            <span className="text-sm font-semibold">{post.userName}</span>
+            <button className="text-xs font-bold text-[#0095f6] hover:text-[#00376b]">Follow</button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+
+          {/* Comments Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
             {(post.content || post.title) && (
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0">
+                <Link href={`/profile/${post.userId}`} className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0">
                   {post.userImage ? (
-                    <img
-                      src={`${FILE_URL}${post.userImage}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) =>
-                      (e.currentTarget.src =
-                        "/istockphoto-2151669184-612x612.jpg")
-                      }
-                    />
+                    <img src={`${FILE_URL}${post.userImage}`} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="w-2/3 h-2/3 text-gray-300"
-                        fill="currentColor"
-                      >
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                      </svg>
+                      <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
                     </div>
                   )}
+                </Link>
+                <div className="flex flex-col">
+                   <p className="text-sm">
+                    <Link href={`/profile/${post.userId}`} className="font-bold mr-2 hover:underline">{post.userName}</Link>
+                    {post.content || post.title}
+                  </p>
+                  <span className="text-[10px] text-gray-400 mt-1 uppercase">1w</span>
                 </div>
-                <p className="text-sm">
-                  <span className="font-semibold mr-1">{post.userName}</span>
-                  {post.content || post.title}
-                </p>
               </div>
             )}
+
             {post.comments?.map((c) => (
               <div key={c.postCommentId} className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0">
-                  <Link href={`/profile/${c.userId}`}>
-                    {c.userImage ? (
-                      <img
-                        src={`${FILE_URL}${c.userImage}`}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
-                        <svg
-                          viewBox="0 0 24 24"
-                          className="w-2/3 h-2/3 text-gray-300"
-                          fill="currentColor"
-                        >
-                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                        </svg>
-                      </div>
-                    )}
-                  </Link>
+                <Link href={`/profile/${c.userId}`} className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0">
+                  {c.userImage ? (
+                    <img src={`${FILE_URL}${c.userImage}`} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-[#f2f2f2] flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="w-2/3 h-2/3 text-gray-300" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                    </div>
+                  )}
+                </Link>
+                <div className="flex flex-col">
+                  <p className="text-sm">
+                    <Link href={`/profile/${c.userId}`} className="font-bold mr-2 hover:underline">{c.userName}</Link>
+                    {c.comment}
+                  </p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[10px] text-gray-400 uppercase">2d</span>
+                    <button className="text-[10px] font-bold text-gray-500">Reply</button>
+                  </div>
                 </div>
-                <p className="text-sm">
-                  <Link
-                    href={`/profile/${c.userId}`}
-                    className="font-semibold mr-1 hover:underline"
-                  >
-                    {c.userName}
-                  </Link>
-                  {c.comment}
-                </p>
               </div>
             ))}
           </div>
-          <div className="border-t border-gray-200 p-4">
-            <p className="text-sm font-bold">
-              {post.postLikeCount.toLocaleString()} likes
-            </p>
+
+          {/* Action Bar */}
+          <div className="border-t border-gray-100 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button onClick={() => likePost(post.postId)} className="hover:opacity-60 transition-opacity">
+                  {post.postLike ? (
+                    <svg color="#ff3040" fill="#ff3040" height="24" viewBox="0 0 48 48" width="24"><path d="M34.6 3.1c-4.5 0-7.9 1.8-10.6 5.6-2.7-3.7-6.1-5.5-10.6-5.5C6 3.1 0 9.6 0 17.6c0 1.4.1 2.6.4 3.9 3.6 11.2 13.6 18.2 22.4 22.7a2.3 2.3 0 002.4 0c8.8-4.5 18.8-11.5 22.4-22.7.3-1.2.4-2.5.4-3.9-.1-8-6.1-14.5-13.4-14.5z"></path></svg>
+                  ) : (
+                    <svg color="#262626" fill="#262626" height="24" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z"></path></svg>
+                  )}
+                </button>
+                <button className="hover:opacity-60 transition-opacity">
+                  <svg color="#262626" fill="#262626" height="24" viewBox="0 0 24 24" width="24"><path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" strokeWidth="2"></path></svg>
+                </button>
+                <button className="hover:opacity-60 transition-opacity">
+                  <svg color="#262626" fill="#262626" height="24" viewBox="0 0 24 24" width="24"><line fill="none" stroke="currentColor" strokeWidth="2" x1="22" x2="9.218" y1="3" y2="10.083"></line><polygon fill="none" points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334" stroke="currentColor" strokeWidth="2"></polygon></svg>
+                </button>
+              </div>
+              <button className="hover:opacity-60 transition-opacity">
+                <svg color="#262626" fill="#262626" height="24" viewBox="0 0 24 24" width="24"><polygon fill="none" points="20 21 12 13.44 4 21 4 3 20 3 20 21" stroke="currentColor" strokeWidth="2"></polygon></svg>
+              </button>
+            </div>
+            
+            <div className="flex flex-col">
+              <p className="text-sm font-bold">{post.postLikeCount.toLocaleString()} likes</p>
+              <span className="text-[10px] text-gray-400 uppercase mt-1">April 24, 2026</span>
+            </div>
           </div>
+
+          {/* Add Comment Input */}
+          <form onSubmit={handleAddComment} className="border-t border-gray-100 p-4 flex items-center gap-3">
+             <button type="button" className="text-gray-600">
+               <svg aria-label="Emoji" color="currentColor" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M15.83 10.997a1.167 1.167 0 101.167 1.167 1.167 1.167 0 00-1.167-1.167zm-7.66 0a1.167 1.167 0 101.167 1.167 1.167 1.167 0 00-1.167-1.167zm3.83 7.434a4.4 4.4 0 01-3.667-2.022c.033-.664.156-1.21.35-1.532l.077-.11h6.48l.077.11c.194.321.317.868.35 1.532a4.4 4.4 0 01-3.667 2.022zM12 1.503a10.497 10.497 0 1010.497 10.497A10.503 10.503 0 0012 1.503zm0 18.994a8.497 8.497 0 118.497-8.497 8.507 8.507 0 01-8.497 8.497z"></path></svg>
+             </button>
+             <input 
+              type="text" 
+              placeholder="Add a comment..." 
+              className="flex-1 text-sm outline-none border-none focus:ring-0"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+             />
+             <button 
+              type="submit" 
+              disabled={!commentText.trim()} 
+              className="text-[#0095f6] font-bold text-sm disabled:opacity-30"
+             >
+               Post
+             </button>
+          </form>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Close button (Floating) */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 text-white hover:opacity-70"
+        className="fixed top-4 right-4 text-white hover:opacity-70 z-[110]"
       >
-        <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
+        <svg fill="currentColor" height="28" viewBox="0 0 24 24" width="28">
           <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
         </svg>
       </button>
@@ -623,12 +759,8 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
 
           {/* Row 2: Full Name */}
           <div className="mb-4 flex items-center gap-2">
-            <p className="text-[15px] text-black">
-              {profile.firstName}
-            </p>
-            <p className="text-[15px] text-black">
-              {profile.lastName}
-            </p>
+            <p className="text-[15px] text-black">{profile.firstName}</p>
+            <p className="text-[15px] text-black">{profile.lastName}</p>
           </div>
 
           {/* Row 3: Stats */}
@@ -688,10 +820,11 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             <button
               onClick={handleFollow}
               disabled={isFollowingLoading || isUnfollowingLoading}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${isFollowing
-                ? "bg-gray-100 hover:bg-gray-200 text-black"
-                : "bg-[#0095f6] text-white hover:bg-[#1877f2]"
-                }`}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                isFollowing
+                  ? "bg-gray-100 hover:bg-gray-200 text-black"
+                  : "bg-[#0095f6] text-white hover:bg-[#1877f2]"
+              }`}
             >
               {isFollowingLoading || isUnfollowingLoading
                 ? "..."
@@ -735,10 +868,11 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         <div className="flex items-center justify-center gap-16">
           <button
             onClick={() => setActiveTab("posts")}
-            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${activeTab === "posts"
-              ? "border-black text-black"
-              : "border-transparent text-gray-400 hover:text-gray-500"
-              }`}
+            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
+              activeTab === "posts"
+                ? "border-black text-black"
+                : "border-transparent text-gray-400 hover:text-gray-500"
+            }`}
           >
             <svg
               aria-label="Posts"
@@ -800,10 +934,11 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
           </button>
           <button
             onClick={() => setActiveTab("reels")}
-            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${activeTab === "reels"
-              ? "border-black text-black"
-              : "border-transparent text-gray-400 hover:text-gray-500"
-              }`}
+            className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
+              activeTab === "reels"
+                ? "border-black text-black"
+                : "border-transparent text-gray-400 hover:text-gray-500"
+            }`}
           >
             <svg
               aria-label="Reels"
@@ -836,10 +971,11 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
           {isMyProfile && (
             <button
               onClick={() => setActiveTab("saved")}
-              className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${activeTab === "saved"
-                ? "border-black text-black"
-                : "border-transparent text-gray-400 hover:text-gray-500"
-                }`}
+              className={`flex items-center gap-1.5 py-4 text-xs font-semibold tracking-widest border-t transition-colors ${
+                activeTab === "saved"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-400 hover:text-gray-500"
+              }`}
             >
               <svg
                 aria-label="Saved"
