@@ -123,13 +123,30 @@ export interface IPagedResponse<T> {
   statusCode: number;
 }
 
-export interface IStory {
-  storyId: number;
-  userId: string;
+export interface IStoryViewer {
   userName: string;
-  userImage: string | null;
-  image: string;
-  datePublished: string;
+  name: string;
+  viewCount: number;
+  viewLike: number;
+}
+
+export interface IStory {
+  id: number;
+  fileName: string;
+  postId: number | null;
+  createAt: string;
+  userId: string;
+  userAvatar: string | null;
+  userName?: string; // Often needed for UI
+  viewerDto?: IStoryViewer;
+  liked?: boolean;
+  likedCount?: number;
+}
+
+export interface IStoryViewResponse {
+  id: number;
+  viewUserId: string;
+  storyId: number;
 }
 
 export interface IFollower {
