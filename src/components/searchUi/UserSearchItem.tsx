@@ -2,6 +2,7 @@
 
 import React from "react";
 import { IUser } from "../../types/interface";
+import { Link } from "@/src/i18n/navigation";
 
 interface UserSearchItemProps {
   user: IUser;
@@ -10,7 +11,8 @@ interface UserSearchItemProps {
 
 const UserSearchItem: React.FC<UserSearchItemProps> = ({ user, onClick }) => {
   return (
-    <div
+    <Link
+      href={`/profile/${user.id}`}
       onClick={onClick}
       className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50/50 cursor-pointer transition-colors w-full border-b border-gray-50 last:border-none"
     >
@@ -53,7 +55,7 @@ const UserSearchItem: React.FC<UserSearchItemProps> = ({ user, onClick }) => {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
