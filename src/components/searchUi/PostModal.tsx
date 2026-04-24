@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { IPost } from "../../types/interface";
 import { useLikePostMutation } from "../../api/post";
-
+import { useAddFollowingRelationShipMutation, useIsFollowingUserQuery, useGetMyProfileQuery } from "../../api/userProfile";
 interface PostModalProps {
   post: IPost;
   onClose: () => void;
@@ -11,11 +11,26 @@ interface PostModalProps {
 
 const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
   const [likePost] = useLikePostMutation();
+  const [addFollow] = useAddFollowingRelationShipMutation();
+  const { data: followStatus } = useIsFollowingUserQuery(
+    { followingUserId: post.userId },
+    { skip: !post.userId }
+  );
+  const isFollowing = followStatus?.data ?? false;
+  const { data: myProfileData } = useGetMyProfileQuery();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const [showCenterIcon, setShowCenterIcon] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleLike = async () => {
+    try {
+      await likePost(post.postId).unwrap();
+    } catch (err) {
+      console.error("Like failed", err);
+    }
+  };
   
   const FILE_URL = "https://instagram-api.softclub.tj/images/";
   const currentMedia = post.images?.[currentIndex];
@@ -64,6 +79,27 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
     setIsMuted(!isMuted);
   };
 
+  const handleFollow = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await addFollow({ followingUserId: post.userId }).unwrap();
+      
+      // Notify the user being followed
+      if (myProfileData?.data) {
+        addNotification({
+          type: "follow",
+          userId: myProfileData.data.userId || myProfileData.data.id || "",
+          userName: myProfileData.data.userName,
+          userImage: myProfileData.data.image,
+          recipientId: post.userId,
+          content: "started following you.",
+        });
+      }
+    } catch (err) {
+      console.error("Follow failed", err);
+    }
+  };
+
   return (
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-10 transition-all duration-300"
@@ -88,7 +124,7 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
         <div 
           className="w-full md:w-[60%] lg:w-[65%] bg-black flex items-center justify-center relative select-none overflow-hidden group cursor-pointer"
           onDoubleClick={() => {
-            if (!post.postLike) likePost(post.postId);
+            if (!post.postLike) handleLike();
             setShowCenterIcon(true);
             setTimeout(() => setShowCenterIcon(false), 800);
           }}
@@ -193,7 +229,14 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
               </div>
               <span className="font-semibold text-sm hover:text-gray-500 cursor-pointer">{post.userName}</span>
               <span className="text-gray-400">•</span>
-              <button className="text-[#0095f6] text-sm font-semibold hover:text-[#00376b]">Follow</button>
+              {!isFollowing && (
+                <button 
+                  onClick={handleFollow}
+                  className="text-[#0095f6] text-sm font-semibold hover:text-[#00376b]"
+                >
+                  Follow
+                </button>
+              )}
             </div>
             <button className="hover:opacity-50">
               <svg aria-label="More options" fill="#262626" height="24" role="img" viewBox="0 0 24 24" width="24"><circle cx="12" cy="12" r="1.5"></circle><circle cx="6" cy="12" r="1.5"></circle><circle cx="18" cy="12" r="1.5"></circle></svg>
@@ -256,7 +299,7 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
                 <button 
-                   onClick={() => likePost(post.postId)}
+                   onClick={() => handleLike()}
                    className="hover:opacity-50 transform active:scale-125 transition-all"
                 >
                    {post.postLike ? (

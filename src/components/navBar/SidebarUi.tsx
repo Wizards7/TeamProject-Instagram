@@ -5,7 +5,6 @@ import { Link, usePathname } from "@/src/i18n/navigation";
 import { AnimatePresence } from "framer-motion";
 import { logoutUser } from "../../utils/token";
 import { useGetMyProfileQuery } from "../../api/userProfile";
-import { useNotifications } from "../../utils/notifications";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -199,9 +198,6 @@ export default function Sidebar() {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const notifications = useNotifications();
-  const hasUnread = notifications.some(n => !n.isRead);
-
   const { data: profileData } = useGetMyProfileQuery();
   const profile = profileData?.data;
 
@@ -252,7 +248,7 @@ export default function Sidebar() {
                   ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
               >
                 <div className="transition-transform duration-200 group-hover:scale-110">
-                  {item.icon(isActive, item.label === "Notifications" ? hasUnread : undefined)}
+                  {item.icon(isActive)}
                 </div>
                 <span
                   className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}

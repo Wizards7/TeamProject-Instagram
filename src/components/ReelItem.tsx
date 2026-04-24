@@ -5,8 +5,8 @@ import { Link } from "@/src/i18n/navigation";
 import { useLocale } from "next-intl";
 import { IPost } from "../types/interface";
 import { useAddCommentMutation, useLikePostMutation, useAddPostFavoriteMutation, useDeleteCommentMutation } from "../api/post";
+import { useAddFollowingRelationShipMutation, useIsFollowingUserQuery, useGetMyProfileQuery } from "../api/userProfile";
 import { ShareModal } from "./ShareModal";
-import { addNotification } from "../utils/notifications";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ReelItemProps {
@@ -20,6 +20,14 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
   const [addComment] = useAddCommentMutation();
   const [addFavorite] = useAddPostFavoriteMutation();
   const [deleteComment] = useDeleteCommentMutation();
+  const [addFollow] = useAddFollowingRelationShipMutation();
+  const { data: followStatus } = useIsFollowingUserQuery(
+    { followingUserId: reel.userId },
+    { skip: !reel.userId }
+  );
+  const { data: myProfileData } = useGetMyProfileQuery();
+  
+  const isFollowing = followStatus?.data ?? false;
   
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -141,6 +149,15 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
     }
   };
 
+  const handleFollow = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await addFollow({ followingUserId: reel.userId }).unwrap();
+    } catch (err) {
+      console.error("Follow failed", err);
+    }
+  };
+
   return (
     <div className="relative h-full w-full bg-black snap-center flex items-center justify-center overflow-hidden" onClick={handleInteraction}>
       
@@ -234,7 +251,14 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
                   <img src={userImg} alt={reel.userName} className="w-full h-full object-cover" />
                 </Link>
                 <Link href={`/profile/${reel.userId}`} className="font-bold text-sm hover:opacity-80 transition-opacity cursor-pointer drop-shadow-md">{reel.userName}</Link>
-                <button className="text-[12px] bg-white/10 backdrop-blur-md border border-white/30 px-4 py-1.5 rounded-lg font-bold hover:bg-white/20 transition-all">Follow</button>
+                {!isFollowing && (
+                  <button 
+                    onClick={handleFollow}
+                    className="text-[12px] bg-white/10 backdrop-blur-md border border-white/30 px-4 py-1.5 rounded-lg font-bold hover:bg-white/20 transition-all"
+                  >
+                    Follow
+                  </button>
+                )}
               </div>
               
               <div className="relative">

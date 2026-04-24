@@ -16,7 +16,6 @@ import {
   useDeleteFollowingRelationShipMutation,
 } from "../../api/userProfile";
 import { useGetPostsQuery, useViewPostMutation, useLikePostMutation, useAddCommentMutation } from "../../api/post";
-import { addNotification } from "../../utils/notifications";
 import { useCreateChatMutation } from "../../api/chat";
 import { FollowModal } from "../FollowModal";
 import { logoutUser } from "@/src/utils/token";
@@ -141,15 +140,8 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
     if (!commentText.trim()) return;
     try {
       await addComment({ postId: post.postId, comment: commentText }).unwrap();
-      addNotification({
-        type: "comment",
-        userId: post.userId,
-        userName: post.userName,
-        userImage: post.userImage,
-        postId: post.postId,
-        postImage: post.images?.[0],
-        content: `commented: ${commentText}`,
-      });
+      // Remove self-notification. In a real app, the post owner would receive this.
+      // For demo purposes, we could simulate a reply, but let's keep it clean.
       setCommentText("");
     } catch (err) {
       console.error("Failed to add comment", err);
@@ -542,7 +534,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
   // --- Dynamic logic start ---
   const isMyProfile = !userId;
   const { data: myProfileData, isLoading: myProfileLoading } =
-    useGetMyProfileQuery(undefined, { skip: !isMyProfile });
+    useGetMyProfileQuery();
   const { data: otherProfileData, isLoading: otherProfileLoading } =
     useGetUserProfileByIdQuery(userId || "", { skip: isMyProfile });
 
@@ -592,14 +584,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
         await deleteFollow({ followingUserId: targetId }).unwrap();
       } else {
         await addFollow({ followingUserId: targetId }).unwrap();
-        // Simulation: Add a follow request notification
-        addNotification({
-          type: "follow_request",
-          userId: targetId,
-          userName: profile?.userName || "User",
-          userImage: profile?.image || null,
-          content: "requested to follow you.",
-        });
+        
       }
     } catch (err: any) {
       setLocalFollowState(isFollowing); // Revert on failure

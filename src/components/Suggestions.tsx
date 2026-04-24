@@ -4,10 +4,13 @@ import React from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { useGetUsersQuery } from "../api/user";
+import { useAddFollowingRelationShipMutation, useGetMyProfileQuery } from "../api/userProfile";
 
 const Suggestions = () => {
   const locale = useLocale();
   const { data: userData, isLoading } = useGetUsersQuery({ PageNumber: 1, PageSize: 5 });
+  const { data: myProfileData } = useGetMyProfileQuery();
+  const [addFollow] = useAddFollowingRelationShipMutation();
   const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
   if (isLoading) return null;
@@ -40,7 +43,16 @@ const Suggestions = () => {
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="text-xs font-bold text-[#0095f6] hover:text-[#00376b] transition-colors">
+              <button 
+                onClick={async () => {
+                  try {
+                    await addFollow({ followingUserId: user.id }).unwrap();
+                  } catch (err) {
+                    console.error("Follow from suggestions failed", err);
+                  }
+                }}
+                className="text-xs font-bold text-[#0095f6] hover:text-[#00376b] transition-colors"
+              >
                 Follow
               </button>
             </div>
