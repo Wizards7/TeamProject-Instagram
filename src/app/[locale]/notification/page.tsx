@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "@/src/i18n/navigation";
 import { useLocale } from "next-intl";
-import { useNotifications, markAllAsRead } from "../../../utils/notifications";
+import { useNotifications, markAllAsRead, getNotifications } from "../../../utils/notifications";
 import { motion, AnimatePresence } from "framer-motion";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
@@ -21,16 +21,36 @@ const NotificationPage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const newNotifications = notifications.filter(n => !n.isRead);
-  const olderNotifications = notifications.filter(n => n.isRead);
+  // ONLY show follow-related notifications as requested
+  const filteredNotifications = notifications.filter(n => n.type === 'follow' || n.type === 'follow_request');
+  
+  const newNotifications = filteredNotifications.filter(n => !n.isRead);
+  const olderNotifications = filteredNotifications.filter(n => n.isRead);
+
+  const handleClearAll = () => {
+      if (typeof window !== 'undefined') {
+          localStorage.setItem('insta_notifications', JSON.stringify([]));
+          window.dispatchEvent(new Event('notifications_updated'));
+      }
+  };
 
   return (
     <div className="max-w-[600px] mx-auto min-h-screen bg-white dark:bg-black pt-6 pb-20 px-4">
       <div className="mb-8">
-        <h1 className="text-[28px] font-bold text-black dark:text-white mb-6">Notifications</h1>
+        <div className="flex items-center justify-between mb-6">
+            <h1 className="text-[28px] font-bold text-black dark:text-white">Notifications</h1>
+            {filteredNotifications.length > 0 && (
+                <button 
+                    onClick={handleClearAll}
+                    className="text-sm font-semibold text-[#0095f6] hover:text-black dark:hover:text-white transition-colors"
+                >
+                    Clear all
+                </button>
+            )}
+        </div>
         
         {/* Simple Tabs/Filters */}
-        <div className="flex gap-4 border-b border-gray-100 dark:border-gray-900 pb-2">
+        <div className="flex gap-4 border-b border-gray-100 dark:border-gray-800 pb-2">
             <button 
                 onClick={() => setFilter("all")}
                 className={`text-sm font-semibold transition-colors relative pb-2 ${filter === "all" ? "text-black dark:text-white" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"}`}
@@ -50,8 +70,8 @@ const NotificationPage = () => {
 
       <div className="space-y-6">
         {/* Follow Requests Entry */}
-        {notifications.some(n => n.type === 'follow_request') && (
-            <div className="flex items-center justify-between py-2 px-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all">
+        {filteredNotifications.some(n => n.type === 'follow_request') && (
+            <div className="flex items-center justify-between py-2 px-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-white/10">
                 <div className="flex items-center gap-4">
                     <div className="relative">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[2px]">
@@ -60,7 +80,7 @@ const NotificationPage = () => {
                             </div>
                         </div>
                         <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white dark:border-black">
-                            {notifications.filter(n => n.type === 'follow_request').length}
+                            {filteredNotifications.filter(n => n.type === 'follow_request').length}
                         </div>
                     </div>
                     <div>
@@ -72,7 +92,7 @@ const NotificationPage = () => {
             </div>
         )}
 
-        {notifications.length === 0 ? (
+        {filteredNotifications.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -81,8 +101,8 @@ const NotificationPage = () => {
              <div className="w-20 h-20 rounded-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center mb-6 border border-gray-100 dark:border-gray-800">
                 <svg fill="none" height="40" viewBox="0 0 24 24" width="40" stroke="currentColor" strokeWidth="1.5"><path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z"></path></svg>
              </div>
-             <p className="text-xl font-bold text-black dark:text-white mb-2">Activity On Your Posts</p>
-             <p className="text-sm leading-relaxed max-w-[280px]">When someone likes or comments on one of your posts, you'll see it here.</p>
+             <p className="text-xl font-bold text-black dark:text-white mb-2">No notifications yet</p>
+             <p className="text-sm leading-relaxed max-w-[280px]">When someone follows you, you'll see it here.</p>
           </motion.div>
         ) : (
           <AnimatePresence mode="popLayout">
@@ -126,7 +146,6 @@ const NotificationPage = () => {
 
 const NotificationItem = ({ notif, locale }: { notif: any, locale: string }) => {
   const [imgError, setImgError] = useState(false);
-  const [postImgError, setPostImgError] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
 
   return (
@@ -165,35 +184,17 @@ const NotificationItem = ({ notif, locale }: { notif: any, locale: string }) => 
         </div>
       </div>
 
-      <div className="shrink-0 flex items-center gap-2">
-        {notif.type === "follow" ? (
-            <button 
-              onClick={() => setIsFollowing(!isFollowing)}
-              className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all shadow-sm ${
-                isFollowing 
-                ? "bg-[#efefef] dark:bg-[#363636] text-black dark:text-white" 
-                : "bg-[#0095f6] hover:bg-[#1877f2] text-white shadow-blue-500/10"
-              }`}
-            >
-                {isFollowing ? "Following" : "Follow"}
-            </button>
-        ) : notif.postId ? (
-            <Link href={`/post/${notif.postId}`} className="block">
-                <div className="w-11 h-11 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-100 dark:border-white/10 group-hover:scale-105 transition-transform shadow-sm">
-                    {notif.postImage && !postImgError ? (
-                        <img 
-                            src={`${FILE_URL}${notif.postImage}`} 
-                            className="w-full h-full object-cover" 
-                            onError={() => setPostImgError(true)}
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-                            <svg viewBox="0 0 24 24" width="20" height="20" className="text-gray-300"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
-                        </div>
-                    )}
-                </div>
-            </Link>
-        ) : null}
+      <div className="shrink-0">
+        <button 
+          onClick={() => setIsFollowing(!isFollowing)}
+          className={`px-5 py-1.5 rounded-lg text-sm font-semibold transition-all shadow-sm ${
+            isFollowing 
+            ? "bg-[#efefef] dark:bg-[#363636] text-black dark:text-white" 
+            : "bg-[#0095f6] hover:bg-[#1877f2] text-white shadow-blue-500/10"
+          }`}
+        >
+            {isFollowing ? "Following" : "Follow"}
+        </button>
       </div>
     </motion.div>
   );
