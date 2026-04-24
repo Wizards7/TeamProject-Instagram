@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter, Link, usePathname } from "@/src/i18n/navigation";
 import { useLocale } from "next-intl";
 import { IFollower, IPost } from "../../types/interface";
@@ -18,7 +18,9 @@ import {
 import { useGetPostsQuery, useViewPostMutation, useLikePostMutation, useAddCommentMutation } from "../../api/post";
 import { addNotification } from "../../utils/notifications";
 import { useCreateChatMutation } from "../../api/chat";
+import { useGetMyStoriesQuery, useAddStoryMutation, useGetUserStoriesQuery } from "../../api/story";
 import { FollowModal } from "../FollowModal";
+import StoryViewer from "../StoryViewer";
 import { logoutUser } from "@/src/utils/token";
 import LogoutModal from "../Auth/LogoutModal";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,6 +30,25 @@ const FILE_URL = "https://instagram-api.softclub.tj/images/";
 const isVideoFile = (filename: string) => {
   const videoExtensions = [".mp4", ".mov", ".wmv", ".avi", ".webm", ".mkv"];
   return videoExtensions.some((ext) => filename?.toLowerCase().endsWith(ext));
+};
+
+const getRelativeTime = (dateStr: string) => {
+  const storyDate = new Date(dateStr);
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - storyDate.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 1) return "сейчас";
+  if (diffInMinutes < 60) return `${diffInMinutes}м`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}ч`;
+  return `${Math.floor(diffInHours / 24)}д`;
+};
+
+const isExpired = (dateStr: string) => {
+  const storyDate = new Date(dateStr);
+  const now = new Date();
+  const diffInHours = (now.getTime() - storyDate.getTime()) / (1000 * 60 * 60);
+  return diffInHours >= 24;
 };
 
 const PostThumbnail: React.FC<{ post: IPost; onClick: () => void }> = ({
@@ -689,6 +710,63 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
   }
   // --- Dynamic logic end ---
 
+  const [addStory, { isLoading: isAddingStory }] = useAddStoryMutation();
+  const { data: myStoriesData } = useGetMyStoriesQuery(undefined, { skip: !isMyProfile });
+  const { data: otherUserStoriesData } = useGetUserStoriesQuery(userId || "", { skip: isMyProfile || !userId });
+
+  const getStoriesArray = (data: any) => {
+    if (Array.isArray(data)) return data.filter(s => !isExpired(s.createAt));
+    if (data && Array.isArray(data.stories)) {
+      // Enrich each story with user info from the parent object and filter expired
+      return data.stories
+        .filter((s: any) => !isExpired(s.createAt))
+        .map((s: any) => ({
+          ...s,
+          userId: data.userId,
+          userName: data.userName,
+          userAvatar: data.userImage
+        }));
+    }
+    return [];
+  };
+
+  const myStories = useMemo(() => {
+    const stories = getStoriesArray(myStoriesData?.data);
+    if (isMyProfile && myProfileData?.data?.id) {
+      return stories.map((s: any) => ({ ...s, userId: myProfileData.data.id }));
+    }
+    return stories;
+  }, [myStoriesData, isMyProfile, myProfileData]);
+  const otherUserStories = useMemo(() => getStoriesArray(otherUserStoriesData?.data), [otherUserStoriesData]);
+  const activeStories = isMyProfile ? myStories : otherUserStories;
+
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [isViewed, setIsViewed] = useState(false);
+  const [startIndex, setStartIndex] = useState(0);
+  const storyInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    if (activeStories.length > 0) {
+      setStartIndex(0);
+      setShowStoryViewer(true);
+      setIsViewed(true);
+    } else {
+      setShowAvatarPreview(true);
+    }
+  };
+
+  const handleStoryFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        await addStory({ image: file }).unwrap();
+        alert("История добавлена!");
+      } catch (err) {
+        console.error("Failed to add story", err);
+      }
+    }
+  };
+
   if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -707,11 +785,29 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
 
   return (
     <div className="max-w-[935px] mx-auto px-4 py-8 text-black bg-white">
+      {/* Hidden inputs for story */}
+      <input
+        type="file"
+        ref={storyInputRef}
+        onChange={handleStoryFileChange}
+        className="hidden"
+        accept="image/*,video/*"
+      />
+
+      {showStoryViewer && activeStories.length > 0 && (
+        <StoryViewer
+          stories={activeStories}
+          initialStoryIndex={startIndex}
+          onClose={() => setShowStoryViewer(false)}
+          canDelete={true}
+        />
+      )}
+
       {/* Profile header */}
       <div className="flex items-start gap-8 md:gap-20 mb-5">
         <div
           className="shrink-0 relative group"
-          onClick={() => setShowAvatarPreview(true)}
+          onClick={handleAvatarClick}
         >
           {/* Note bubble */}
           <div className="absolute -top-3 -right-2 z-10">
@@ -721,27 +817,34 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             </div>
           </div>
 
-          <div className="w-[80px] h-[80px] md:w-[150px] md:h-[150px] rounded-full overflow-hidden bg-gray-100 border border-black/10 cursor-pointer">
-            {profile.image ? (
-              <img
-                src={`${FILE_URL}${profile.image}`}
-                alt={profile.userName}
-                className="w-full h-full object-cover"
-                onError={(e) =>
-                  (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")
-                }
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-2/3 h-2/3 text-gray-400"
-                  fill="currentColor"
-                >
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-              </div>
-            )}
+          <div className={`w-[80px] h-[80px] md:w-[150px] md:h-[150px] rounded-full overflow-hidden border border-black/10 cursor-pointer p-[3px] ${activeStories.length > 0
+              ? isViewed
+                ? 'border border-gray-300'
+                : 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600'
+              : 'bg-gray-100'
+            }`}>
+            <div className="w-full h-full rounded-full border-2 border-white overflow-hidden bg-white">
+              {profile.image ? (
+                <img
+                  src={`${FILE_URL}${profile.image}`}
+                  alt={profile.userName}
+                  className="w-full h-full object-cover"
+                  onError={(e) =>
+                    (e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg")
+                  }
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="w-2/3 h-2/3 text-gray-400"
+                    fill="currentColor"
+                  >
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -880,24 +983,65 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
       </div>
 
       {/* Highlights Section */}
-      {isMyProfile && (
-        <div className="flex gap-8 mb-12">
-          <div className="flex flex-col items-center gap-2 group cursor-pointer">
-            <div className="w-[77px] h-[77px] rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-gray-50 transition-colors">
-              <svg
-                aria-label="Plus icon"
-                color="black"
-                fill="black"
-                height="44"
-                role="img"
-                viewBox="0 0 24 24"
-                width="44"
-              >
-                <path d="M21 11.3h-8.2V3c0-.4-.3-.8-.8-.8s-.8.4-.8.8v8.2H3c-.4 0-.8.3-.8.8s.4.8.8.8h8.2V21c0 .4.3.8.8.8s.8-.4.8-.8v-8.2H21c.4 0 .8-.3.8-.8s-.4-.8-.8-.8z"></path>
-              </svg>
+      {(isMyProfile || activeStories.length > 0) && (
+        <div className="flex gap-8 mb-12 overflow-x-auto no-scrollbar py-2">
+          {/* Add Story Button (Only for My Profile) */}
+          {isMyProfile && (
+            <div
+              onClick={() => storyInputRef.current?.click()}
+              className="flex flex-col items-center gap-2 min-w-[77px] group cursor-pointer"
+            >
+              <div className="w-[77px] h-[77px] rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-gray-50 transition-colors">
+                <svg
+                  aria-label="Plus icon"
+                  color="black"
+                  fill="black"
+                  height="44"
+                  role="img"
+                  viewBox="0 0 24 24"
+                  width="44"
+                >
+                  <path d="M21 11.3h-8.2V3c0-.4-.3-.8-.8-.8s-.8.4-.8.8v8.2H3c-.4 0-.8.3-.8.8s.4.8.8.8h8.2V21c0 .4.3.8.8.8s.8-.4.8-.8v-8.2H21c.4 0 .8-.3.8-.8s-.4-.8-.8-.8z"></path>
+                </svg>
+              </div>
+              <span className="text-xs font-semibold text-black">Добавить</span>
             </div>
-            <span className="text-xs font-semibold text-black">Добавить</span>
-          </div>
+          )}
+
+          {/* Active Stories List */}
+          {activeStories.map((story: any, index: number) => {
+            const storyTime = getRelativeTime(story.createAt);
+            return (
+              <div
+                key={story.id}
+                onClick={() => {
+                  setStartIndex(index);
+                  setShowStoryViewer(true);
+                }}
+                className="flex flex-col items-center gap-2 min-w-[77px] cursor-pointer group"
+              >
+                <div className="w-[77px] h-[77px] rounded-full p-[3px] border border-gray-200 group-hover:border-gray-400 transition-all duration-300">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-gray-50 border border-black/5">
+                    {isVideoFile(story.fileName) ? (
+                      <video
+                        src={`${FILE_URL}${story.fileName}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={`${FILE_URL}${story.fileName}`}
+                        alt="Story Highlight"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                </div>
+                <span className="text-[11px] font-normal text-black truncate w-[77px] text-center">
+                  {storyTime}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
 
