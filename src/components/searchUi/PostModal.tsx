@@ -83,18 +83,6 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
     e.stopPropagation();
     try {
       await addFollow({ followingUserId: post.userId }).unwrap();
-      
-      // Notify the user being followed
-      if (myProfileData?.data) {
-        addNotification({
-          type: "follow",
-          userId: myProfileData.data.userId || myProfileData.data.id || "",
-          userName: myProfileData.data.userName,
-          userImage: myProfileData.data.image,
-          recipientId: post.userId,
-          content: "started following you.",
-        });
-      }
     } catch (err) {
       console.error("Follow failed", err);
     }
