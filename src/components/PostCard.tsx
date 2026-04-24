@@ -1,31 +1,34 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/src/i18n/navigation";
 import { useLocale } from "next-intl";
 import { IPost } from "../types/interface";
-import { useLikePostMutation, useAddCommentMutation, useAddPostFavoriteMutation, useDeleteCommentMutation } from "../api/post";
+import { useAddCommentMutation, useDeleteCommentMutation, useLikePostMutation, useAddPostFavoriteMutation } from "../api/post";
+import { 
+  useAddFollowingRelationShipMutation, 
+  useDeleteFollowingRelationShipMutation, 
+  useIsFollowingUserQuery,
+  useGetMyProfileQuery
+} from "../api/userProfile";
 import { ShareModal } from "./ShareModal";
 import { addNotification } from "../utils/notifications";
 
-interface PostCardProps {
-  post: IPost;
-}
+const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
+const PostCard = ({ post }: { post: IPost }) => {
   const locale = useLocale();
   const [likePost] = useLikePostMutation();
   const [addComment] = useAddCommentMutation();
-  const [addFavorite] = useAddPostFavoriteMutation();
   const [deleteComment] = useDeleteCommentMutation();
+  const [addPostFavorite] = useAddPostFavoriteMutation();
   const [commentText, setCommentText] = useState("");
+  const [showAllComments, setShowAllComments] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showCenterIcon, setShowCenterIcon] = useState(false);
-  const [showAllComments, setShowAllComments] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -59,8 +62,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           content: "liked your post.",
         });
       }
-    } catch (err) {
-      console.error("Like failed", err);
+    } catch (error) {
+      console.error("Failed to like post:", error);
     }
   };
 
@@ -122,6 +125,10 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             muted={isMuted}
             loop 
             playsInline
+            onError={(e) => {
+               const target = e.target as HTMLVideoElement;
+               target.style.display = 'none';
+            }}
           />
           
           {/* Mute Button Overlay (Bottom Right) */}
@@ -162,74 +169,91 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       <img 
         src={`${FILE_URL}${filename}`} 
         className="w-full aspect-square object-cover rounded-lg border border-gray-100"
-        onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?q=80&w=1000&auto=format&fit=crop")}
+        onError={(e) => {
+            e.currentTarget.src = "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?q=80&w=1000&auto=format&fit=crop";
+            e.currentTarget.className = "w-full aspect-square object-cover rounded-lg border border-gray-100 opacity-50 grayscale";
+        }}
       />
     );
   };
 
   return (
-    <div className="bg-transparent mb-16 w-full">
+    <div className="bg-transparent mb-16 w-full max-w-[470px] mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between py-3">
         <div className="flex items-center gap-3">
-          <Link href={`/${locale}/profile/${post.userId}`} className="w-8 h-8 rounded-full p-[1px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600 cursor-pointer">
-            <div className="w-full h-full rounded-full border border-white overflow-hidden bg-gray-100">
+          <Link href={`/profile/${post.userId}`} className="w-8 h-8 rounded-full p-[1px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600 cursor-pointer">
+            <div className="w-full h-full rounded-full border border-white dark:border-black overflow-hidden bg-gray-100 dark:bg-gray-800">
               {post.userImage ? (
-                <img src={`${FILE_URL}${post.userImage}`} className="w-full h-full object-cover" />
+                <img 
+                    src={`${FILE_URL}${post.userImage}`} 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => (e.currentTarget.src = "/image.webp")}
+                />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400 uppercase">
-                  {post.userName?.[0]}
+                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-900 uppercase">
+                  {post.userName?.[0] || "U"}
                 </div>
               )}
             </div>
           </Link>
-          <div className="flex items-center gap-1.5 font-medium">
-            <Link href={`/${locale}/profile/${post.userId}`} className="text-[13px] font-semibold text-black hover:opacity-60 cursor-pointer">
-              {post.userName}
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Link 
+              href={`/profile/${post.userId || post.userName}`} 
+              className="text-[14px] font-bold text-black dark:text-white hover:opacity-60 cursor-pointer truncate max-w-[150px]"
+            >
+              {post.userName || "user_" + (post.userId?.slice(0, 5) || "unknown")}
             </Link>
-            <span className="text-gray-400 text-xs">• 1w</span>
+            <span className="text-gray-400 text-xs shrink-0">• 1w</span>
+            
+            {/* Follow Button */}
+            <PostFollowButton userId={post.userId} />
           </div>
         </div>
-        <button className="text-[#262626] hover:opacity-50">
+        <button className="text-black dark:text-white hover:opacity-50">
           <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><circle cx="12" cy="12" r="1.5"></circle><circle cx="6" cy="12" r="1.5"></circle><circle cx="18" cy="12" r="1.5"></circle></svg>
         </button>
       </div>
 
       {/* Media Content */}
-      {post.images?.[0] ? renderMedia(post.images[0]) : <div className="aspect-square bg-gray-50 flex items-center justify-center text-gray-300">No Content</div>}
+      <div className="rounded-lg overflow-hidden border border-gray-100 dark:border-white/10">
+        {post.images?.[0] ? renderMedia(post.images[0]) : <div className="aspect-square bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-gray-300">No Content</div>}
+      </div>
 
       {/* Footer Info */}
       <div className="py-3 px-1">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-4 text-[#262626]">
-            <button onClick={handleLike} className="hover:opacity-60 transform active:scale-125 transition-all">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-4">
+            <button onClick={handleLike} className={`hover:scale-110 active:scale-90 transition-transform ${post.postLike ? 'text-[#ed4956]' : 'text-black dark:text-white'}`}>
               {post.postLike ? (
-                <svg color="#ff3040" fill="#ff3040" height="24" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z"></path></svg>
+                <svg fill="currentColor" height="24" viewBox="0 0 48 48" width="24"><path d="M34.6 3.1c-4.5 0-7.9 1.8-10.6 5.6-2.7-3.7-6.1-5.5-10.6-5.5C6 3.1 0 9.6 0 17.6c0 5.8 2 8.8 8 14.3l16 13 16-13c6-5.5 8-8.5 8-14.3 0-8-6-14.5-13.4-14.5z"></path></svg>
               ) : (
-                <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z"></path></svg>
+                <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z"></path></svg>
               )}
             </button>
-            <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22l-1.344-4.992z"></path></svg>
-            <button onClick={() => setShowShareModal(true)} className="hover:opacity-60 transition-opacity">
-              <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><line x1="22" y1="3" x2="9.218" y2="10.083"></line><polygon points="11.698 20.334 22 3.001 2 3.001 9.218 10.083 11.698 20.334"></polygon></svg>
+            <button className="text-black dark:text-white hover:scale-110 transition-transform">
+              <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" strokeWidth="2"></path></svg>
+            </button>
+            <button onClick={() => setShowShareModal(true)} className="text-black dark:text-white hover:scale-110 transition-transform">
+              <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><line fill="none" stroke="currentColor" strokeWidth="2" x1="22" x2="9.218" y1="3" y2="10.083"></line><polygon fill="none" points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334" stroke="currentColor" strokeWidth="2"></polygon></svg>
             </button>
           </div>
-          <button onClick={() => addFavorite(post.postId)} className="hover:opacity-60 transform active:scale-125 transition-all">
-            {post.postFavorite ? (
-              <svg color="black" fill="black" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><polygon points="20 21 12 13.44 4 21 4 3 20 3 20 21"></polygon></svg>
-            ) : (
-              <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><polygon points="20 21 12 13.44 4 21 4 3 20 3 20 21"></polygon></svg>
-            )}
+          <button onClick={() => addPostFavorite(post.postId)} className={`hover:scale-110 transition-transform ${post.postFavorite ? 'text-black dark:text-white' : 'text-black dark:text-white'}`}>
+             {post.postFavorite ? (
+                <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><path d="M20 22L12 14.37 4 22V4h16z"></path></svg>
+             ) : (
+                <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><path d="M20 22L12 14.37 4 22V4h16z" fill="none" stroke="currentColor" strokeWidth="2"></path></svg>
+             )}
           </button>
         </div>
 
         <div className="space-y-1">
-          <p className="text-sm font-bold">{post.postLikeCount.toLocaleString()} likes</p>
+          <p className="text-sm font-bold text-black dark:text-white">{post.postLikeCount.toLocaleString()} likes</p>
           <div className="text-[14px]">
-            <Link href={`/${locale}/profile/${post.userId}`} className="font-bold mr-2 text-black hover:opacity-60">
-              {post.userName}
+            <Link href={`/profile/${post.userId}`} className="font-bold mr-2 text-black dark:text-white hover:opacity-60">
+              {post.userName || "Instagram User"}
             </Link>
-            <span className="text-gray-900 leading-relaxed">{post.content || post.title}</span>
+            <span className="text-gray-900 dark:text-gray-200 leading-relaxed">{post.content || post.title}</span>
           </div>
           
           {/* Comments List */}
@@ -238,70 +262,110 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               {(showAllComments ? post.comments : post.comments.slice(-3)).map((c) => (
                 <div key={c.postCommentId} className="group flex items-start justify-between text-[14px]">
                   <div className="flex items-start gap-2 flex-1">
-                    <Link href={`/${locale}/profile/${c.userId}`} className="shrink-0 mt-0.5">
-                      <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-100 border border-gray-100">
+                    <Link href={`/profile/${c.userId}`} className="shrink-0 mt-0.5">
+                      <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-gray-800">
                         {c.userImage ? (
-                          <img src={`${FILE_URL}${c.userImage}`} className="w-full h-full object-cover" />
+                          <img 
+                            src={`${FILE_URL}${c.userImage}`} 
+                            className="w-full h-full object-cover" 
+                            onError={(e) => (e.currentTarget.src = "/image.webp")}
+                          />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[8px] font-bold text-gray-400 bg-gray-50 uppercase">
-                            {c.userName?.[0]}
+                          <div className="w-full h-full flex items-center justify-center text-[8px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-900 uppercase">
+                            {c.userName?.[0] || "U"}
                           </div>
                         )}
                       </div>
                     </Link>
                     <div className="flex-1">
-                      <Link href={`/${locale}/profile/${c.userId}`} className="font-bold mr-2 text-black hover:opacity-60 inline">
-                        {c.userName}
-                      </Link>
-                      <span className="text-gray-800 break-words leading-tight">{c.comment}</span>
+                      <p className="text-black dark:text-white leading-tight">
+                        <Link href={`/profile/${c.userId}`} className="font-bold mr-2 hover:opacity-60">{c.userName || "User"}</Link>
+                        {c.comment}
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">{new Date(c.dateCommented).toLocaleDateString()}</p>
                     </div>
                   </div>
                   <button 
                     onClick={() => handleDeleteComment(c.postCommentId)}
-                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all ml-2 p-1"
+                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all ml-2"
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
                   </button>
                 </div>
               ))}
+              {post.comments.length > 3 && (
+                <button 
+                  onClick={() => setShowAllComments(!showAllComments)}
+                  className="text-gray-500 text-xs font-medium hover:text-black dark:hover:text-white transition-colors mt-1"
+                >
+                  {showAllComments ? "Show less" : `View all ${post.comments.length} comments`}
+                </button>
+              )}
             </div>
           )}
-
-          {post.commentCount > 3 && (
-            <button 
-              onClick={() => setShowAllComments(!showAllComments)}
-              className="text-sm text-gray-500 mt-2 hover:opacity-60 transition-opacity font-medium"
-            >
-              {showAllComments ? "Hide comments" : `View all ${post.commentCount} comments`}
-            </button>
-          )}
-          
-          {/* Add Comment Input */}
-          <form onSubmit={handleAddComment} className="mt-3 flex items-center border-t border-gray-100 pt-3">
-            <input
-              type="text"
-              placeholder="Add a comment..."
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-500"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-            />
-            <button 
-              type="submit" 
-              disabled={!commentText.trim()}
-              className="text-[#0095f6] font-semibold text-sm disabled:opacity-30 hover:text-[#00376b] transition-colors ml-2"
-            >
-              Post
-            </button>
-          </form>
         </div>
+
+        {/* Add Comment */}
+        <form onSubmit={handleAddComment} className="mt-4 flex items-center gap-2 border-t border-gray-100 dark:border-white/5 pt-3">
+          <input 
+            type="text" 
+            placeholder="Add a comment..."
+            className="flex-1 bg-transparent text-sm outline-none text-black dark:text-white"
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+          />
+          <button 
+            disabled={!commentText.trim()}
+            className="text-[#0095f6] font-bold text-sm disabled:opacity-30 transition-opacity"
+          >
+            Post
+          </button>
+        </form>
       </div>
+
       {showShareModal && (
         <ShareModal 
-          postId={post.postId} 
-          postUrl={typeof window !== 'undefined' ? `${window.location.origin}/${locale}/post/${post.postId}` : ""} 
           onClose={() => setShowShareModal(false)} 
+          postUrl={typeof window !== 'undefined' ? `${window.location.origin}/${locale}/post/${post.postId}` : ""} 
         />
       )}
+    </div>
+  );
+};
+
+const PostFollowButton = ({ userId }: { userId: string }) => {
+  const { data: myProfile } = useGetMyProfileQuery();
+  const { data: isFollowingData } = useIsFollowingUserQuery({ followingUserId: userId });
+  const [followUser] = useAddFollowingRelationShipMutation();
+  const [unfollowUser] = useDeleteFollowingRelationShipMutation();
+  
+  const isMe = myProfile?.data?.id === userId || myProfile?.data?.userId === userId;
+  const isFollowing = isFollowingData?.data ?? false;
+
+  if (isMe) return null;
+
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      if (isFollowing) {
+        await unfollowUser({ followingUserId: userId }).unwrap();
+      } else {
+        await followUser({ followingUserId: userId }).unwrap();
+      }
+    } catch (err) {
+      console.error("Follow from post failed", err);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1.5 ml-1">
+        <span className="text-gray-400 text-xs">•</span>
+        <button 
+            onClick={handleToggle}
+            className={`text-[14px] font-bold transition-colors ${isFollowing ? 'text-black dark:text-white opacity-50' : 'text-[#0095f6] hover:text-[#00376b]'}`}
+        >
+            {isFollowing ? "Following" : "Follow"}
+        </button>
     </div>
   );
 };

@@ -325,7 +325,12 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
               className="mt-2 w-8 h-8 rounded-full border-4 border-white/20 overflow-hidden shadow-xl"
             >
-              <img src={userImg} alt="audio" className="w-full h-full object-cover" />
+              <img 
+                src={userImg} 
+                alt="audio" 
+                className="w-full h-full object-cover" 
+                onError={(e) => (e.currentTarget.src = "/image.webp")}
+              />
             </motion.div>
           </div>
 
@@ -367,6 +372,7 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
                           src={c.userImage ? `${FILE_URL}${c.userImage}` : "/image.webp"} 
                           className="w-8 h-8 rounded-full object-cover border border-gray-100 shadow-sm"
                           alt={c.userName}
+                          onError={(e) => (e.currentTarget.src = "/image.webp")}
                         />
                       </Link>
                       <div className="flex flex-col flex-1">

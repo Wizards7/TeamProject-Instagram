@@ -1,10 +1,8 @@
 import { apiSlice } from "./apiSlice";
 import { IPost, IPaginatedResponse, IUserProfile, IFollower } from "../types/interface";
 
-
 export const userProfileApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-
     getMyProfile: builder.query<{ data: IUserProfile }, void>({
       query: () => "/UserProfile/get-my-profile",
       providesTags: ["Profile"],
@@ -39,6 +37,17 @@ export const userProfileApi = apiSlice.injectEndpoints({
         url: "/FollowingRelationShip/get-subscribers",
         params: { UserId: userId, pageNumber, pageSize },
       }),
+      transformResponse: (response: any) => {
+        return {
+          data: response.data?.map((item: any) => ({
+            id: item.userShortInfo?.userId || item.id,
+            userName: item.userShortInfo?.userName,
+            fullName: item.userShortInfo?.fullname,
+            image: item.userShortInfo?.userPhoto,
+          })) || []
+        };
+      },
+      providesTags: ["Following"],
     }),
 
     getFollowing: builder.query<{ data: IFollower[] }, { userId: string; pageNumber?: number; pageSize?: number }>({
@@ -46,23 +55,106 @@ export const userProfileApi = apiSlice.injectEndpoints({
         url: "/FollowingRelationShip/get-subscriptions",
         params: { UserId: userId, pageNumber, pageSize },
       }),
+      transformResponse: (response: any) => {
+        return {
+          data: response.data?.map((item: any) => ({
+            id: item.userShortInfo?.userId || item.id,
+            userName: item.userShortInfo?.userName,
+            fullName: item.userShortInfo?.fullname,
+            image: item.userShortInfo?.userPhoto,
+          })) || []
+        };
+      },
+      providesTags: ["Following"],
     }),
 
     addFollowingRelationShip: builder.mutation<void, { followingUserId: string }>({
-      query: ({ followingUserId }) => ({
+      query: (params) => ({
         url: "/FollowingRelationShip/add-following-relation-ship",
         method: "POST",
-        params: { followingUserId },
+        params,
       }),
+      async onQueryStarted({ followingUserId }, { dispatch, queryFulfilled }) {
+        // 1. Optimistically update follow status check
+        const patchFollow = dispatch(
+          userProfileApi.util.updateQueryData("isFollowingUser", { followingUserId }, (draft) => {
+            if (draft) draft.data = true;
+          })
+        );
+        
+        // 2. Optimistically update my following count
+        const patchMyProfile = dispatch(
+          userProfileApi.util.updateQueryData("getMyProfile", undefined, (draft) => {
+            if (draft?.data) {
+                if (draft.data.followingCount !== undefined) draft.data.followingCount += 1;
+                else if ((draft.data as any).subscriptionsCount !== undefined) (draft.data as any).subscriptionsCount += 1;
+            }
+          })
+        );
+
+        // 3. Optimistically update target user's followers count
+        const patchOtherProfile = dispatch(
+          userProfileApi.util.updateQueryData("getUserProfileById", followingUserId, (draft) => {
+            if (draft?.data) {
+                if (draft.data.followersCount !== undefined) draft.data.followersCount += 1;
+                else if ((draft.data as any).subscribersCount !== undefined) (draft.data as any).subscribersCount += 1;
+            }
+          })
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          patchFollow.undo();
+          patchMyProfile.undo();
+          patchOtherProfile.undo();
+        }
+      },
       invalidatesTags: ["Profile", "Following"],
     }),
 
     deleteFollowingRelationShip: builder.mutation<void, { followingUserId: string }>({
-      query: ({ followingUserId }) => ({
+      query: (params) => ({
         url: "/FollowingRelationShip/delete-following-relation-ship",
         method: "DELETE",
-        params: { followingUserId },
+        params,
       }),
+      async onQueryStarted({ followingUserId }, { dispatch, queryFulfilled }) {
+        // 1. Optimistically update follow status check
+        const patchFollow = dispatch(
+          userProfileApi.util.updateQueryData("isFollowingUser", { followingUserId }, (draft) => {
+            if (draft) draft.data = false;
+          })
+        );
+
+        // 2. Optimistically update my following count
+        const patchMyProfile = dispatch(
+          userProfileApi.util.updateQueryData("getMyProfile", undefined, (draft) => {
+            if (draft?.data) {
+                if (draft.data.followingCount !== undefined) draft.data.followingCount -= 1;
+                else if ((draft.data as any).subscriptionsCount !== undefined) (draft.data as any).subscriptionsCount -= 1;
+            }
+          })
+        );
+
+        // 3. Optimistically update target user's followers count
+        const patchOtherProfile = dispatch(
+          userProfileApi.util.updateQueryData("getUserProfileById", followingUserId, (draft) => {
+            if (draft?.data) {
+                if (draft.data.followersCount !== undefined) draft.data.followersCount -= 1;
+                else if ((draft.data as any).subscribersCount !== undefined) (draft.data as any).subscribersCount -= 1;
+            }
+          })
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          patchFollow.undo();
+          patchMyProfile.undo();
+          patchOtherProfile.undo();
+        }
+      },
       invalidatesTags: ["Profile", "Following"],
     }),
 
@@ -102,6 +194,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
 
   }),
 });
+
 export const {
   useGetMyProfileQuery,
   useGetUserProfileByIdQuery,

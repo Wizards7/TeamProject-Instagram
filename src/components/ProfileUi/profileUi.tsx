@@ -69,13 +69,13 @@ const PostThumbnail: React.FC<{ post: IPost; onClick: () => void }> = ({
           <svg fill="white" height="18" viewBox="0 0 24 24" width="18">
             <path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z" />
           </svg>
-          {post.postLikeCount.toLocaleString()}
+          {(post.postLikeCount ?? 0).toLocaleString()}
         </span>
         <span className="flex items-center gap-1.5">
           <svg fill="white" height="18" viewBox="0 0 24 24" width="18">
             <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" />
           </svg>
-          {post.commentCount.toLocaleString()}
+          {(post.commentCount ?? 0).toLocaleString()}
         </span>
       </div>
 
@@ -141,6 +141,15 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
     if (!commentText.trim()) return;
     try {
       await addComment({ postId: post.postId, comment: commentText }).unwrap();
+      addNotification({
+        type: "comment",
+        userId: post.userId,
+        userName: post.userName,
+        userImage: post.userImage,
+        postId: post.postId,
+        postImage: post.images?.[0],
+        content: `commented: ${commentText}`,
+      });
       setCommentText("");
     } catch (err) {
       console.error("Failed to add comment", err);
@@ -330,7 +339,7 @@ const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
             </div>
             
             <div className="flex flex-col">
-              <p className="text-sm font-bold">{post.postLikeCount.toLocaleString()} likes</p>
+              <p className="text-sm font-bold">{(post.postLikeCount ?? 0).toLocaleString()} likes</p>
               <span className="text-[10px] text-gray-400 uppercase mt-1">April 24, 2026</span>
             </div>
           </div>
@@ -555,33 +564,51 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
     useAddFollowingRelationShipMutation();
   const [deleteFollow, { isLoading: isUnfollowingLoading }] =
     useDeleteFollowingRelationShipMutation();
+  const profileId = profile?.userId || profile?.id;
   const { data: followStatus } = useIsFollowingUserQuery(
-    { followingUserId: userId || "" },
-    { skip: isMyProfile },
+    { followingUserId: profileId || "" },
+    { skip: isMyProfile || !profileId },
   );
-  const isFollowing = followStatus?.data ?? false;
+  
+  const [localFollowState, setLocalFollowState] = useState<boolean | null>(null);
+  const isFollowing = localFollowState !== null ? localFollowState : (followStatus?.data ?? false);
+
+  useEffect(() => {
+    setLocalFollowState(null);
+  }, [userId]);
 
   const [createChat] = useCreateChatMutation();
   const [viewPost] = useViewPostMutation();
 
   const handleFollow = async () => {
-    if (!userId) return;
+    const targetId = profile?.userId || profile?.id || userId;
+    if (!targetId) return;
+
+    const nextState = !isFollowing;
+    setLocalFollowState(nextState);
+
     try {
       if (isFollowing) {
-        await deleteFollow({ followingUserId: userId }).unwrap();
+        await deleteFollow({ followingUserId: targetId }).unwrap();
       } else {
-        await addFollow({ followingUserId: userId }).unwrap();
-        // Simulation: Notify current user that they followed someone (or someone followed them)
+        await addFollow({ followingUserId: targetId }).unwrap();
+        // Simulation: Notify target user
         addNotification({
           type: "follow",
-          userId: profile?.userId || profile?.id || userId,
+          userId: profile?.userId || profile?.id || targetId,
           userName: profile?.userName || "User",
           userImage: profile?.image || null,
           content: "started following you.",
         });
       }
-    } catch (err) {
-      console.error("Follow action failed", err);
+    } catch (err: any) {
+      setLocalFollowState(isFollowing); // Revert on failure
+      console.error("Follow action failed:", {
+        error: err,
+        status: err?.status,
+        data: err?.data,
+        targetId
+      });
     }
   };
 
@@ -598,9 +625,11 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
 
   // Helper to handle various response structures
   const extractPosts = (data: any): IPost[] => {
+    if (!data) return [];
     if (Array.isArray(data)) return data;
     if (Array.isArray(data?.data)) return data.data;
-    return (data as any)?.data?.data ?? [];
+    if (data?.data?.data && Array.isArray(data.data.data)) return data.data.data;
+    return [];
   };
 
   const myPosts = extractPosts(myPostsData);
@@ -785,7 +814,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
               className="flex flex-col md:flex-row items-center gap-1 hover:opacity-70 transition-opacity"
             >
               <span className="font-bold text-[16px]">
-                {(profile.followersCount ?? 0).toLocaleString()}
+                {(profile.followersCount ?? (profile as any).subscribersCount ?? 0).toLocaleString()}
               </span>
               <span className="text-gray-500 text-[14px]">followers</span>
             </button>
@@ -794,7 +823,7 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
               className="flex flex-col md:flex-row items-center gap-1 hover:opacity-70 transition-opacity"
             >
               <span className="font-bold text-[16px]">
-                {(profile.followingCount ?? 0).toLocaleString()}
+                {(profile.followingCount ?? (profile as any).subscriptionsCount ?? 0).toLocaleString()}
               </span>
               <span className="text-gray-500 text-[14px]">following</span>
             </button>
@@ -829,13 +858,13 @@ const ProfileUi = ({ userId }: { userId?: string }) => {
             <button
               onClick={handleFollow}
               disabled={isFollowingLoading || isUnfollowingLoading}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${isFollowing
-                ? "bg-gray-100 hover:bg-gray-200 text-black"
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors flex items-center justify-center min-h-[32px] ${isFollowing
+                ? "bg-gray-100 dark:bg-[#363636] hover:bg-gray-200 text-black dark:text-white"
                 : "bg-[#0095f6] text-white hover:bg-[#1877f2]"
                 }`}
             >
               {isFollowingLoading || isUnfollowingLoading
-                ? "..."
+                ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 : isFollowing
                   ? "Following"
                   : "Follow"}
