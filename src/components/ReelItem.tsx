@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import { IPost } from "../types/interface";
 import { useAddCommentMutation, useLikePostMutation, useAddPostFavoriteMutation, useDeleteCommentMutation } from "../api/post";
+import { ShareModal } from "./ShareModal";
 
 interface ReelItemProps {
   reel: IPost;
@@ -22,6 +23,7 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showCenterIcon, setShowCenterIcon] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const FILE_URL = "https://instagram-api.softclub.tj/images/";
@@ -172,7 +174,7 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
               <svg color="white" fill="white" height="26" viewBox="0 0 24 24" width="26"><path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" strokeWidth="2"></path></svg>
               <span className="font-bold">{reel.commentCount}</span>
             </div>
-            <div className="flex flex-col items-center gap-1 cursor-pointer hover:opacity-70 transition-opacity">
+            <div className="flex flex-col items-center gap-1 cursor-pointer hover:opacity-70 transition-opacity" onClick={(e) => { e.stopPropagation(); setShowShareModal(true); }}>
               <svg color="white" fill="white" height="26" viewBox="0 0 24 24" width="26"><line fill="none" stroke="currentColor" strokeWidth="2" x1="22" x2="9.218" y1="3" y2="10.083"></line><polygon fill="none" points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334" stroke="currentColor" strokeWidth="2"></polygon></svg>
             </div>
             <div className="flex flex-col items-center gap-1 cursor-pointer hover:opacity-70 transition-opacity" onClick={handleFavorite}>
@@ -265,6 +267,13 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
           </div>
         )}
       </div>
+      {showShareModal && (
+        <ShareModal 
+          postId={reel.postId} 
+          postUrl={typeof window !== 'undefined' ? `${window.location.origin}/${locale}/reels/${reel.postId}` : ""} 
+          onClose={() => setShowShareModal(false)} 
+        />
+      )}
     </div>
   );
 };

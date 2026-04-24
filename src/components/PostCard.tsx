@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import { IPost } from "../types/interface";
 import { useLikePostMutation, useAddCommentMutation, useAddPostFavoriteMutation, useDeleteCommentMutation } from "../api/post";
+import { ShareModal } from "./ShareModal";
 
 interface PostCardProps {
   post: IPost;
@@ -21,6 +22,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showCenterIcon, setShowCenterIcon] = useState(false);
   const [showAllComments, setShowAllComments] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -179,7 +181,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               )}
             </button>
             <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22l-1.344-4.992z"></path></svg>
-            <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><line x1="22" y1="3" x2="9.218" y2="10.083"></line><polygon points="11.698 20.334 22 3.001 2 3.001 9.218 10.083 11.698 20.334"></polygon></svg>
+            <button onClick={() => setShowShareModal(true)} className="hover:opacity-60 transition-opacity">
+              <svg color="black" fill="none" height="24" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><line x1="22" y1="3" x2="9.218" y2="10.083"></line><polygon points="11.698 20.334 22 3.001 2 3.001 9.218 10.083 11.698 20.334"></polygon></svg>
+            </button>
           </div>
           <button onClick={() => addFavorite(post.postId)} className="hover:opacity-60 transform active:scale-125 transition-all">
             {post.postFavorite ? (
@@ -262,6 +266,13 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </form>
         </div>
       </div>
+      {showShareModal && (
+        <ShareModal 
+          postId={post.postId} 
+          postUrl={typeof window !== 'undefined' ? `${window.location.origin}/${locale}/post/${post.postId}` : ""} 
+          onClose={() => setShowShareModal(false)} 
+        />
+      )}
     </div>
   );
 };
