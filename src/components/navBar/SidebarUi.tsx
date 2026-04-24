@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, usePathname } from "@/src/i18n/navigation";
 import { AnimatePresence } from "framer-motion";
 import { logoutUser } from "../../utils/token";
@@ -9,7 +9,13 @@ import { useNotifications } from "../../utils/notifications";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
-const sidebarItems = [
+interface SidebarItem {
+  label: string;
+  href: string;
+  icon: (active: boolean, hasUnread?: boolean) => React.ReactNode;
+}
+
+const sidebarItems: SidebarItem[] = [
   {
     label: "Home",
     href: "/",
@@ -227,9 +233,7 @@ export default function Sidebar() {
                     ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
                 >
                   <div className="transition-transform duration-200 group-hover:scale-110">
-                    {item.label === "Notifications" 
-                      ? (item.icon as any)(isActive, hasUnread) 
-                      : (item.icon as any)(isActive)}
+                    {item.icon(isActive)}
                   </div>
                   <span
                     className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}
@@ -248,9 +252,7 @@ export default function Sidebar() {
                   ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
               >
                 <div className="transition-transform duration-200 group-hover:scale-110">
-                  {item.label === "Notifications" 
-                    ? (item.icon as any)(isActive, hasUnread) 
-                    : (item.icon as any)(isActive)}
+                  {item.icon(isActive, item.label === "Notifications" ? hasUnread : undefined)}
                 </div>
                 <span
                   className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}
