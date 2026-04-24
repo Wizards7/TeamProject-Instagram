@@ -34,7 +34,7 @@ const EditProfileUi = () => {
     if (profile) {
       setAbout(profile.about || "");
       setGender(profile.gender ?? 0);
-      setFullName(profile.fullName || "");
+      setFullName(`${profile.firstName || ""} ${profile.lastName || ""}`.trim());
       setUserName(profile.userName || "");
     }
   }, [profile]);
@@ -42,7 +42,17 @@ const EditProfileUi = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateProfile({ about, gender }).unwrap();
+      const nameParts = fullName.trim().split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ");
+
+      await updateProfile({ 
+        about, 
+        gender, 
+        firstName, 
+        lastName, 
+        userName 
+      }).unwrap();
       router.push("/profile");
     } catch (err) {
       console.error("Failed to update profile:", err);
@@ -124,7 +134,7 @@ const EditProfileUi = () => {
             <p className="font-bold text-sm leading-tight">
               {profile.userName}
             </p>
-            <p className="text-gray-500 text-sm">{profile.fullName}</p>
+            <p className="text-gray-500 text-sm">{profile.firstName + " " + profile.lastName}</p>
           </div>
         </div>
         <div className="flex flex-col gap-2">

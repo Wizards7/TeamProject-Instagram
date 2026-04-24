@@ -72,7 +72,8 @@ export interface IUserProfile {
   id?: string;
   userId?: string;
   userName: string;
-  fullName: string;
+  firstName: string;
+  lastName?: string;
   email: string;
   phoneNumber?: string;
   image: string | null;

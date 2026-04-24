@@ -74,7 +74,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
       providesTags: ["Following"],
     }),
 
-    updateUserProfile: builder.mutation<void, { about: string; gender: number }>({
+    updateUserProfile: builder.mutation<void, { about: string; gender: number; firstName: string; lastName: string; userName: string }>({
       query: (body) => ({
         url: "/UserProfile/update-user-profile",
         method: "PUT",
