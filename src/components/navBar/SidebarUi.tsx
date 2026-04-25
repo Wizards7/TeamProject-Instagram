@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { Link, usePathname } from "@/src/i18n/navigation";
-import { AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
+import { motion, AnimatePresence } from "framer-motion";
 import { logoutUser } from "../../utils/token";
 import { useGetMyProfileQuery } from "../../api/userProfile";
 
@@ -21,7 +22,7 @@ const sidebarItems: SidebarItem[] = [
     icon: (active: boolean) => (
       <svg
         aria-label="Home"
-        color={active ? "#0095f6" : "#262626"}
+        color="currentColor" className={active ? "text-[#0095f6]" : "text-[#262626] dark:text-gray-200"}
         fill={active ? "#0095f6" : "none"}
         height="24"
         role="img"
@@ -44,7 +45,7 @@ const sidebarItems: SidebarItem[] = [
     icon: (active: boolean) => (
       <svg
         aria-label="Search"
-        color={active ? "#0095f6" : "#262626"}
+        color="currentColor" className={active ? "text-[#0095f6]" : "text-[#262626] dark:text-gray-200"}
         fill="none"
         height="24"
         role="img"
@@ -117,7 +118,7 @@ const sidebarItems: SidebarItem[] = [
       <div className="relative">
         <svg
           aria-label="Notifications"
-          color={active ? "#0095f6" : "#262626"}
+          color="currentColor" className={active ? "text-[#0095f6]" : "text-[#262626] dark:text-gray-200"}
           fill={active ? "#0095f6" : "none"}
           height="24"
           role="img"
@@ -144,7 +145,7 @@ const sidebarItems: SidebarItem[] = [
     icon: (active: boolean) => (
       <svg
         aria-label="New Post"
-        color={active ? "#0095f6" : "#262626"}
+        color="currentColor" className={active ? "text-[#0095f6]" : "text-[#262626] dark:text-gray-200"}
         fill="none"
         height="24"
         role="img"
@@ -192,26 +193,56 @@ const sidebarItems: SidebarItem[] = [
 
 import CreatePostModal from "../createPost/CreatePostModal";
 import LogoutModal from "../Auth/LogoutModal";
+import { NotificationDrawer } from "./NotificationDrawer";
 
 export default function Sidebar() {
+  const t = useTranslations("Sidebar");
   const pathname = usePathname();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const { data: profileData } = useGetMyProfileQuery();
   const profile = profileData?.data;
 
+  const expanded = isHovered || isMoreOpen;
+
   return (
     <>
-      <aside className="fixed left-0 top-0 bottom-0 w-[245px] border-r border-[#dbdbdb] py-2 px-3 flex flex-col z-50 bg-white group transition-all duration-300">
+      <aside
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          if (isMoreOpen) setIsMoreOpen(false);
+        }}
+        className={`fixed left-0 top-0 bottom-0 border-r border-border py-2 px-3 flex flex-col z-50 bg-background transition-all duration-300 ease-in-out ${
+          expanded ? "w-[245px]" : "w-[72px]"
+        }`}
+      >
         {/* Logo */}
-        <div className="pt-8 pb-10 px-3 flex items-center">
-          <Link href="/">
-            <img
-              src="/Frame 168.png"
-              alt="Instagram"
-              className="w-[153px] h-auto object-contain"
-            />
+        <div className="pt-8 pb-10 px-3 flex items-center overflow-hidden h-[76px]">
+          <Link href="/" className="flex items-center">
+            {expanded ? (
+              <img
+                src="/Frame 168.png"
+                alt="Instagram"
+                className="w-[153px] h-auto object-contain transition-opacity duration-200"
+              />
+            ) : (
+              <svg
+                aria-label="Instagram"
+                color="currentColor"
+                fill="currentColor"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                className="text-foreground"
+              >
+                <path d="M12 2.982c2.937 0 3.285.011 4.445.064a6.087 6.087 0 0 1 2.042.379 3.408 3.408 0 0 1 1.265.823 3.408 3.408 0 0 1 .823 1.265 6.087 6.087 0 0 1 .379 2.042c.053 1.16.064 1.508.064 4.445s-.011 3.285-.064 4.445a6.087 6.087 0 0 1-.379 2.042 3.643 3.643 0 0 1-2.088 2.088 6.087 6.087 0 0 1-2.042.379c-1.16.053-1.508.064-4.445.064s-3.285-.011-4.445-.064a6.087 6.087 0 0 1-2.042-.379 3.408 3.408 0 0 1-1.265-.823 3.408 3.408 0 0 1-.823-1.265 6.087 6.087 0 0 1-.379-2.042c-.053-1.16-.064-1.508-.064-4.445s.011-3.285.064-4.445a6.087 6.087 0 0 1 .379-2.042 3.408 3.408 0 0 1 .823-1.265 3.408 3.408 0 0 1 1.265-.823 6.087 6.087 0 0 1 2.042-.379c1.16-.053 1.508-.064 4.445-.064M12 1c-2.987 0-3.362.013-4.535.066a8.074 8.074 0 0 0-2.67.511 5.392 5.392 0 0 0-1.949 1.27 5.392 5.392 0 0 0-1.269 1.948 8.074 8.074 0 0 0-.51 2.67C1.012 8.638 1 9.013 1 12s.013 3.362.066 4.535a8.074 8.074 0 0 0 .511 2.67 5.392 5.392 0 0 0 1.27 1.949 5.392 5.392 0 0 0 1.948 1.269 8.074 8.074 0 0 0 2.67.51C8.638 22.988 9.013 23 12 23s3.362-.013 4.535-.066a8.074 8.074 0 0 0 2.67-.511 5.625 5.625 0 0 0 3.218-3.218 8.074 8.074 0 0 0 .51-2.67C22.988 15.362 23 14.987 23 12s-.013-3.362-.066-4.535a8.074 8.074 0 0 0-.511-2.67 5.392 5.392 0 0 0-1.27-1.949 5.392 5.392 0 0 0-1.948-1.269 8.074 8.074 0 0 0-2.67-.51C15.362 1.012 14.987 1 12 1Zm0 5.351A5.649 5.649 0 1 0 17.649 12 5.649 5.649 0 0 0 12 6.351Zm0 9.316A3.667 3.667 0 1 1 15.667 12 3.667 3.667 0 0 1 12 15.667Zm5.872-10.859a1.32 1.32 0 1 0 1.32 1.32 1.32 1.32 0 0 0-1.32-1.32Z" />
+              </svg>
+            )}
           </Link>
         </div>
 
@@ -225,16 +256,40 @@ export default function Sidebar() {
                 <button
                   key={item.label}
                   onClick={() => setIsCreateModalOpen(true)}
-                  className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group
-                    ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
+                  className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group/item
+                    ${isActive ? "bg-muted text-foreground" : "hover:bg-muted text-foreground"}`}
                 >
-                  <div className="transition-transform duration-200 group-hover:scale-110">
+                  <div className="shrink-0 transition-transform duration-200 group-hover/item:scale-110">
                     {item.icon(isActive)}
                   </div>
                   <span
-                    className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}
+                    className={`text-base tracking-wide whitespace-nowrap overflow-hidden transition-all duration-300 ${
+                      expanded ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"
+                    } ${isActive ? "font-bold" : "font-normal"}`}
                   >
-                    {item.label}
+                    {t(item.label.toLowerCase())}
+                  </span>
+                </button>
+              );
+            }
+
+            if (item.label === "Notifications") {
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                  className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group/item
+                    ${isNotificationOpen ? "bg-muted text-foreground" : "hover:bg-muted text-foreground"}`}
+                >
+                  <div className="shrink-0 transition-transform duration-200 group-hover/item:scale-110">
+                    {item.icon(isNotificationOpen)}
+                  </div>
+                  <span
+                    className={`text-base tracking-wide whitespace-nowrap overflow-hidden transition-all duration-300 ${
+                      expanded ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"
+                    } ${isNotificationOpen ? "font-bold" : "font-normal"}`}
+                  >
+                    {t("notifications")}
                   </span>
                 </button>
               );
@@ -244,16 +299,18 @@ export default function Sidebar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group
-                  ${isActive ? "bg-[#f2f2f2] text-black" : "hover:bg-[#fafafa] text-[#262626]"}`}
+                className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative group/item
+                  ${isActive ? "bg-muted text-foreground" : "hover:bg-muted text-foreground"}`}
               >
-                <div className="transition-transform duration-200 group-hover:scale-110">
+                <div className="shrink-0 transition-transform duration-200 group-hover/item:scale-110">
                   {item.icon(isActive)}
                 </div>
                 <span
-                  className={`text-base tracking-wide ${isActive ? "font-bold" : "font-normal text-[#262626]"}`}
+                  className={`text-base tracking-wide whitespace-nowrap overflow-hidden transition-all duration-300 ${
+                    expanded ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"
+                  } ${isActive ? "font-bold" : "font-normal"}`}
                 >
-                  {item.label}
+                  {t(item.label.toLowerCase())}
                 </span>
 
                 {isActive && (
@@ -263,15 +320,15 @@ export default function Sidebar() {
             );
           })}
 
-          {/* Profile (Special Item) */}
+          {/* Profile Link */}
           <Link
             href="/profile"
-            className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-200 relative group
-              ${pathname === "/profile" ? "text-[#0095f6]" : "hover:bg-[#fafafa] text-[#262626]"}`}
+            className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-200 relative group/item
+              ${pathname === "/profile" ? "text-[#0095f6]" : "hover:bg-muted text-foreground"}`}
           >
             <div
-              className={`w-6 h-6 rounded-full overflow-hidden border transition-all group-hover:scale-110 flex items-center justify-center bg-gray-100
-              ${pathname === "/profile" ? "border-[#0095f6]" : "border-gray-300"}`}
+              className={`w-6 h-6 shrink-0 rounded-full overflow-hidden border transition-all group-hover/item:scale-110 flex items-center justify-center bg-gray-100 dark:bg-[#1a1a1a]
+              ${pathname === "/profile" ? "border-[#0095f6]" : "border-gray-300 dark:border-gray-700"}`}
             >
               {profile?.image ? (
                 <img
@@ -286,9 +343,11 @@ export default function Sidebar() {
               )}
             </div>
             <span
-              className={`text-base tracking-wide ${pathname === "/profile" ? "font-bold" : "font-normal"}`}
+              className={`text-base tracking-wide whitespace-nowrap overflow-hidden transition-all duration-300 ${
+                expanded ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"
+              } ${pathname === "/profile" ? "font-bold" : "font-normal"}`}
             >
-              Profile
+              {t("profile")}
             </span>
             {pathname === "/profile" && (
               <div className="absolute right-[-12px] top-1 bottom-1 w-1 bg-[#0095f6] rounded-l-full shadow-[0_0_8px_rgba(0,149,246,0.5)]" />
@@ -300,43 +359,39 @@ export default function Sidebar() {
         <div className="mt-auto pb-4 relative">
           {/* Dropup Menu */}
           {isMoreOpen && (
-            <div className="absolute bottom-[70px] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.1)] z-[100] overflow-hidden transform transition-all duration-200 min-w-[220px]">
+            <div className="absolute bottom-[70px] left-0 w-full bg-background border border-border rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.1)] z-[100] overflow-hidden transform transition-all duration-200 min-w-[220px]">
               <div className="flex flex-col p-2">
-                <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left">
-                  <span>Settings</span>
-                </button>
-                <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left">
-                  <span>Your activity</span>
-                </button>
-                <button className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left border-b border-gray-100 mb-1">
-                  <span>Saved</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setIsMoreOpen(false);
-                    setShowLogoutModal(true);
-                  }}
-                  className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-sm w-full text-left"
+                <Link
+                  href="/settings"
+                  onClick={() => setIsMoreOpen(false)}
+                  className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors text-sm w-full text-left text-foreground"
                 >
-                  <span className="text-[red]">Log out</span>
-                </button>
+                  <span>{t("settings")}</span>
+                </Link>
+                <Link
+                  href="/saved"
+                  onClick={() => setIsMoreOpen(false)}
+                  className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors text-sm w-full text-left border-b border-border mb-1 text-foreground"
+                >
+                  <span>{t("saved")}</span>
+                </Link>
               </div>
             </div>
           )}
 
           <button
             onClick={() => setIsMoreOpen(!isMoreOpen)}
-            className={`flex items-center gap-4 p-3 w-full rounded-lg hover:bg-[#fafafa] transition-all text-[#262626] group ${isMoreOpen ? "bg-[#fafafa]" : ""}`}
+            className={`flex items-center gap-4 p-3 w-full rounded-lg hover:bg-muted transition-all text-foreground group/item ${isMoreOpen ? "bg-muted" : ""}`}
           >
             <svg
               aria-label="Settings"
-              color="#262626"
+              color="currentColor"
               fill="none"
               height="24"
               role="img"
               viewBox="0 0 24 24"
               width="24"
-              className="group-hover:scale-110 transition-transform"
+              className="shrink-0 group-hover/item:scale-110 transition-transform"
             >
               <line
                 fill="none"
@@ -373,9 +428,11 @@ export default function Sidebar() {
               ></line>
             </svg>
             <span
-              className={`text-base ${isMoreOpen ? "font-bold" : "font-normal"}`}
+              className={`text-base whitespace-nowrap overflow-hidden transition-all duration-300 ${
+                expanded ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"
+              } ${isMoreOpen ? "font-bold" : "font-normal"}`}
             >
-              More
+              {t("more")}
             </span>
           </button>
         </div>
@@ -390,6 +447,11 @@ export default function Sidebar() {
       {showLogoutModal && (
         <LogoutModal onClose={() => setShowLogoutModal(false)} />
       )}
+
+      <NotificationDrawer 
+        isOpen={isNotificationOpen} 
+        onClose={() => setIsNotificationOpen(false)} 
+      />
     </>
   );
 }

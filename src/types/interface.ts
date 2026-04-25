@@ -161,4 +161,5 @@ export interface FollowModalProps {
   title: string;
   users: IFollower[];
   onClose: () => void;
+  isLoading?: boolean;
 }

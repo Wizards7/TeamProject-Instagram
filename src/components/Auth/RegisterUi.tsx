@@ -52,11 +52,11 @@ const RegisterUi = () => {
       <div className="flex flex-col gap-3 w-full max-w-[350px]">
         <div className="bg-white border border-gray-300 px-10 py-10 flex flex-col items-center">
           <div className="mb-4 mt-2">
-            <i 
-                className="bg-[url('https://static.cdninstagram.com/rsrc.php/v3/yS/r/aj_4-oR96_B.png')] bg-[position:0px_-52px] w-[175px] h-[51px] block scale-110"
-                aria-label="Instagram"
-                role="img"
-              ></i>
+            <i
+              className="bg-[url('https://static.cdninstagram.com/rsrc.php/v3/yS/r/aj_4-oR96_B.png')] bg-[position:0px_-52px] w-[175px] h-[51px] block scale-110"
+              aria-label="Instagram"
+              role="img"
+            ></i>
           </div>
 
           <h2 className="text-[#737373] text-[17px] font-semibold text-center leading-5 mb-6">

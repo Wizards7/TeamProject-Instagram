@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import Providers from "@/src/components/ProvidersUi";
 import Sidebar from "@/src/components/navBar/SidebarUi";
+import { ThemeProvider } from "@/src/components/theme-provider";
 
 import MobileNav from "@/src/components/navBar/MobileNav";
 
@@ -28,38 +29,45 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang={locale}>
-      <body className="antialiased bg-white overflow-x-hidden">
-        <Providers>
-          <NextIntlClientProvider locale={locale}>
-            <div className="flex min-h-screen">
-              {/* Sidebar: Only visible if logged in */}
-              {isLoggedIn && (
-                <div className="hidden lg:block">
-                  <Sidebar />
-                </div>
-              )}
+    <html lang={locale} suppressHydrationWarning>
+      <body className="antialiased bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Providers>
+            <NextIntlClientProvider locale={locale}>
+              <div className="flex min-h-screen">
+                {/* Sidebar: Only visible if logged in */}
+                {isLoggedIn && (
+                  <div className="hidden lg:block">
+                    <Sidebar />
+                  </div>
+                )}
 
-              {/* Main Content Area: Margin only if sidebar is present */}
-              <main
-                className={`flex-1 transition-all duration-300 ${isLoggedIn ? "lg:ml-[245px]" : ""}`}
-              >
-                <div
-                  className={
-                    isLoggedIn
-                      ? "max-w-[975px] mx-auto pt-8 px-4 sm:px-8"
-                      : "w-full min-h-screen"
-                  }
+                {/* Main Content Area: Margin only if sidebar is present */}
+                <main
+                  className={`flex-1 transition-all duration-300 ${isLoggedIn ? "lg:ml-[72px]" : ""}`}
                 >
-                  {children}
-                </div>
-              </main>
+                  <div
+                    className={
+                      isLoggedIn
+                        ? "max-w-[975px] mx-auto pt-8 px-4 sm:px-8"
+                        : "w-full min-h-screen"
+                    }
+                  >
+                    {children}
+                  </div>
+                </main>
 
-              {/* Mobile Bottom Nav: Only show if logged in */}
-              {isLoggedIn && <MobileNav />}
-            </div>
-          </NextIntlClientProvider>
-        </Providers>
+                {/* Mobile Bottom Nav: Only show if logged in */}
+                {isLoggedIn && <MobileNav />}
+              </div>
+            </NextIntlClientProvider>
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );

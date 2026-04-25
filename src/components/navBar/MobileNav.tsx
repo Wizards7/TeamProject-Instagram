@@ -15,7 +15,7 @@ export default function MobileNav() {
     {
       href: "/",
       icon: (active: boolean) => (
-        <svg aria-label="Home" color="black" fill={active ? "black" : "none"} height="24" role="img" viewBox="0 0 24 24" width="24">
+        <svg aria-label="Home" color="currentColor" className={active ? "text-[#0095f6]" : "text-black dark:text-white"} fill={active ? "currentColor" : "none"} height="24" role="img" viewBox="0 0 24 24" width="24">
           <path d="M9.005 16.545a2.997 2.997 0 012.997-2.997h0A2.997 2.997 0 0115 16.545V22h7V11.543L12 2 2 11.543V22h7v-5.455z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
         </svg>
       )
@@ -23,7 +23,7 @@ export default function MobileNav() {
     {
       href: "/search",
       icon: (active: boolean) => (
-        <svg aria-label="Search" color="black" fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
+        <svg aria-label="Search" color="currentColor" className={active ? "text-[#0095f6]" : "text-black dark:text-white"} fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
           <path d="M19 10.5A8.5 8.5 0 1110.5 2a8.5 8.5 0 018.5 8.5z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? "3" : "2"}></path>
           <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? "3" : "2"} x1="16.511" x2="22" y1="16.511" y2="22"></line>
         </svg>
@@ -42,7 +42,7 @@ export default function MobileNav() {
     {
       href: "/createPost",
       icon: (active: boolean) => (
-        <svg aria-label="New Post" color="black" fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
+        <svg aria-label="New Post" color="currentColor" className={active ? "text-[#0095f6]" : "text-black dark:text-white"} fill="none" height="24" role="img" viewBox="0 0 24 24" width="24">
           <rect fill="none" height="18" rx="3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="18" x="3" y="3"></rect>
           <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="12" x2="12" y1="8" y2="16"></line>
           <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="8" x2="16" y1="12" y2="12"></line>
@@ -52,7 +52,7 @@ export default function MobileNav() {
     {
       href: "/profile",
       icon: (active: boolean) => (
-        <div className={`w-6 h-6 rounded-full overflow-hidden border flex items-center justify-center bg-gray-100 ${active ? "border-black" : "border-transparent"}`}>
+        <div className={`w-6 h-6 rounded-full overflow-hidden border flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${active ? "border-black dark:border-white" : "border-transparent"}`}>
           {profile?.image ? (
             <img src={`${FILE_URL}${profile.image}`} className="w-full h-full object-cover" alt="profile" />
           ) : (
@@ -66,7 +66,7 @@ export default function MobileNav() {
   ];
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-[50px] bg-white border-t border-gray-200 z-[100] flex items-center justify-around px-2">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-[50px] bg-background border-t border-border z-[100] flex items-center justify-around px-2">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         return (

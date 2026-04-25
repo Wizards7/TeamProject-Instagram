@@ -2,22 +2,57 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { IPost } from "../../types/interface";
-import { useLikePostMutation } from "../../api/post";
-import { useAddFollowingRelationShipMutation, useIsFollowingUserQuery, useGetMyProfileQuery } from "../../api/userProfile";
+import { useLikePostMutation, useAddCommentMutation } from "../../api/post";
+import { useAddFollowingRelationShipMutation, useIsFollowingUserQuery, useGetMyProfileQuery, useDeleteFollowingRelationShipMutation } from "../../api/userProfile";
+import { Link, useRouter } from "@/src/i18n/navigation";
+import { ShareModal } from "../ShareModal";
+import { useLocale } from "next-intl";
 interface PostModalProps {
   post: IPost;
   onClose: () => void;
 }
-
 const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
   const [likePost] = useLikePostMutation();
-  const [addFollow] = useAddFollowingRelationShipMutation();
+  const [addComment] = useAddCommentMutation();
+  const [commentText, setCommentText] = useState("");
+  const [addFollow, { isLoading: isFollowingMutationLoading }] = useAddFollowingRelationShipMutation();
+  const [deleteFollow] = useDeleteFollowingRelationShipMutation();
+  const router = useRouter();
+  const locale = useLocale();
+  const [showShareModal, setShowShareModal] = useState(false);
+  
+  // Local storage cache for follow status
+  const [localFollows, setLocalFollows] = useState<Record<string, boolean>>({});
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = JSON.parse(localStorage.getItem("followed_users") || "{}");
+      setLocalFollows(saved);
+    }
+  }, []);
+
+  const saveFollowToLocal = (id: string, name: string, state: boolean) => {
+    if (typeof window !== "undefined") {
+      const saved = JSON.parse(localStorage.getItem("followed_users") || "{}");
+      saved[String(id)] = state;
+      saved[String(name)] = state;
+      localStorage.setItem("followed_users", JSON.stringify(saved));
+      setLocalFollows(saved);
+    }
+  };
+
   const { data: followStatus } = useIsFollowingUserQuery(
     { followingUserId: post.userId },
     { skip: !post.userId }
   );
-  const isFollowing = followStatus?.data ?? false;
+
+  const isFollowing = localFollows[String(post.userId)] || localFollows[post.userName] || (followStatus?.data === true);
+  
   const { data: myProfileData } = useGetMyProfileQuery();
+  const myId = myProfileData?.data?.id || myProfileData?.data?.userId;
+  const isMe = (myId && post.userId && String(myId) === String(post.userId)) || 
+               (myProfileData?.data?.userName && post.userName && myProfileData.data.userName === post.userName);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -81,11 +116,41 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
 
   const handleFollow = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isMe || isFollowingMutationLoading) return;
+
+    const nextState = !isFollowing;
+    saveFollowToLocal(String(post.userId), post.userName, nextState);
+    
     try {
-      await addFollow({ followingUserId: post.userId }).unwrap();
-    } catch (err) {
-      console.error("Follow failed", err);
+      if (isFollowing) {
+        await deleteFollow({ followingUserId: post.userId }).unwrap();
+      } else {
+        await addFollow({ followingUserId: post.userId }).unwrap();
+      }
+    } catch (err: any) {
+      if (err?.status === 400) {
+        saveFollowToLocal(String(post.userId), post.userName, nextState);
+      } else {
+        saveFollowToLocal(String(post.userId), post.userName, isFollowing);
+        console.error("Follow failed", err);
+      }
     }
+  };
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+    try {
+      await addComment({ postId: post.postId, comment: commentText }).unwrap();
+      setCommentText("");
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    }
+  };
+
+  const goToProfile = () => {
+    onClose();
+    router.push(`/profile/${post.userId}`);
   };
 
   return (
@@ -162,6 +227,10 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
                 src={`${FILE_URL}${currentMedia}`} 
                 alt={post.title || ""} 
                 className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg";
+                }}
               />
             )
           ) : (
@@ -206,24 +275,44 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
           {/* Header */}
           <div className="p-4 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full border border-gray-200 overflow-hidden bg-gray-50">
+              <div 
+                onClick={goToProfile}
+                className="w-8 h-8 rounded-full border border-gray-200 overflow-hidden bg-gray-50 cursor-pointer"
+              >
                 {post.userImage ? (
-                  <img src={`${FILE_URL}${post.userImage}`} className="w-full h-full object-cover" />
+                  <img 
+                    src={`${FILE_URL}${post.userImage}`} 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg";
+                    }}
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-400">
                     {post.userName?.[0]}
                   </div>
                 )}
               </div>
-              <span className="font-semibold text-sm hover:text-gray-500 cursor-pointer">{post.userName}</span>
-              <span className="text-gray-400">•</span>
-              {!isFollowing && (
-                <button 
-                  onClick={handleFollow}
-                  className="text-[#0095f6] text-sm font-semibold hover:text-[#00376b]"
-                >
-                  Follow
-                </button>
+              <span 
+                onClick={goToProfile}
+                className="font-semibold text-sm hover:text-gray-500 cursor-pointer"
+              >
+                {post.userName}
+              </span>
+              {!isMe && (
+                <>
+                  <span className="text-gray-400 font-bold px-1">•</span>
+                  <button 
+                    onClick={handleFollow}
+                    disabled={isFollowingMutationLoading}
+                    className={`text-sm font-bold transition-all ${
+                      isFollowing ? "text-black" : "text-[#0095f6] hover:text-[#00376b]"
+                    }`}
+                  >
+                    {isFollowing ? "Following" : isFollowingMutationLoading ? "..." : "Follow"}
+                  </button>
+                </>
               )}
             </div>
             <button className="hover:opacity-50">
@@ -237,7 +326,16 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
             {(post.content || post.title) && (
               <div className="flex gap-3">
                  <div className="w-8 h-8 rounded-full border border-gray-200 overflow-hidden shrink-0 mt-1">
-                    {post.userImage && <img src={`${FILE_URL}${post.userImage}`} className="w-full h-full object-cover" />}
+                    {post.userImage && (
+                      <img 
+                        src={`${FILE_URL}${post.userImage}`} 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg";
+                        }}
+                      />
+                    )}
                  </div>
                  <div className="text-sm">
                     <span className="font-semibold mr-2">{post.userName}</span>
@@ -253,7 +351,14 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
                 <div key={comment.postCommentId} className="flex gap-3 animate-fade-in">
                   <div className="w-8 h-8 rounded-full border border-gray-200 overflow-hidden shrink-0 mt-1 bg-gray-50 flex items-center justify-center text-gray-400 font-bold text-[10px]">
                     {comment.userImage ? (
-                      <img src={`${FILE_URL}${comment.userImage}`} className="w-full h-full object-cover" />
+                      <img 
+                        src={`${FILE_URL}${comment.userImage}`} 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg";
+                        }}
+                      />
                     ) : (
                       <span>{comment.userName?.[0]}</span>
                     )}
@@ -297,7 +402,12 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
                    )}
                 </button>
                 <button className="hover:opacity-50"><svg color="#262626" fill="none" height="24" role="img" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22l-1.344-4.992z" strokeLinejoin="round"></path></svg></button>
-                <button className="hover:opacity-50"><svg color="#262626" fill="none" height="24" role="img" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><line x1="22" x2="9.218" y1="3" y2="10.083"></line><polygon points="11.698 20.334 22 3.001 2 3.001 9.218 10.083 11.698 20.334" strokeLinejoin="round"></polygon></svg></button>
+                <button 
+                  onClick={() => setShowShareModal(true)}
+                  className="hover:opacity-50"
+                >
+                  <svg color="#262626" fill="none" height="24" role="img" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><line x1="22" x2="9.218" y1="3" y2="10.083"></line><polygon points="11.698 20.334 22 3.001 2 3.001 9.218 10.083 11.698 20.334" strokeLinejoin="round"></polygon></svg>
+                </button>
               </div>
               <button className="hover:opacity-50"><svg color="#262626" fill="none" height="24" role="img" viewBox="0 0 24 24" width="24" stroke="currentColor" strokeWidth="2"><polygon points="20 21 12 13.44 4 21 4 3 20 3 20 21" strokeLinecap="round" strokeLinejoin="round"></polygon></svg></button>
             </div>
@@ -307,19 +417,38 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
           </div>
 
           {/* Add Comment Bar */}
-          <div className="p-4 border-t border-gray-100 flex items-center gap-3">
-            <button className="hover:opacity-50">
+          <form 
+            onSubmit={handleAddComment}
+            className="p-4 border-t border-gray-100 flex items-center gap-3"
+          >
+            <button type="button" className="hover:opacity-50">
               <svg aria-label="Emoji" color="#262626" fill="#262626" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M15.83 10.997a1.167 1.167 0 101.167 1.167 1.167 1.167 0 00-1.167-1.167zm-6.5 1.167a1.167 1.167 0 10-1.166-1.167 1.167 1.167 0 001.166 1.167zm5.163 3.24a3.406 3.406 0 01-4.982.007 1 1 0 10-1.557 1.256 5.397 5.397 0 008.09 0 1 1 0 00-1.55-1.263zM12 .503a11.5 11.5 0 1011.5 11.5A11.513 11.513 0 0012 .503zm0 21a9.5 9.5 0 119.5-9.5 9.51 9.51 0 01-9.5 9.5z"></path></svg>
             </button>
             <input 
               type="text" 
               placeholder="Add a comment..." 
               className="flex-1 text-sm border-none focus:ring-0 active:ring-0 outline-none"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
             />
-            <button className="text-[#0095f6] text-sm font-semibold opacity-50 cursor-default">Post</button>
-          </div>
+            <button 
+              type="submit"
+              disabled={!commentText.trim()}
+              className={`text-[#0095f6] text-sm font-semibold transition-opacity ${!commentText.trim() ? "opacity-30 cursor-default" : "hover:text-[#1877f2]"}`}
+            >
+              Post
+            </button>
+          </form>
         </div>
       </div>
+      
+      {showShareModal && (
+        <ShareModal 
+          postId={post.postId}
+          onClose={() => setShowShareModal(false)} 
+          postUrl={typeof window !== 'undefined' ? `${window.location.origin}/${locale}/post/${post.postId}` : ""} 
+        />
+      )}
     </div>
   );
 };

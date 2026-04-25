@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useGetUsersQuery } from "../api/user";
 import { useCreateChatMutation, useSendMessageMutation } from "../api/chat";
+import { useGetFollowingQuery, useGetMyProfileQuery } from "../api/userProfile";
 import { IUser } from "../types/interface";
 
 interface ShareModalProps {
@@ -15,7 +16,19 @@ const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
 export const ShareModal: React.FC<ShareModalProps> = ({ postId, postUrl, onClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: usersData, isLoading } = useGetUsersQuery({ UserName: searchTerm, PageSize: 20 });
+  const { data: myProfile } = useGetMyProfileQuery();
+  const myId = myProfile?.data?.id || myProfile?.data?.userId;
+
+  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery(
+    { UserName: searchTerm, PageSize: 20 },
+    { skip: !searchTerm }
+  );
+
+  const { data: followingData, isLoading: followingLoading } = useGetFollowingQuery(
+    { userId: myId || "" },
+    { skip: !!searchTerm || !myId }
+  );
+
   const [createChat] = useCreateChatMutation();
   const [sendMessage] = useSendMessageMutation();
   const [selectedUsers, setSelectedUsers] = useState<IUser[]>([]);
@@ -63,7 +76,11 @@ export const ShareModal: React.FC<ShareModalProps> = ({ postId, postUrl, onClose
     }
   };
 
-  const users = usersData?.data || [];
+  const users = searchTerm 
+    ? (usersData?.data || []) 
+    : (followingData?.data || []);
+
+  const isLoading = searchTerm ? usersLoading : followingLoading;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">

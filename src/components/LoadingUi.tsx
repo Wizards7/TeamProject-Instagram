@@ -4,7 +4,7 @@ import React from "react";
 
 const Loading = () => {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white dark:bg-[#121212]">
       {/* Centered Instagram Glyph Logo */}
       <div className="flex-1 flex items-center justify-center">
         <div className="w-[80px] h-[80px] relative animate-pulse">

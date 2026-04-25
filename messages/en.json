@@ -45,5 +45,63 @@
     "requests": "Requests",
     "noConversations": "No conversations found.",
     "sentMessage": "Sent a message"
+  },
+  "Sidebar": {
+    "home": "Home",
+    "search": "Search",
+    "reels": "Reels",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "create": "Create",
+    "profile": "Profile",
+    "more": "More",
+    "settings": "Settings",
+    "activity": "Your activity",
+    "saved": "Saved",
+    "logout": "Log out"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "startedFollowing": "started following you.",
+    "justNow": "Just now",
+    "noNotifications": "No notifications yet",
+    "noNotificationsDesc": "When someone follows you, you'll see it here.",
+    "recent": "Recent",
+    "follow": "Follow",
+    "following": "Following"
+  },
+  "Post": {
+    "likes": "likes",
+    "viewAllComments": "View all {count} comments",
+    "showLess": "Show less",
+    "addComment": "Add a comment...",
+    "post": "Post",
+    "follow": "Follow",
+    "following": "Following",
+    "deleteCommentConfirm": "Delete this comment?",
+    "noContent": "No Content"
+  },
+  "Settings": {
+    "title": "Settings",
+    "language": "Language",
+    "appearance": "Appearance",
+    "selectLanguage": "Select your language",
+    "editProfile": "Edit Profile",
+    "help": "Help",
+    "logout": "Log out"
+  },
+  "Profile": {
+    "editProfile": "Edit Profile",
+    "posts": "Posts",
+    "followers": "Followers",
+    "following": "Following",
+    "noFollowers": "No followers yet",
+    "noFollowing": "No following yet",
+    "shareProfile": "Share Profile",
+    "qr_code": "QR code",
+    "settings_privacy": "Settings and privacy",
+    "viewArchive": "View Archive",
+    "notifications": "Notifications",
+    "saved": "Saved"
   }
 }

@@ -13,7 +13,7 @@ const EmptyChat: React.FC<EmptyChatProps> = ({ onOpenNewChat }) => {
   const t = useTranslations("Chat");
 
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-white select-none text-[#262626]">
+    <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-background select-none text-foreground">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -29,9 +29,9 @@ const EmptyChat: React.FC<EmptyChatProps> = ({ onOpenNewChat }) => {
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="w-[100px] h-[100px] rounded-full border-[2.5px] border-[#262626] flex items-center justify-center mx-auto mb-6 shadow-sm"
+          className="w-[100px] h-[100px] rounded-full border-[2.5px] border-foreground flex items-center justify-center mx-auto mb-6 shadow-sm"
         >
-          <SendHorizontal size={50} strokeWidth={1} className="text-[#262626] -rotate-12 translate-x-1" />
+          <SendHorizontal size={50} strokeWidth={1} className="text-foreground -rotate-12 translate-x-1" />
         </motion.div>
       </motion.div>
 
@@ -39,7 +39,7 @@ const EmptyChat: React.FC<EmptyChatProps> = ({ onOpenNewChat }) => {
         initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="text-[22px] font-bold text-[#262626] mb-2 tracking-tight"
+        className="text-[22px] font-bold text-foreground mb-2 tracking-tight"
       >
         {t("emptyTitle")}
       </motion.h2>
@@ -48,7 +48,7 @@ const EmptyChat: React.FC<EmptyChatProps> = ({ onOpenNewChat }) => {
         initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="text-sm text-[#737373] mb-8 max-w-[280px] font-medium leading-normal"
+        className="text-sm text-muted-foreground mb-8 max-w-[280px] font-medium leading-normal"
       >
         {t("emptyDesc")}
       </motion.p>

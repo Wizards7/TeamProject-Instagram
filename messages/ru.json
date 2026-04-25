@@ -44,6 +44,64 @@
     "messages": "Сообщения",
     "requests": "Запросы",
     "noConversations": "Диалоги не найдены.",
-    "sentMessage": "Отправлено сообщение"
+    "sentMessage": "Отправил сообщение"
+  },
+  "Sidebar": {
+    "home": "Главная",
+    "search": "Поиск",
+    "reels": "Reels",
+    "messages": "Сообщения",
+    "notifications": "Уведомления",
+    "create": "Создать",
+    "profile": "Профиль",
+    "more": "Ещё",
+    "settings": "Настройки",
+    "activity": "Ваши действия",
+    "saved": "Сохраненное",
+    "logout": "Выйти"
+  },
+  "Notifications": {
+    "title": "Уведомления",
+    "startedFollowing": "подписался(-ась) на ваши обновления.",
+    "justNow": "Только что",
+    "noNotifications": "Уведомлений пока нет",
+    "noNotificationsDesc": "Когда кто-то подпишется на вас, вы увидите это здесь.",
+    "recent": "Недавние",
+    "follow": "Подписаться",
+    "following": "Подписки"
+  },
+  "Post": {
+    "likes": "отметки \"Нравится\"",
+    "viewAllComments": "Посмотреть все комментарии ({count})",
+    "showLess": "Свернуть",
+    "addComment": "Добавьте комментарий...",
+    "post": "Опубликовать",
+    "follow": "Подписаться",
+    "following": "Подписки",
+    "deleteCommentConfirm": "Удалить этот комментарий?",
+    "noContent": "Нет контента"
+  },
+  "Settings": {
+    "title": "Настройки",
+    "language": "Язык",
+    "appearance": "Внешний вид",
+    "selectLanguage": "Выберите ваш язык",
+    "editProfile": "Редактировать профиль",
+    "help": "Помощь",
+    "logout": "Выйти"
+  },
+  "Profile": {
+    "editProfile": "Редактировать профиль",
+    "posts": "Публикации",
+    "followers": "Подписчики",
+    "following": "Подписки",
+    "noFollowers": "Подписчиков пока нет",
+    "noFollowing": "Подписок пока нет",
+    "shareProfile": "Поделиться профилем",
+    "qr_code": "QR-код",
+    "settings_privacy": "Настройки и конфиденциальность",
+    "viewArchive": "Архив",
+    "notifications": "Уведомления",
+    "saved": "Сохраненное"
   }
 }

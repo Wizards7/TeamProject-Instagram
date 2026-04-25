@@ -30,6 +30,7 @@ import {
   useDeleteChatMutation,
   useClearChatMutation
 } from "../../api/chat";
+import { Link } from "@/src/i18n/navigation";
 
 interface ChatViewProps {
   chat: IChat;
@@ -524,9 +525,12 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white relative overflow-hidden font-sans">
-      <header className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between z-50 bg-white/80 backdrop-blur-md sticky top-0">
-        <div className="flex items-center gap-3 cursor-pointer group">
+    <div className="flex flex-col h-full bg-background relative overflow-hidden font-sans">
+      <header className="px-5 py-3.5 border-b border-border flex items-center justify-between z-50 bg-background/80 backdrop-blur-md sticky top-0">
+        <Link 
+          href={`/profile/${chat.receiveUserId}`}
+          className="flex items-center gap-3 cursor-pointer group"
+        >
           <div className="relative">
             <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-50 flex items-center justify-center font-bold text-gray-400 bg-gray-50 shadow-sm transition-transform group-hover:scale-105">
               {chat.receiveUserImage ? (
@@ -538,23 +542,23 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
           </div>
           <div className="flex flex-col">
-            <h2 className="text-base font-bold text-[#262626] leading-tight group-hover:text-gray-600 transition-colors">{chat.receiveUserName}</h2>
+            <h2 className="text-base font-bold text-foreground leading-tight group-hover:text-muted-foreground transition-colors">{chat.receiveUserName}</h2>
             <span className="text-[11px] text-gray-400 font-medium tracking-tight">{t("activeNow")}</span>
           </div>
-        </div>
-        <div className="flex items-center gap-4 text-[#262626]">
-          <button onClick={() => setActiveCall('audio')} className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Phone size={22} /></button>
-          <button onClick={() => setActiveCall('video')} className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Video size={24} /></button>
+        </Link>
+        <div className="flex items-center gap-4 text-foreground">
+          <button onClick={() => setActiveCall('audio')} className="p-2 hover:bg-gray-50 dark:hover:bg-[#262626] rounded-full transition-colors"><Phone size={22} /></button>
+          <button onClick={() => setActiveCall('video')} className="p-2 hover:bg-gray-50 dark:hover:bg-[#262626] rounded-full transition-colors"><Video size={24} /></button>
           <div className="relative" ref={menuRef}>
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Info size={24} /></button>
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 hover:bg-gray-50 dark:hover:bg-[#262626] rounded-full transition-colors"><Info size={24} /></button>
             <AnimatePresence>
               {isMenuOpen && (
                 <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 mt-3 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[100] py-2 overflow-hidden">
-                  <button onClick={handleClearChat} className="w-full text-left px-5 py-3.5 text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors font-semibold text-sm">
+                  <button onClick={handleClearChat} className="w-full text-left px-5 py-3.5 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#262626] flex items-center gap-3 transition-colors font-semibold text-sm">
                     <Trash2 size={18} /> {t("clearChat") || "Очистить чат"}
                   </button>
-                  <div className="h-[1px] bg-gray-50 my-1 mx-2" />
-                  <button onClick={handleChatDelete} className="w-full text-left px-5 py-3.5 text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors font-semibold text-sm">
+                  <div className="h-[1px] bg-gray-50 dark:bg-gray-800 my-1 mx-2" />
+                  <button onClick={handleChatDelete} className="w-full text-left px-5 py-3.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-3 transition-colors font-semibold text-sm">
                     <Trash2 size={18} /> {t("deleteChat")}
                   </button>
                 </motion.div>
@@ -572,16 +576,21 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
         ) : (
           <div className="flex flex-col gap-1.5">
             <div className="flex flex-col items-center py-8 mb-4">
-              <div className="w-24 h-24 rounded-full overflow-hidden border border-gray-100 mb-4 shadow-sm bg-gray-50 flex items-center justify-center">
+              <Link href={`/profile/${chat.receiveUserId}`} className="w-24 h-24 rounded-full overflow-hidden border border-gray-100 mb-4 shadow-sm bg-gray-50 flex items-center justify-center hover:opacity-90 transition-opacity">
                 {chat.receiveUserImage ? (
                   <img src={API_IMAGE_URL + chat.receiveUserImage} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-2xl font-bold text-gray-300">{chat.receiveUserName[0]}</span>
                 )}
-              </div>
-              <h3 className="font-bold text-xl text-[#262626]">{chat.receiveUserName}</h3>
-              <p className="text-[13px] text-gray-500 mt-1">Instagram · {chat.receiveUserName}</p>
-              <button className="mt-4 px-5 py-1.5 bg-[#efefef] hover:bg-[#dbdbdb] rounded-lg text-sm font-bold transition-colors">{t("viewProfile")}</button>
+              </Link>
+              <Link href={`/profile/${chat.receiveUserId}`} className="font-bold text-xl text-foreground hover:text-muted-foreground transition-colors">{chat.receiveUserName}</Link>
+              <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">Instagram · {chat.receiveUserName}</p>
+              <Link 
+                href={`/profile/${chat.receiveUserId}`}
+                className="mt-4 px-5 py-1.5 bg-input hover:bg-input/80 rounded-lg text-sm font-bold transition-colors text-foreground inline-block"
+              >
+                {t("viewProfile")}
+              </Link>
             </div>
 
             <AnimatePresence initial={false}>
@@ -609,7 +618,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
                             onMouseLeave={handleLongPressEnd}
                             onTouchStart={() => handleLongPressStart(msg.messageId)}
                             onTouchEnd={handleLongPressEnd}
-                            className={`px-4 py-2.5 rounded-[22px] text-[14.5px] leading-relaxed shadow-sm transition-all cursor-pointer relative overflow-hidden ${isMine ? "bg-[#0095f6] text-white rounded-br-sm shadow-blue-500/10" : "bg-[#efefef] text-[#262626] rounded-bl-sm"} ${activeMessageMenu === msg.messageId ? "ring-2 ring-black/10 scale-[0.98] blur-[0.5px]" : "hover:opacity-95"}`}
+                            className={`px-4 py-2.5 rounded-[22px] text-[14.5px] leading-relaxed shadow-sm transition-all cursor-pointer relative overflow-hidden ${isMine ? "bg-primary text-primary-foreground rounded-br-sm shadow-primary/10" : "bg-input text-foreground rounded-bl-sm"} ${activeMessageMenu === msg.messageId ? "ring-2 ring-black/10 dark:ring-white/10 scale-[0.98] blur-[0.5px]" : "hover:opacity-95"}`}
                           >
                             {/* Top-half Color Fill Animation */}
                             <AnimatePresence>
@@ -710,7 +719,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
         <div className="max-w-full mx-auto">
           <AnimatePresence>
             {(replyingTo || editingMessage) && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="bg-gray-50 border-x border-t border-gray-200 p-3 rounded-t-3xl flex items-center justify-between text-[13px] shadow-sm mb-[-1px]">
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="bg-gray-50 dark:bg-[#1a1a1a] border-x border-t border-gray-200 p-3 rounded-t-3xl flex items-center justify-between text-[13px] shadow-sm mb-[-1px]">
                 <div className="flex items-center gap-3">
                   <div className="w-1 bg-[#0095f6] h-8 rounded-full" />
                   <div className="flex flex-col">
@@ -724,10 +733,10 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
           </AnimatePresence>
           <AnimatePresence>
             {isEmojiOpen && (
-              <motion.div initial={{ opacity: 0, y: 10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.9 }} className="absolute bottom-full mb-4 p-3 bg-white border border-gray-100 rounded-3xl shadow-2xl min-w-[300px] grid grid-cols-6 gap-2 z-50 overflow-hidden">{["❤️", "🙌", "🔥", "👏", "😢", "😍", "✨", "😂", "😮", "🌈", "👍", "👎", "🙏", "💯", "🎉", "🙄", "🤔", "😴", "🚀", "💎", "✅", "❌", "⏰", "📍"].map(e => <button key={e} onClick={() => { setMessageText(prev => prev + e); setIsEmojiOpen(false); }} className="text-2xl p-2 hover:bg-gray-50 rounded-xl transition-all active:scale-125">{e}</button>)}</motion.div>
+              <motion.div initial={{ opacity: 0, y: 10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.9 }} className="absolute bottom-full mb-4 p-3 bg-white border border-gray-100 rounded-3xl shadow-2xl min-w-[300px] grid grid-cols-6 gap-2 z-50 overflow-hidden">{["❤️", "🙌", "🔥", "👏", "😢", "😍", "✨", "😂", "😮", "🌈", "👍", "👎", "🙏", "💯", "🎉", "🙄", "🤔", "😴", "🚀", "💎", "✅", "❌", "⏰", "📍"].map(e => <button key={e} onClick={() => { setMessageText(prev => prev + e); setIsEmojiOpen(false); }} className="text-2xl p-2 hover:bg-gray-50 dark:bg-[#1a1a1a] rounded-xl transition-all active:scale-125">{e}</button>)}</motion.div>
             )}
           </AnimatePresence>
-          <div className={`flex items-center gap-3 bg-white border border-gray-200 rounded-[32px] px-5 py-2.5 shadow-xl transition-all shadow-black/5 ${isRecording ? "ring-2 ring-red-400" : "focus-within:border-gray-400"}`}>
+          <div className={`flex items-center gap-3 bg-white dark:bg-[#262626] border border-gray-200 dark:border-gray-800 rounded-[32px] px-5 py-2.5 shadow-xl transition-all shadow-black/5 ${isRecording ? "ring-2 ring-red-400" : "focus-within:border-gray-400 dark:focus-within:border-gray-600"}`}>
             {!isRecording && !previewAudioUrl && <button onClick={() => setIsEmojiOpen(!isEmojiOpen)} className="p-1 hover:opacity-60 transition-opacity"><Smile size={26} /></button>}
 
             {isRecording && (
@@ -756,7 +765,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
                 initial={{ y: 20, opacity: 0, scale: 0.95 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: 20, opacity: 0, scale: 0.95 }}
-                className="flex items-center gap-3 flex-1 bg-gray-100/80 backdrop-blur-sm rounded-full px-3 py-1.5 border border-gray-200 shadow-sm"
+                className="flex items-center gap-3 flex-1 bg-gray-100 dark:bg-gray-800/80 backdrop-blur-sm rounded-full px-3 py-1.5 border border-gray-200 shadow-sm"
               >
                 {/* Тугмаи нест кардан */}
                 <button onClick={handleDeletePreview} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
@@ -864,8 +873,8 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
         {forwardingMessage && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-[2px] flex items-center justify-center p-4">
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white rounded-[24px] w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
-              <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between"><span className="font-bold text-lg">{t("forward")}</span><button onClick={() => setForwardingMessage(null)} className="p-1 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button></div>
-              <div className="p-4 bg-gray-50/50"><div className="relative"><Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" /><input type="text" placeholder={t("search")} className="w-full bg-white border border-gray-200 rounded-xl py-2.5 pl-11 pr-4 outline-none text-sm focus:border-[#0095f6]" /></div></div>
+              <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between"><span className="font-bold text-lg">{t("forward")}</span><button onClick={() => setForwardingMessage(null)} className="p-1 hover:bg-gray-100 dark:bg-gray-800 rounded-full transition-colors"><X size={24} /></button></div>
+              <div className="p-4 bg-gray-50 dark:bg-[#1a1a1a]/50"><div className="relative"><Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" /><input type="text" placeholder={t("search")} className="w-full bg-white border border-gray-200 rounded-xl py-2.5 pl-11 pr-4 outline-none text-sm focus:border-[#0095f6]" /></div></div>
               <div className="flex-1 overflow-y-auto max-h-[400px] p-2">{["ali", "chokolate", "muhammadusuf", "dilshod", "parviz"].map(user => <div key={user} className="flex items-center justify-between p-3.5 hover:bg-neutral-50 rounded-2xl transition-colors group cursor-pointer"><div className="flex items-center gap-3"><div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-500 uppercase">{user[0]}</div><span className="font-semibold text-[#262626] font-sans">{user}</span></div><button className="bg-[#0095f6] hover:bg-[#00376b] text-white px-4 py-1.5 rounded-xl text-sm font-bold transition-all active:scale-95"> {t("send")} </button></div>)}</div>
             </motion.div>
           </motion.div>
@@ -912,7 +921,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
                 {modalConfig.type === "confirm" && (
                   <button
                     onClick={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
-                    className="flex-1 py-4 text-[15px] font-semibold text-gray-400 hover:bg-gray-50 transition-colors border-r border-gray-100"
+                    className="flex-1 py-4 text-[15px] font-semibold text-gray-400 hover:bg-gray-50 dark:bg-[#1a1a1a] transition-colors border-r border-gray-100"
                   >
                     {modalConfig.cancelText}
                   </button>
@@ -922,7 +931,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chat, onDeleteChat }) => {
                     setModalConfig(prev => ({ ...prev, isOpen: false }));
                     if (modalConfig.onConfirm) modalConfig.onConfirm();
                   }}
-                  className={`flex-1 py-4 text-[15px] font-bold transition-colors hover:bg-gray-50 ${modalConfig.type === "confirm" ? "text-red-500" : "text-[#0095f6]"}`}
+                  className={`flex-1 py-4 text-[15px] font-bold transition-colors hover:bg-gray-50 dark:bg-[#1a1a1a] ${modalConfig.type === "confirm" ? "text-red-500" : "text-[#0095f6]"}`}
                 >
                   {modalConfig.confirmText}
                 </button>

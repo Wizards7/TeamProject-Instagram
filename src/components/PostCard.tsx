@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "@/src/i18n/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { IPost } from "../types/interface";
 import { useAddCommentMutation, useDeleteCommentMutation, useLikePostMutation, useAddPostFavoriteMutation } from "../api/post";
 import { 
@@ -17,6 +17,7 @@ import { ShareModal } from "./ShareModal";
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
 const PostCard = ({ post }: { post: IPost }) => {
+  const t = useTranslations("Post");
   const locale = useLocale();
   const [likePost] = useLikePostMutation();
   const [addComment] = useAddCommentMutation();
@@ -29,6 +30,7 @@ const PostCard = ({ post }: { post: IPost }) => {
   const [showCenterIcon, setShowCenterIcon] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const commentInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -68,7 +70,7 @@ const PostCard = ({ post }: { post: IPost }) => {
   };
 
   const handleDeleteComment = async (commentId: number) => {
-    if (window.confirm("Delete this comment?")) {
+    if (window.confirm(t("deleteCommentConfirm"))) {
       try {
         await deleteComment(commentId).unwrap();
       } catch (err) {
@@ -148,10 +150,10 @@ const PostCard = ({ post }: { post: IPost }) => {
     return (
       <img 
         src={`${FILE_URL}${filename}`} 
-        className="w-full aspect-square object-cover rounded-lg border border-gray-100"
+        className="w-full aspect-square object-cover rounded-lg border border-gray-100 dark:border-gray-800"
         onError={(e) => {
             e.currentTarget.src = "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?q=80&w=1000&auto=format&fit=crop";
-            e.currentTarget.className = "w-full aspect-square object-cover rounded-lg border border-gray-100 opacity-50 grayscale";
+            e.currentTarget.className = "w-full aspect-square object-cover rounded-lg border border-gray-100 dark:border-gray-800 opacity-50 grayscale";
         }}
       />
     );
@@ -163,15 +165,18 @@ const PostCard = ({ post }: { post: IPost }) => {
       <div className="flex items-center justify-between py-3">
         <div className="flex items-center gap-3">
           <Link href={`/profile/${post.userId}`} className="w-8 h-8 rounded-full p-[1px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600 cursor-pointer">
-            <div className="w-full h-full rounded-full border border-white dark:border-black overflow-hidden bg-gray-100 dark:bg-gray-800">
+            <div className="w-full h-full rounded-full border border-white overflow-hidden bg-gray-100 dark:bg-gray-800">
               {post.userImage ? (
                 <img 
                     src={`${FILE_URL}${post.userImage}`} 
                     className="w-full h-full object-cover" 
-                    onError={(e) => (e.currentTarget.src = "/image.webp")}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg";
+                    }}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-900 uppercase">
+                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-[#1a1a1a] uppercase">
                   {post.userName?.[0] || "U"}
                 </div>
               )}
@@ -180,60 +185,65 @@ const PostCard = ({ post }: { post: IPost }) => {
           <div className="flex items-center gap-1.5 min-w-0">
             <Link 
               href={`/profile/${post.userId || post.userName}`} 
-              className="text-[14px] font-bold text-black dark:text-white hover:opacity-60 cursor-pointer truncate max-w-[150px]"
+              className="text-[14px] font-bold text-[#262626] dark:text-gray-200 hover:opacity-60 cursor-pointer truncate max-w-[150px]"
             >
               {post.userName || "user_" + (post.userId?.slice(0, 5) || "unknown")}
             </Link>
-            <span className="text-gray-400 text-xs shrink-0">• 1w</span>
+            <span className="text-gray-500 dark:text-gray-400 text-xs shrink-0">• 1w</span>
             
             {/* Follow Button */}
-            <PostFollowButton userId={post.userId} />
+            <PostFollowButton userId={post.userId} userName={post.userName} />
           </div>
         </div>
-        <button className="text-black dark:text-white hover:opacity-50">
+        <button className="text-[#262626] dark:text-gray-200 hover:opacity-50">
           <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><circle cx="12" cy="12" r="1.5"></circle><circle cx="6" cy="12" r="1.5"></circle><circle cx="18" cy="12" r="1.5"></circle></svg>
         </button>
       </div>
 
       {/* Media Content */}
-      <div className="rounded-lg overflow-hidden border border-gray-100 dark:border-white/10">
-        {post.images?.[0] ? renderMedia(post.images[0]) : <div className="aspect-square bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-gray-300">No Content</div>}
+      <div className="rounded-lg overflow-hidden border border-gray-100 dark:border-gray-800">
+        {post.images?.[0] ? renderMedia(post.images[0]) : <div className="aspect-square bg-gray-50 dark:bg-[#1a1a1a] flex items-center justify-center text-gray-300">{t("noContent")}</div>}
       </div>
 
       {/* Footer Info */}
       <div className="py-3 px-1">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-4">
-            <button onClick={handleLike} className={`hover:scale-110 active:scale-90 transition-transform ${post.postLike ? 'text-[#ed4956]' : 'text-black dark:text-white'}`}>
+            <button onClick={handleLike} className={`hover:scale-110 active:scale-90 transition-transform ${post.postLike ? 'text-[#ed4956]' : 'text-[#262626] dark:text-gray-200'}`}>
               {post.postLike ? (
                 <svg fill="currentColor" height="24" viewBox="0 0 48 48" width="24"><path d="M34.6 3.1c-4.5 0-7.9 1.8-10.6 5.6-2.7-3.7-6.1-5.5-10.6-5.5C6 3.1 0 9.6 0 17.6c0 5.8 2 8.8 8 14.3l16 13 16-13c6-5.5 8-8.5 8-14.3 0-8-6-14.5-13.4-14.5z"></path></svg>
               ) : (
-                <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.194 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.325.487.627 1.011.817 1.477.19-.466.492-.99.817-1.477a4.21 4.21 0 013.675-1.941z"></path></svg>
+                <svg fill="none" height="24" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="24">
+                  <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                </svg>
               )}
             </button>
-            <button className="text-black dark:text-white hover:scale-110 transition-transform">
+            <button 
+              onClick={() => commentInputRef.current?.focus()}
+              className="text-[#262626] dark:text-gray-200 hover:scale-110 transition-transform"
+            >
               <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" strokeWidth="2"></path></svg>
             </button>
-            <button onClick={() => setShowShareModal(true)} className="text-black dark:text-white hover:scale-110 transition-transform">
+            <button onClick={() => setShowShareModal(true)} className="text-[#262626] dark:text-gray-200 hover:scale-110 transition-transform">
               <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><line fill="none" stroke="currentColor" strokeWidth="2" x1="22" x2="9.218" y1="3" y2="10.083"></line><polygon fill="none" points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334" stroke="currentColor" strokeWidth="2"></polygon></svg>
             </button>
           </div>
-          <button onClick={() => addPostFavorite(post.postId)} className={`hover:scale-110 transition-transform ${post.postFavorite ? 'text-black dark:text-white' : 'text-black dark:text-white'}`}>
+          <button onClick={() => addPostFavorite(post.postId)} className="hover:scale-110 transition-transform text-[#262626] dark:text-gray-200">
              {post.postFavorite ? (
                 <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><path d="M20 22L12 14.37 4 22V4h16z"></path></svg>
              ) : (
-                <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24"><path d="M20 22L12 14.37 4 22V4h16z" fill="none" stroke="currentColor" strokeWidth="2"></path></svg>
+                <svg fill="none" height="24" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="24"><path d="M20 22L12 14.37 4 22V4h16z"></path></svg>
              )}
           </button>
         </div>
 
         <div className="space-y-1">
-          <p className="text-sm font-bold text-black dark:text-white">{post.postLikeCount.toLocaleString()} likes</p>
+          <p className="text-sm font-bold text-[#262626] dark:text-gray-200">{post.postLikeCount.toLocaleString()} {t("likes")}</p>
           <div className="text-[14px]">
-            <Link href={`/profile/${post.userId}`} className="font-bold mr-2 text-black dark:text-white hover:opacity-60">
+            <Link href={`/profile/${post.userId}`} className="font-bold mr-2 text-[#262626] dark:text-gray-200 hover:opacity-60">
               {post.userName || "Instagram User"}
             </Link>
-            <span className="text-gray-900 dark:text-gray-200 leading-relaxed">{post.content || post.title}</span>
+            <span className="text-[#262626] dark:text-gray-200 leading-relaxed">{post.content || post.title}</span>
           </div>
           
           {/* Comments List */}
@@ -243,22 +253,25 @@ const PostCard = ({ post }: { post: IPost }) => {
                 <div key={c.postCommentId} className="group flex items-start justify-between text-[14px]">
                   <div className="flex items-start gap-2 flex-1">
                     <Link href={`/profile/${c.userId}`} className="shrink-0 mt-0.5">
-                      <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-gray-800">
+                      <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 dark:border-gray-800">
                         {c.userImage ? (
                           <img 
                             src={`${FILE_URL}${c.userImage}`} 
                             className="w-full h-full object-cover" 
-                            onError={(e) => (e.currentTarget.src = "/image.webp")}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg";
+                          }}
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[8px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-900 uppercase">
+                          <div className="w-full h-full flex items-center justify-center text-[8px] font-bold text-gray-400 bg-gray-50 dark:bg-[#1a1a1a] dark:bg-gray-900 uppercase">
                             {c.userName?.[0] || "U"}
                           </div>
                         )}
                       </div>
                     </Link>
                     <div className="flex-1">
-                      <p className="text-black dark:text-white leading-tight">
+                      <p className="text-[#262626] dark:text-gray-200 leading-tight">
                         <Link href={`/profile/${c.userId}`} className="font-bold mr-2 hover:opacity-60">{c.userName || "User"}</Link>
                         {c.comment}
                       </p>
@@ -278,7 +291,7 @@ const PostCard = ({ post }: { post: IPost }) => {
                   onClick={() => setShowAllComments(!showAllComments)}
                   className="text-gray-500 text-xs font-medium hover:text-black dark:hover:text-white transition-colors mt-1"
                 >
-                  {showAllComments ? "Show less" : `View all ${post.comments.length} comments`}
+                  {showAllComments ? t("showLess") : t("viewAllComments", { count: post.comments.length })}
                 </button>
               )}
             </div>
@@ -286,11 +299,12 @@ const PostCard = ({ post }: { post: IPost }) => {
         </div>
 
         {/* Add Comment */}
-        <form onSubmit={handleAddComment} className="mt-4 flex items-center gap-2 border-t border-gray-100 dark:border-white/5 pt-3">
+        <form onSubmit={handleAddComment} className="mt-4 flex items-center gap-2 border-t border-gray-100 dark:border-gray-800 dark:border-white/5 pt-3">
           <input 
+            ref={commentInputRef}
             type="text" 
-            placeholder="Add a comment..."
-            className="flex-1 bg-transparent text-sm outline-none text-black dark:text-white"
+            placeholder={t("addComment")}
+            className="flex-1 bg-transparent text-sm outline-none text-[#262626] dark:text-gray-200"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
           />
@@ -298,7 +312,7 @@ const PostCard = ({ post }: { post: IPost }) => {
             disabled={!commentText.trim()}
             className="text-[#0095f6] font-bold text-sm disabled:opacity-30 transition-opacity"
           >
-            Post
+            {t("post")}
           </button>
         </form>
       </div>
@@ -314,25 +328,23 @@ const PostCard = ({ post }: { post: IPost }) => {
   );
 };
 
-const PostFollowButton = ({ userId }: { userId: string }) => {
+const PostFollowButton = ({ userId, userName }: { userId: string; userName: string }) => {
+  const t = useTranslations("Post");
   const { data: myProfile } = useGetMyProfileQuery();
   const { data: isFollowingData } = useIsFollowingUserQuery({ followingUserId: userId });
   const [followUser] = useAddFollowingRelationShipMutation();
   const [unfollowUser] = useDeleteFollowingRelationShipMutation();
   
-  const isMe = myProfile?.data?.id === userId || myProfile?.data?.userId === userId;
+  const isMe = ((myProfile?.data?.id || myProfile?.data?.userId) && userId && String(myProfile?.data?.id || myProfile?.data?.userId) === String(userId)) ||
+               (myProfile?.data?.userName && userName && myProfile.data.userName === userName);
   const isFollowing = isFollowingData?.data ?? false;
 
-  if (isMe) return null;
+  if (isMe || isFollowing) return null;
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     try {
-      if (isFollowing) {
-        await unfollowUser({ followingUserId: userId }).unwrap();
-      } else {
-        await followUser({ followingUserId: userId }).unwrap();
-      }
+      await followUser({ followingUserId: userId }).unwrap();
     } catch (err) {
       console.error("Follow from post failed", err);
     }
@@ -340,12 +352,12 @@ const PostFollowButton = ({ userId }: { userId: string }) => {
 
   return (
     <div className="flex items-center gap-1.5 ml-1">
-        <span className="text-gray-400 text-xs">•</span>
+        <span className="text-gray-500 dark:text-gray-400 text-xs">•</span>
         <button 
             onClick={handleToggle}
-            className={`text-[14px] font-bold transition-colors ${isFollowing ? 'text-black dark:text-white opacity-50' : 'text-[#0095f6] hover:text-[#00376b]'}`}
+            className="text-[14px] font-bold text-[#0095f6] hover:text-[#00376b]"
         >
-            {isFollowing ? "Following" : "Follow"}
+            {t("follow")}
         </button>
     </div>
   );

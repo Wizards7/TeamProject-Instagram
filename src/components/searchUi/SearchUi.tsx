@@ -51,7 +51,7 @@ const SearchUi = () => {
   return (
     <div className="w-full max-w-[935px] mx-auto pb-12">
       {/* Search Bar - Instagram Style */}
-      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md py-4 mb-2">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md py-4 mb-2">
         <div className="relative w-full">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-[#8e8e8e]">
             <svg
@@ -89,7 +89,7 @@ const SearchUi = () => {
             placeholder="Search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#efefef] border-none rounded-lg py-2.5 pl-11 pr-10 text-[16px] focus:ring-0 placeholder:text-[#8e8e8e] transition-all"
+            className="w-full bg-input border-none rounded-lg py-2.5 pl-11 pr-10 text-[16px] text-foreground focus:ring-0 placeholder:text-[#8e8e8e] transition-all"
           />
           {/* Right side loading spinner */}
           {usersLoading && (
@@ -100,7 +100,7 @@ const SearchUi = () => {
 
           {/* Search Dropdown Results */}
           {searchQuery && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 max-h-[480px] overflow-y-auto z-50 py-2">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-popover rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-border max-h-[480px] overflow-y-auto z-50 py-2">
               {usersLoading ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3">
                   <div className="w-8 h-8 border-[3px] border-gray-100 border-t-[#0095f6] rounded-full animate-spin"></div>

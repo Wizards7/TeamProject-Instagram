@@ -44,6 +44,64 @@
     "messages": "Паёмҳо",
     "requests": "Дархостҳо",
     "noConversations": "Ягон суҳбат ёфт нашуд.",
-    "sentMessage": "Паём фиристода шуд"
+    "sentMessage": "Паём фиристод"
+  },
+  "Sidebar": {
+    "home": "Асосӣ",
+    "search": "Ҷустуҷӯ",
+    "reels": "Reels",
+    "messages": "Паёмҳо",
+    "notifications": "Огоҳиҳо",
+    "create": "Эҷод кардан",
+    "profile": "Профил",
+    "more": "Бештар",
+    "settings": "Танзимот",
+    "activity": "Фаъолияти шумо",
+    "saved": "Захирашуда",
+    "logout": "Баромадан"
+  },
+  "Notifications": {
+    "title": "Огоҳиҳо",
+    "startedFollowing": "ба шумо обуна шуд.",
+    "justNow": "Ҳозир",
+    "noNotifications": "Ҳанӯз огоҳӣ нест",
+    "noNotificationsDesc": "Вақте ки касе ба шумо обуна мешавад, шумо онро дар ин ҷо хоҳед дид.",
+    "recent": "Охирин",
+    "follow": "Обуна шудан",
+    "following": "Обунаҳо"
+  },
+  "Post": {
+    "likes": "писандҳо",
+    "viewAllComments": "Намоиши ҳамаи шарҳҳо ({count})",
+    "showLess": "Намоиши камтар",
+    "addComment": "Шарҳ илова кунед...",
+    "post": "Нашр кардан",
+    "follow": "Обуна шудан",
+    "following": "Обунаҳо",
+    "deleteCommentConfirm": "Ин шарҳро нест кунед?",
+    "noContent": "Муҳтаво нест"
+  },
+  "Settings": {
+    "title": "Танзимот",
+    "language": "Забон",
+    "appearance": "Намуди зоҳирӣ",
+    "selectLanguage": "Забони худро интихоб кунед",
+    "editProfile": "Таҳрири профил",
+    "help": "Ёрӣ",
+    "logout": "Баромадан"
+  },
+  "Profile": {
+    "editProfile": "Таҳрири профил",
+    "posts": "Нашрияҳо",
+    "followers": "Обуначиён",
+    "following": "Обунаҳо",
+    "noFollowers": "Ҳанӯз обуначӣ нест",
+    "noFollowing": "Ҳанӯз обуна нест",
+    "shareProfile": "Мубодилаи профил",
+    "qr_code": "QR-код",
+    "settings_privacy": "Танзимот ва махфият",
+    "viewArchive": "Архивро бинед",
+    "notifications": "Огоҳиҳо",
+    "saved": "Маҳфузшудаҳо"
   }
 }

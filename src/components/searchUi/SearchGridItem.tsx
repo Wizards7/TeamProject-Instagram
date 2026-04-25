@@ -32,8 +32,8 @@ const SearchGridItem: React.FC<SearchGridItemProps> = ({ post, isBig, onClick })
               autoPlay
               loop
               onError={(e) => {
-                // If video fails, maybe it's actually an image or just broken
-                const target = e.target as HTMLVideoElement;
+                const target = e.currentTarget;
+                target.onerror = null;
                 target.style.display = 'none';
               }}
             />
@@ -42,7 +42,10 @@ const SearchGridItem: React.FC<SearchGridItemProps> = ({ post, isBig, onClick })
               src={`${FILE_URL}${post.images[0]}`} 
               alt={post.title || ""} 
               className="w-full h-full object-cover"
-              onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?q=80&w=1000&auto=format&fit=crop")}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg";
+              }}
             />
           )
         ) : (

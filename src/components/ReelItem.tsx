@@ -27,6 +27,9 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
   );
   const { data: myProfileData } = useGetMyProfileQuery();
   
+  const myId = myProfileData?.data?.id || myProfileData?.data?.userId;
+  const isMe = (myId && reel.userId && String(myId) === String(reel.userId)) || 
+               (myProfileData?.data?.userName && reel.userName && myProfileData.data.userName === reel.userName);
   const isFollowing = followStatus?.data ?? false;
   
   const [isPaused, setIsPaused] = useState(false);
@@ -46,7 +49,7 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
   const mediaSrc = `${FILE_URL}${fileName}`;
   
   const isVideo = fileName.toLowerCase().endsWith(".mp4") || fileName.toLowerCase().endsWith(".mov") || fileName.toLowerCase().endsWith(".webm");
-  const userImg = reel.userImage ? `${FILE_URL}${reel.userImage}` : "/image.webp";
+  const userImg = reel.userImage ? `${FILE_URL}${reel.userImage}` : "/istockphoto-2151669184-612x612.jpg";
 
   // Auto-play/pause based on isActive prop
   useEffect(() => {
@@ -251,7 +254,7 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
                   <img src={userImg} alt={reel.userName} className="w-full h-full object-cover" />
                 </Link>
                 <Link href={`/profile/${reel.userId}`} className="font-bold text-sm hover:opacity-80 transition-opacity cursor-pointer drop-shadow-md">{reel.userName}</Link>
-                {!isFollowing && (
+                {!isMe && !isFollowing && (
                   <button 
                     onClick={handleFollow}
                     className="text-[12px] bg-white/10 backdrop-blur-md border border-white/30 px-4 py-1.5 rounded-lg font-bold hover:bg-white/20 transition-all"
@@ -333,7 +336,10 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
                 src={userImg} 
                 alt="audio" 
                 className="w-full h-full object-cover" 
-                onError={(e) => (e.currentTarget.src = "/image.webp")}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg";
+                }}
               />
             </motion.div>
           </div>
@@ -373,10 +379,13 @@ const ReelItem: React.FC<ReelItemProps> = ({ reel, isActive }) => {
                     <div key={c.postCommentId} className="group flex gap-3 text-black">
                       <Link href={`/profile/${c.userId}`} className="shrink-0">
                         <img 
-                          src={c.userImage ? `${FILE_URL}${c.userImage}` : "/image.webp"} 
+                          src={c.userImage ? `${FILE_URL}${c.userImage}` : "/istockphoto-2151669184-612x612.jpg"} 
                           className="w-8 h-8 rounded-full object-cover border border-gray-100 shadow-sm"
                           alt={c.userName}
-                          onError={(e) => (e.currentTarget.src = "/image.webp")}
+                          onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/istockphoto-2151669184-612x612.jpg";
+                }}
                         />
                       </Link>
                       <div className="flex flex-col flex-1">

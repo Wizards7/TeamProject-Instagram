@@ -32,37 +32,83 @@ export const userProfileApi = apiSlice.injectEndpoints({
       providesTags: ["Post"],
     }),
 
-    getFollowers: builder.query<{ data: IFollower[] }, { userId: string; pageNumber?: number; pageSize?: number }>({
-      query: ({ userId, pageNumber = 1, pageSize = 30 }) => ({
-        url: "/FollowingRelationShip/get-subscribers",
-        params: { UserId: userId, pageNumber, pageSize },
+    getFollowers: builder.query<{ data: IFollower[] }, { userId: string }>({
+      query: ({ userId }) => ({
+        url: `/FollowingRelationShip/get-subscribers`,
+        params: {
+          UserId: userId,
+        },
       }),
       transformResponse: (response: any) => {
+        let items = [];
+        
+        // 1. Try to find the array in common locations
+        if (Array.isArray(response)) {
+          items = response;
+        } else if (response && Array.isArray(response.data)) {
+          items = response.data;
+        } else if (response && response.data && Array.isArray(response.data.data)) {
+          items = response.data.data;
+        } else if (response && response.data && Array.isArray(response.data.list)) {
+          items = response.data.list;
+        } else if (response && Array.isArray(response.list)) {
+          items = response.list;
+        } else if (response && response.data && typeof response.data === "object") {
+          // Check for any property that might be an array
+          const possibleArray = Object.values(response.data).find(val => Array.isArray(val));
+          if (possibleArray) items = possibleArray as any[];
+        }
+
         return {
-          data: response.data?.map((item: any) => ({
-            id: item.userShortInfo?.userId || item.id,
-            userName: item.userShortInfo?.userName,
-            fullName: item.userShortInfo?.fullname,
-            image: item.userShortInfo?.userPhoto,
-          })) || []
+          data: items.map((item: any) => {
+            const user = item.userShortInfo || item.userInfo || item;
+            return {
+              id: String(user.userId || user.id || user.subscriberUserId || user.followingUserId || user.pk || user.PK || ""),
+              userName: user.userName || user.username || user.userName || "unknown",
+              fullName: user.fullname || user.fullName || user.firstName || user.userName || "",
+              image: user.userPhoto || user.image || user.userImage || user.avatar || user.userAvatar || null,
+            };
+          }),
         };
       },
       providesTags: ["Following"],
     }),
 
-    getFollowing: builder.query<{ data: IFollower[] }, { userId: string; pageNumber?: number; pageSize?: number }>({
-      query: ({ userId, pageNumber = 1, pageSize = 30 }) => ({
-        url: "/FollowingRelationShip/get-subscriptions",
-        params: { UserId: userId, pageNumber, pageSize },
+    getFollowing: builder.query<{ data: IFollower[] }, { userId: string }>({
+      query: ({ userId }) => ({
+        url: `/FollowingRelationShip/get-subscriptions`,
+        params: {
+          UserId: userId,
+        },
       }),
       transformResponse: (response: any) => {
+        let items = [];
+        
+        if (Array.isArray(response)) {
+          items = response;
+        } else if (response && Array.isArray(response.data)) {
+          items = response.data;
+        } else if (response && response.data && Array.isArray(response.data.data)) {
+          items = response.data.data;
+        } else if (response && response.data && Array.isArray(response.data.list)) {
+          items = response.data.list;
+        } else if (response && Array.isArray(response.list)) {
+          items = response.list;
+        } else if (response && response.data && typeof response.data === "object") {
+          const possibleArray = Object.values(response.data).find(val => Array.isArray(val));
+          if (possibleArray) items = possibleArray as any[];
+        }
+
         return {
-          data: response.data?.map((item: any) => ({
-            id: item.userShortInfo?.userId || item.id,
-            userName: item.userShortInfo?.userName,
-            fullName: item.userShortInfo?.fullname,
-            image: item.userShortInfo?.userPhoto,
-          })) || []
+          data: items.map((item: any) => {
+            const user = item.userShortInfo || item.userInfo || item;
+            return {
+              id: String(user.userId || user.id || user.subscriberUserId || user.followingUserId || user.pk || user.PK || ""),
+              userName: user.userName || user.username || user.userName || "unknown",
+              fullName: user.fullname || user.fullName || user.firstName || user.userName || "",
+              image: user.userPhoto || user.image || user.userImage || user.avatar || user.userAvatar || null,
+            };
+          }),
         };
       },
       providesTags: ["Following"],
@@ -74,7 +120,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
         method: "POST",
         params,
       }),
-      async onQueryStarted({ followingUserId }, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ followingUserId }, { dispatch, getState, queryFulfilled }) {
         // 1. Optimistically update follow status check
         const patchFollow = dispatch(
           userProfileApi.util.updateQueryData("isFollowingUser", { followingUserId }, (draft) => {
@@ -102,12 +148,34 @@ export const userProfileApi = apiSlice.injectEndpoints({
           })
         );
 
+        // Get myId from the profile query
+        const state = getState() as any;
+        const myProfile = state.api.queries['getMyProfile(undefined)']?.data?.data;
+        const myId = myProfile?.id || myProfile?.userId;
+
+        // 4. Optimistically update getFollowing list
+        const patchFollowingList = dispatch(
+          userProfileApi.util.updateQueryData("getFollowing", { userId: myId || "" }, (draft) => {
+            if (draft?.data) {
+              // We don't have all details, but we can push a partial user
+              // to trigger the 'isFollowed' check in Suggestions
+              draft.data.push({
+                id: followingUserId,
+                userName: "...", // Temporary name
+                fullName: "...",
+                image: null
+              });
+            }
+          })
+        );
+
         try {
           await queryFulfilled;
         } catch {
           patchFollow.undo();
           patchMyProfile.undo();
           patchOtherProfile.undo();
+          patchFollowingList.undo();
         }
       },
       invalidatesTags: ["Profile", "Following"],
@@ -119,7 +187,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
         method: "DELETE",
         params,
       }),
-      async onQueryStarted({ followingUserId }, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ followingUserId }, { dispatch, getState, queryFulfilled }) {
         // 1. Optimistically update follow status check
         const patchFollow = dispatch(
           userProfileApi.util.updateQueryData("isFollowingUser", { followingUserId }, (draft) => {
@@ -193,6 +261,7 @@ export const userProfileApi = apiSlice.injectEndpoints({
     }),
 
   }),
+  overrideExisting: true,
 });
 
 export const {

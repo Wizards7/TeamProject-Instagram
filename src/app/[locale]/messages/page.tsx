@@ -29,7 +29,7 @@ const MessagesPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] bg-white">
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] bg-white dark:bg-[#121212]">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -41,8 +41,8 @@ const MessagesPage = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-100px)] border border-[#dbdbdb] rounded-sm overflow-hidden flex bg-white shadow-2xl shadow-black/5 max-w-[1200px] mx-auto my-1">
-      <div className="w-[350px] flex-shrink-0 border-r border-[#dbdbdb]">
+    <div className="h-[calc(100vh-100px)] border border-border rounded-lg overflow-hidden flex bg-background max-w-[1200px] mx-auto my-1">
+      <div className="w-[350px] flex-shrink-0 border-r border-border">
         <ChatList
           chats={chats}
           selectedChatId={selectedChat?.chatId}
@@ -51,7 +51,7 @@ const MessagesPage = () => {
         />
       </div>
 
-      <div className="flex-1 min-w-0 bg-white relative">
+      <div className="flex-1 min-w-0 bg-background relative">
         <AnimatePresence mode="wait">
           {selectedChat ? (
             <motion.div
