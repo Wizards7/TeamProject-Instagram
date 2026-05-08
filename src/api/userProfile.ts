@@ -1,5 +1,5 @@
 import { apiSlice } from "./apiSlice";
-import { IPost, IPaginatedResponse, IUserProfile, IFollower } from "../types/interface";
+import { IPost, IPaginatedResponse, IPagedResponse, IUserProfile, IFollower } from "../types/interface";
 
 export const userProfileApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -16,13 +16,13 @@ export const userProfileApi = apiSlice.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
-    getMyPosts: builder.query<IPaginatedResponse<IPost>, void>({
+    getMyPosts: builder.query<IPagedResponse<IPost>, void>({
       query: () => "/Post/get-my-posts?PageSize=100",
       providesTags: ["Post"],
     }),
 
     getPostFavorites: builder.query<
-      IPaginatedResponse<IPost>,
+      IPagedResponse<IPost>,
       { PageNumber?: number; PageSize?: number }
     >({
       query: (params) => ({
@@ -32,11 +32,12 @@ export const userProfileApi = apiSlice.injectEndpoints({
       providesTags: ["Post"],
     }),
 
-    getFollowers: builder.query<{ data: IFollower[] }, { userId: string }>({
-      query: ({ userId }) => ({
+    getFollowers: builder.query<{ data: IFollower[] }, { userId: string; pageSize?: number }>({
+      query: ({ userId, pageSize }) => ({
         url: `/FollowingRelationShip/get-subscribers`,
         params: {
           UserId: userId,
+          PageSize: pageSize || 50,
         },
       }),
       transformResponse: (response: any) => {
@@ -74,11 +75,12 @@ export const userProfileApi = apiSlice.injectEndpoints({
       providesTags: ["Following"],
     }),
 
-    getFollowing: builder.query<{ data: IFollower[] }, { userId: string }>({
-      query: ({ userId }) => ({
+    getFollowing: builder.query<{ data: IFollower[] }, { userId: string; pageSize?: number }>({
+      query: ({ userId, pageSize }) => ({
         url: `/FollowingRelationShip/get-subscriptions`,
         params: {
           UserId: userId,
+          PageSize: pageSize || 50,
         },
       }),
       transformResponse: (response: any) => {

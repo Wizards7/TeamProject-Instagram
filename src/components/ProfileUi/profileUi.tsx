@@ -612,6 +612,7 @@ export const PostModal: React.FC<{ post: IPost; onClose: () => void }> = ({
     </div>
   );
 };
+type Tab = "posts" | "reels" | "saved";
 
 const Tabs: React.FC<{ activeTab: Tab; onTabChange: (key: Tab) => void }> = ({ activeTab, onTabChange }) => {
   const t = useTranslations("Profile");

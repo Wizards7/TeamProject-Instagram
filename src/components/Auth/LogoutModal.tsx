@@ -4,9 +4,19 @@ import React from "react";
 
 interface LogoutModalProps {
   onClose: () => void;
+  onConfirm?: () => void;
 }
 
-export default function LogoutModal({ onClose }: LogoutModalProps) {
+export default function LogoutModal({ onClose, onConfirm }: LogoutModalProps) {
+  const handleLogout = () => {
+    logoutUser();
+    if (onConfirm) {
+      onConfirm();
+    } else {
+      window.location.href = "/login";
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div 
@@ -24,7 +34,7 @@ export default function LogoutModal({ onClose }: LogoutModalProps) {
         </div>
         <div className="flex flex-col">
           <button
-            onClick={() => logoutUser()}
+            onClick={handleLogout}
             className="w-full py-3.5 text-[15px] font-bold text-[#ed4956] hover:bg-gray-50 transition-colors border-b border-gray-100"
           >
             Log Out

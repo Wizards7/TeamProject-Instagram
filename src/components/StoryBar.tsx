@@ -5,7 +5,7 @@ import { useLocale } from "next-intl";
 import { useGetStoriesQuery, useGetMyStoriesQuery } from "../api/story";
 import { useGetMyProfileQuery, useGetFollowingQuery } from "../api/userProfile";
 import { useGetPostsQuery } from "../api/post";
-import { IStory } from "../types/interface";
+import { IFollower, IStory } from "../types/interface";
 import { Link } from "../i18n/navigation";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
@@ -41,7 +41,7 @@ const StoryBar = () => {
   );
 
   const followingList = followingData?.data || [];
-  const followedIds = new Set(followingList.map((f: any) => String(f.id)));
+  const followedIds = new Set(followingList.map((f: IFollower) => String(f.id)));
 
   const [activeUserStories, setActiveUserStories] = useState<IStory[] | null>(null);
   const [viewedUsers, setViewedUsers] = useState<Set<string>>(new Set());

@@ -10,6 +10,7 @@ import {
   useDeleteFollowingRelationShipMutation,
   useIsFollowingUserQuery
 } from "../../../api/userProfile";
+import { IFollower } from "../../../types/interface";
 import { motion, AnimatePresence } from "framer-motion";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
@@ -93,7 +94,7 @@ const NotificationPage = () => {
   );
 };
 
-const NotificationItem = ({ user, locale }: { user: any, locale: string }) => {
+const NotificationItem = ({ user, locale }: { user: IFollower, locale: string }) => {
   const { data: followStatus } = useIsFollowingUserQuery({ followingUserId: user.id });
   const [addFollow] = useAddFollowingRelationShipMutation();
   const [deleteFollow] = useDeleteFollowingRelationShipMutation();

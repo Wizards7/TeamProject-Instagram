@@ -29,7 +29,7 @@ export default function SavedUi() {
 
       {savedPosts.length > 0 ? (
         <div className="grid grid-cols-3 gap-1 md:gap-4">
-          {savedPosts.map((post) => (
+          {savedPosts.map((post: IPost) => (
             <PostThumbnail
               key={post.postId}
               post={post}

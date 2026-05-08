@@ -11,6 +11,7 @@ import {
   useDeleteFollowingRelationShipMutation,
   useIsFollowingUserQuery
 } from "../../api/userProfile";
+import { IFollower } from "../../types/interface";
 
 const FILE_URL = "https://instagram-api.softclub.tj/images/";
 
@@ -91,6 +92,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
                       user={subscriber} 
                       locale={locale}
                       onClose={onClose}
+                      t={t}
                     />
                   ))}
                 </div>
@@ -103,7 +105,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
   );
 };
 
-const NotificationItem = ({ user, locale, onClose }: { user: any, locale: string, onClose: () => void }) => {
+const NotificationItem = ({ user, locale, onClose, t }: { user: IFollower, locale: string, onClose: () => void, t: any }) => {
   const { data: followStatus } = useIsFollowingUserQuery({ followingUserId: user.id });
   const [addFollow] = useAddFollowingRelationShipMutation();
   const [deleteFollow] = useDeleteFollowingRelationShipMutation();

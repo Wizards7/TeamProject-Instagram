@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import { useGetUsersQuery } from "../api/user";
 import { useAddFollowingRelationShipMutation, useGetMyProfileQuery, useGetFollowingQuery } from "../api/userProfile";
+import { IFollower } from "../types/interface";
 
 const Suggestions = () => {
   const locale = useLocale();
@@ -39,7 +40,7 @@ const Suggestions = () => {
     }
   };
 
-  const followedIds = new Set((followingData?.data || []).map((f: any) => String(f.id)));
+  const followedIds = new Set((followingData?.data || []).map((f: IFollower) => String(f.id)));
 
   const filteredUsers = userData?.data
     ?.filter(u => String(u.id) !== String(myId)) // Don't suggest myself
